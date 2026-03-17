@@ -42,9 +42,9 @@ const Profile = () => {
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [followersCount, setFollowersCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [signalsCount, setSignalsCount] = useState(0);
+  const [sparkedCount, setSparkedCount] = useState(0);
+  const [ignitedCount, setIgnitedCount] = useState(0);
+  const [fuelingCount, setFuelingCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
   const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
@@ -55,11 +55,14 @@ const Profile = () => {
     if (!user) return;
 
     const load = async () => {
-      const [profileRes, followersRes, followingRes, signalsRes] = await Promise.all([
+      const [profileRes, followersRes, followingRes, stitchesGivenRes, stitchesReceivedRes] = await Promise.all([
         supabase.from("profiles").select("display_name, phone, avatar_url").eq("user_id", user.id).single(),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", user.id),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", user.id),
-        supabase.from("signals").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        // Unique users I've stitched
+        supabase.from("stitches").select("signal_id").eq("user_id", user.id),
+        // Stitches on my signals (to find unique users who stitched me)
+        supabase.from("signals").select("id").eq("user_id", user.id),
       ]);
 
       if (profileRes.data) {
@@ -67,9 +70,28 @@ const Profile = () => {
         setPhone(profileRes.data.phone ?? "");
         setAvatarUrl(profileRes.data.avatar_url ?? null);
       }
-      setFollowersCount(followersRes.count ?? 0);
-      setFollowingCount(followingRes.count ?? 0);
-      setSignalsCount(signalsRes.count ?? 0);
+
+      setIgnitedCount(followingRes.count ?? 0);
+      setFuelingCount(followersRes.count ?? 0);
+
+      // Calculate unique embers sparked with (union of unique users I stitched + unique users who stitched me)
+      const mySignalIds = (stitchesReceivedRes.data ?? []).map(s => s.id);
+      const usersIStitched = new Set<string>();
+      // We need signal owners for stitches I gave
+      if (stitchesGivenRes.data && stitchesGivenRes.data.length > 0) {
+        const sigIds = [...new Set(stitchesGivenRes.data.map(s => s.signal_id))];
+        const { data: sigs } = await supabase.from("signals").select("id, user_id").in("id", sigIds);
+        sigs?.forEach(s => { if (s.user_id !== user.id) usersIStitched.add(s.user_id); });
+      }
+      // Users who stitched my signals
+      const usersWhoStitchedMe = new Set<string>();
+      if (mySignalIds.length > 0) {
+        const { data: theirStitches } = await supabase.from("stitches").select("user_id").in("signal_id", mySignalIds);
+        theirStitches?.forEach(s => { if (s.user_id !== user.id) usersWhoStitchedMe.add(s.user_id); });
+      }
+      // Union
+      const allSparked = new Set([...usersIStitched, ...usersWhoStitchedMe]);
+      setSparkedCount(allSparked.size);
     };
     load();
   }, [user]);
@@ -382,18 +404,21 @@ const Profile = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ ...signalTransition, delay: 0.1 }}
-          className="grid grid-cols-3 gap-3 mb-6"
+          className="flex flex-col items-center gap-4 mb-6"
         >
-          {[
-            { label: "signals", value: signalsCount },
-            { label: "followers", value: followersCount },
-            { label: "following", value: followingCount },
-          ].map((stat) => (
-            <div key={stat.label} className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
-              <span className="text-xl font-medium text-foreground">{stat.value}</span>
-              <span className="label-signal">{stat.label}</span>
+          <p className="text-sm text-muted-foreground">
+            You've Sparked with <span className="text-foreground font-semibold">{sparkedCount}</span> Embers
+          </p>
+          <div className="grid grid-cols-2 gap-3 w-full">
+            <div className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
+              <span className="text-xl font-medium text-foreground">{ignitedCount}</span>
+              <span className="label-signal">Ignited</span>
             </div>
-          ))}
+            <div className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
+              <span className="text-xl font-medium text-foreground">{fuelingCount}</span>
+              <span className="label-signal">Fueling You</span>
+            </div>
+          </div>
         </motion.div>
 
         {/* Tab switcher */}
