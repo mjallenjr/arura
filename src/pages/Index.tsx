@@ -25,7 +25,7 @@ const Index = () => {
   const startTimeRef = useRef<number>(0);
 
   const cameraActive = state === "camera" || state === "confirm";
-  const { videoRef, streamRef, hasPermission, error: cameraError } = useCamera({
+  const { videoRef, streamRef, hasPermission, error: cameraError, zoom, zoomCaps, applyZoom } = useCamera({
     facing: cameraFacing,
     active: cameraActive,
   });
