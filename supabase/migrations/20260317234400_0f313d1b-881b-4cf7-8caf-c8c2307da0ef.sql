@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS signal_owner_views_signal_user_unique ON public.signal_owner_views (signal_id, user_id);
