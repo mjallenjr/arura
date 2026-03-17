@@ -30,6 +30,7 @@ const Index = () => {
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [songUrl, setSongUrl] = useState("");
   const [songTitle, setSongTitle] = useState("");
+  const [stitchWord, setStitchWord] = useState("");
   const [uploading, setUploading] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
