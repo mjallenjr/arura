@@ -19,6 +19,8 @@ interface ProfileResult {
   isFollowing: boolean;
 }
 
+type AnimatingId = { id: string; type: "ignite" | "extinguish" };
+
 const People = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
