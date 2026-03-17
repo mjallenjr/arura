@@ -5,70 +5,93 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Curated list of working high-quality image URLs from Unsplash (photos endpoint)
+const STOCK_IMAGES = [
+  { query: "golden hour mountain", url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=1200&fit=crop" },
+  { query: "misty forest trail", url: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&h=1200&fit=crop" },
+  { query: "ocean sunset cliffs", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=1200&fit=crop" },
+  { query: "lavender field sunrise", url: "https://images.unsplash.com/photo-1499002238440-d264edd596ec?w=800&h=1200&fit=crop" },
+  { query: "autumn forest path", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1200&fit=crop" },
+  { query: "cozy rainy window", url: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&h=1200&fit=crop" },
+  { query: "northern lights sky", url: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&h=1200&fit=crop" },
+  { query: "tropical beach paradise", url: "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&h=1200&fit=crop" },
+  { query: "desert sand dunes", url: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&h=1200&fit=crop" },
+  { query: "cherry blossom spring", url: "https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800&h=1200&fit=crop" },
+  { query: "snowy cabin retreat", url: "https://images.unsplash.com/photo-1520769669658-f07657f5a307?w=800&h=1200&fit=crop" },
+  { query: "waterfall jungle mist", url: "https://images.unsplash.com/photo-1432405972618-c6b0cfba8427?w=800&h=1200&fit=crop" },
+  { query: "starry night camping", url: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&h=1200&fit=crop" },
+  { query: "wildflower meadow", url: "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=800&h=1200&fit=crop" },
+  { query: "sunrise yoga beach", url: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=1200&fit=crop" },
+  { query: "mountain lake reflection", url: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800&h=1200&fit=crop" },
+  { query: "foggy pier morning", url: "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=800&h=1200&fit=crop" },
+  { query: "colorful street market", url: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&h=1200&fit=crop" },
+];
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { themes } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Use AI to generate Unsplash search queries based on stitch/drop themes
-    const themeList = (themes || []).slice(0, 10).join(", ");
-    const prompt = themeList
-      ? `Given these one-word themes from a social media app: ${themeList}
+    let selectedImages = shuffleArray(STOCK_IMAGES).slice(0, 6);
 
-Generate exactly 6 nature/lifestyle Unsplash search queries that would match similar vibes and scenes of interest. Each query should be 2-4 words, evocative, and visually interesting.
+    // If we have themes and an API key, try to get AI-curated selections
+    if (LOVABLE_API_KEY && themes && themes.length > 0) {
+      try {
+        const themeList = themes.slice(0, 10).join(", ");
+        const prompt = `Given these one-word themes: ${themeList}
 
-Return ONLY a JSON array of strings, nothing else. Example: ["golden hour beach","misty mountain trail","cozy cafe rain","autumn forest path","ocean sunset cliffs","lavender field sunrise"]`
-      : `Generate exactly 6 diverse nature/lifestyle Unsplash search queries for a social media discovery feed. Each should be 2-4 words, evocative, visually stunning.
+Pick the 6 most relevant items from this list and return their indices (0-based). List: ${STOCK_IMAGES.map((s, i) => `${i}:${s.query}`).join(", ")}
 
-Return ONLY a JSON array of strings, nothing else.`;
+Return ONLY a JSON array of numbers, e.g. [0,3,5,7,11,15]`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: "You are a creative assistant that generates search queries for beautiful imagery. Only respond with a JSON array." },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-lite",
+            messages: [
+              { role: "system", content: "You select image indices. Only respond with a JSON array of numbers." },
+              { role: "user", content: prompt },
+            ],
+          }),
         });
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices?.[0]?.message?.content || "[]";
+          const jsonMatch = content.match(/\[[\s\S]*?\]/);
+          if (jsonMatch) {
+            const indices: number[] = JSON.parse(jsonMatch[0]);
+            const valid = indices.filter((i) => i >= 0 && i < STOCK_IMAGES.length);
+            if (valid.length >= 4) {
+              selectedImages = valid.slice(0, 6).map((i) => STOCK_IMAGES[i]);
+            }
+          }
+        }
+      } catch {
+        // Fall back to random selection
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Credits required" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error(`AI gateway error: ${response.status}`);
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "[]";
-
-    // Extract JSON array from response
-    const jsonMatch = content.match(/\[[\s\S]*?\]/);
-    const queries = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-
-    // Build Unsplash URLs (using their free source API)
-    const discoveryItems = queries.slice(0, 6).map((query: string, i: number) => ({
+    const discoveryItems = selectedImages.map((item, i) => ({
       id: `ai-d-${i}`,
-      query,
-      image_url: `https://source.unsplash.com/800x1200/?${encodeURIComponent(query)}&sig=${Date.now()}-${i}`,
-      display_name: query,
+      query: item.query,
+      image_url: item.url,
+      display_name: item.query,
     }));
 
     return new Response(JSON.stringify({ items: discoveryItems }), {
