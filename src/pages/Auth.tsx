@@ -140,7 +140,11 @@ const Auth = () => {
             className="w-full max-w-sm"
           >
             <div className="flex flex-col items-center gap-3 mb-8">
-              <span className="text-4xl">🔥</span>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="text-primary">
+                <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" opacity="0.2" />
+                <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                <path d="M12 18a3 3 0 003-3c0-2-1.5-3-2-5-.5 1-1.5 1.5-2 0-.5 2-2 3-2 5a3 3 0 003 3z" fill="currentColor" opacity="0.4" />
+              </svg>
               <h1 className="display-signal text-center">arura</h1>
               <p className="text-sm text-muted-foreground text-center">
                 {forgotMode ? "Reset your password" : mode === "signin" ? "Welcome back" : "Join the moment"}
