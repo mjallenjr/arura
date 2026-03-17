@@ -27,7 +27,7 @@ const Advertise = () => {
   useEffect(() => {
     const load = async () => {
       const [usersRes, signalsRes, impressionsRes] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("public_profiles").select("user_id", { count: "exact", head: true }),
         supabase.from("signals").select("id", { count: "exact", head: true }),
         supabase.from("ad_impressions").select("id", { count: "exact", head: true }),
       ]);
