@@ -389,6 +389,27 @@ export type Database = {
         }
         Relationships: []
       }
+      push_vapid_keys: {
+        Row: {
+          created_at: string
+          id: number
+          private_key: string
+          public_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          private_key: string
+          public_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          private_key?: string
+          public_key?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           code: string
