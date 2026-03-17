@@ -8,6 +8,7 @@ import NavBar from "@/components/NavBar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import People from "./pages/People";
+import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
