@@ -76,6 +76,7 @@ const Profile = () => {
         setDisplayName(profileRes.data.display_name ?? "");
         setPhone(profileRes.data.phone ?? "");
         setAvatarUrl(profileRes.data.avatar_url ?? null);
+        setMyInterests(profileRes.data.interests ?? []);
       }
 
       setIgnitedCount(followingRes.count ?? 0);
