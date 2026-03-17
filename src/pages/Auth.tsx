@@ -258,6 +258,8 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
       </AnimatePresence>
     </div>
   );
-};
+});
+
+Auth.displayName = "Auth";
 
 export default Auth;
