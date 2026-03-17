@@ -444,6 +444,27 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
             </motion.div>
           )}
 
+          {/* Words button (mutual spark only) */}
+          {!isSelf && currentUser && hasMutualSpark && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...signalTransition, delay: 0.12 }}
+              className="mb-6"
+            >
+              <motion.button
+                onClick={() => {
+                  onClose();
+                  navigate(`/messages?dm=${userId}&name=${encodeURIComponent(data?.display_name ?? "")}`);
+                }}
+                className="w-full rounded-xl py-3 px-4 signal-surface border border-border/30 text-xs font-medium tracking-wide uppercase text-foreground/80 hover:text-foreground transition-colors"
+                whileTap={{ scale: 0.97 }}
+              >
+                words
+              </motion.button>
+            </motion.div>
+          )}
+
           {/* Stats */}
           <motion.div
             initial={{ opacity: 0 }}
