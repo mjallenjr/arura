@@ -65,6 +65,9 @@ function getTouchAngle(t1: Touch, t2: Touch) {
 const FeedView = ({ onEnd }: FeedViewProps) => {
   const { user } = useAuth();
   const { fetchTargetedAd } = useAds();
+  const { isBlocked, refreshBlocks } = useBlocks();
+  const checkStitchLimit = useRateLimit(10, 60000); // 10 stitches per minute
+  const [showReportMenu, setShowReportMenu] = useState(false);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
