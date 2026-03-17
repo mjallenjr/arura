@@ -267,6 +267,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
 
       const enriched: Signal[] = rawSignals
+        .filter((s) => !isBlocked(s.user_id))
         .map((s) => {
           let media_url: string | null = null;
           if (s.storage_path) {
