@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const signalTransition = { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as const };
