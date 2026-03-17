@@ -133,6 +133,7 @@ export type Database = {
           id: string
           song_clip_url: string | null
           song_title: string | null
+          stitch_word: string | null
           storage_path: string | null
           type: string
           user_id: string
@@ -143,6 +144,7 @@ export type Database = {
           id?: string
           song_clip_url?: string | null
           song_title?: string | null
+          stitch_word?: string | null
           storage_path?: string | null
           type?: string
           user_id: string
@@ -153,11 +155,44 @@ export type Database = {
           id?: string
           song_clip_url?: string | null
           song_title?: string | null
+          stitch_word?: string | null
           storage_path?: string | null
           type?: string
           user_id?: string
         }
         Relationships: []
+      }
+      stitches: {
+        Row: {
+          created_at: string
+          id: string
+          signal_id: string
+          user_id: string
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          signal_id: string
+          user_id: string
+          word: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          signal_id?: string
+          user_id?: string
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stitches_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
