@@ -748,8 +748,44 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
             <button onClick={handleStitchSubmit} disabled={!stitchInput.trim()} className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground disabled:opacity-30">
               stitch
             </button>
-            <button onClick={() => { setShowStitchInput(false); setStitchInput(""); setStitchSuggestions([]); }} className="text-muted-foreground/50 text-xs">✕</button>
+            <button onClick={() => { setShowStitchInput(false); setShowIgnitePrompt(false); setStitchInput(""); setStitchSuggestions([]); }} className="text-muted-foreground/50 text-xs">✕</button>
           </motion.div>
+
+          {/* Ignite button for suggested embers */}
+          <AnimatePresence>
+            {showIgnitePrompt && signal.isSuggested && !ignitedInFeed[signal.user_id] && (
+              <motion.button
+                initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={signalTransition}
+                onClick={async () => {
+                  if (!user) return;
+                  const { error } = await supabase.from("follows").insert({
+                    follower_id: user.id,
+                    following_id: signal.user_id,
+                  });
+                  if (!error) {
+                    setIgnitedInFeed((prev) => ({ ...prev, [signal.user_id]: true }));
+                    toast.success(`Ignited ${signal.display_name} 🔥`);
+                  }
+                }}
+                className="mt-2 rounded-full bg-primary px-5 py-2 text-xs font-medium text-primary-foreground uppercase tracking-wide"
+                whileTap={{ scale: 0.95 }}
+              >
+                🔥 ignite {signal.display_name}
+              </motion.button>
+            )}
+            {showIgnitePrompt && signal.isSuggested && ignitedInFeed[signal.user_id] && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-2 text-[10px] text-primary/70"
+              >
+                🔥 ignited
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
