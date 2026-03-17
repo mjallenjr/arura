@@ -262,9 +262,33 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       elapsedBeforePauseRef.current = 0;
       startTimeRef.current = Date.now();
     } else {
-      setEnded(true);
+      // Filter out stitched signals and signals older than 24hrs, then reshuffle
+      const now = Date.now();
+      const remaining = signals.filter((s) => {
+        if (s.isAd || s.isDiscovery) return false;
+        if (hasStitched[s.id]) return false;
+        const createdAt = new Date(s.created_at).getTime();
+        if (createdAt > 0 && now - createdAt > 24 * 60 * 60 * 1000) return false;
+        return true;
+      });
+
+      if (remaining.length > 0) {
+        const reshuffled = shuffleArray(remaining);
+        setSignals(reshuffled);
+        setCurrentIndex(0);
+        setProgress(0);
+        setShowStitchInput(false);
+        setStitchInput("");
+        setSubmittedStitch(null);
+        setStitchScale(1);
+        setStitchRotation(0);
+        elapsedBeforePauseRef.current = 0;
+        startTimeRef.current = Date.now();
+      } else {
+        setEnded(true);
+      }
     }
-  }, [currentIndex, signals.length]);
+  }, [currentIndex, signals, hasStitched]);
 
   // Fetch stitch counts for own signals
   useEffect(() => {
