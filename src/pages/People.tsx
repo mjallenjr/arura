@@ -124,7 +124,7 @@ const People = () => {
           .from("follows")
           .upsert({ follower_id: user.id, following_id: data.user_id });
         setFollowingIds((prev) => new Set(prev).add(data.user_id));
-        toast.success(`Connected with ${data.display_name}`);
+        toast.success(`Now trailing ${data.display_name}`);
         setTab("search");
       } else {
         toast.error("User not found");
