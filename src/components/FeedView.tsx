@@ -71,6 +71,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [showStitchInput, setShowStitchInput] = useState(false);
   const [stitchCounts, setStitchCounts] = useState<Record<string, number>>({});
   const [hasStitched, setHasStitched] = useState<Record<string, boolean>>({});
+  const [stitchSuggestions, setStitchSuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // Stitch position, scale, and rotation
   const [stitchPos, setStitchPos] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
