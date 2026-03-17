@@ -255,7 +255,7 @@ const Messages = () => {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
-        <p className="label-signal">messages</p>
+        <p className="label-signal">words</p>
         <button
           onClick={() => {
             setShowNewDm(true);
