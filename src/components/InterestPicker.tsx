@@ -45,7 +45,7 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
 
       if (mutualIds.length > 0) {
         const { data: profiles } = await supabase
-          .from("profiles")
+          .from("public_profiles")
           .select("interests")
           .in("user_id", mutualIds);
 

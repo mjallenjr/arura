@@ -103,7 +103,7 @@ const Discover = () => {
     // Get author names
     const authorIds = [...new Set(discoverySignals.map((s) => s.user_id))];
     const { data: profiles } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name")
       .in("user_id", authorIds.length > 0 ? authorIds : ["none"]);
     const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
@@ -145,7 +145,7 @@ const Discover = () => {
 
     // Get all profiles with interests, not already following
     const { data: allProfiles } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name, avatar_url, interests")
       .neq("user_id", user.id)
       .limit(100);
@@ -186,7 +186,7 @@ const Discover = () => {
     setSelectedInterest(interest);
 
     const { data } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name, avatar_url, interests")
       .contains("interests", [interest])
       .neq("user_id", user.id)

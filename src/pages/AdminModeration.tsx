@@ -53,7 +53,7 @@ const AdminModeration = () => {
       ...data.map(r => r.reporter_id),
       ...data.map(r => r.reported_user_id).filter(Boolean),
     ] as string[])];
-    const { data: profiles } = await supabase.from("profiles").select("user_id, display_name").in("user_id", userIds);
+    const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", userIds);
     const nameMap = new Map(profiles?.map(p => [p.user_id, p.display_name]) ?? []);
 
     setReports(data.map(r => ({

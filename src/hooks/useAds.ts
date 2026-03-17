@@ -47,7 +47,7 @@ export function useAds() {
       let networkInterests: string[] = [];
       if (networkIds.length > 0) {
         const { data: networkProfiles } = await supabase
-          .from("profiles")
+          .from("public_profiles")
           .select("interests")
           .in("user_id", networkIds.slice(0, 15));
 

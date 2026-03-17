@@ -71,7 +71,7 @@ const People = () => {
     let founderProfile: ProfileResult | null = null;
     if (user.id !== EMBER_FOUNDER_ID && !myFollowingIds.has(EMBER_FOUNDER_ID)) {
       const { data: fp } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url, qr_code")
         .eq("user_id", EMBER_FOUNDER_ID)
         .single();
@@ -94,7 +94,7 @@ const People = () => {
 
         if (shuffled.length > 0) {
           const { data: profiles } = await supabase
-            .from("profiles")
+            .from("public_profiles")
             .select("user_id, display_name, avatar_url, qr_code")
             .in("user_id", shuffled.slice(0, 20));
 
@@ -107,7 +107,7 @@ const People = () => {
 
     // Also fetch random embers not yet following
     const { data: randomEmbers } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name, avatar_url, qr_code")
       .neq("user_id", user.id)
       .neq("user_id", EMBER_FOUNDER_ID)
@@ -208,7 +208,7 @@ const People = () => {
     setSelectedInterest(interest);
 
     const { data } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name, avatar_url, qr_code, interests")
       .contains("interests", [interest])
       .neq("user_id", user.id)
@@ -233,13 +233,13 @@ const People = () => {
     const q = query.trim();
     const [nameRes, interestRes] = await Promise.all([
       supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url, qr_code, interests")
         .ilike("display_name", `%${q}%`)
         .neq("user_id", user.id)
         .limit(20),
       supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url, qr_code, interests")
         .contains("interests", [q.toLowerCase()])
         .neq("user_id", user.id)
@@ -321,7 +321,7 @@ const People = () => {
       if (!user) return;
 
       const { data } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name")
         .eq("qr_code", qrCode)
         .neq("user_id", user.id)

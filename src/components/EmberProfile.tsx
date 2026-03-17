@@ -42,7 +42,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   useEffect(() => {
     const load = async () => {
       const [profileRes, ignitedRes, fuelingRes, signalsRes] = await Promise.all([
-        supabase.from("profiles").select("display_name, avatar_url, bio_word").eq("user_id", userId).single(),
+        supabase.from("public_profiles").select("display_name, avatar_url, bio_word").eq("user_id", userId).single(),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", userId),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", userId),
         supabase.from("signals").select("id, type, storage_path, stitch_word").eq("user_id", userId).order("created_at", { ascending: false }).limit(10),

@@ -140,7 +140,7 @@ const Profile = () => {
       let nameMap = new Map<string, string>();
       if (stitchAuthorIds.length > 0) {
         const { data: profiles } = await supabase
-          .from("profiles")
+          .from("public_profiles")
           .select("user_id, display_name")
           .in("user_id", stitchAuthorIds);
         nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
@@ -201,7 +201,7 @@ const Profile = () => {
 
       const fromIds = [...new Set(notifs.map((n) => n.from_user_id))];
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name")
         .in("user_id", fromIds);
 
@@ -317,7 +317,7 @@ const Profile = () => {
     if (followData && followData.length > 0) {
       const ids = followData.map(f => (f as any).following_id ?? (f as any).follower_id);
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url")
         .in("user_id", ids);
       setListEmbers(profiles ?? []);
