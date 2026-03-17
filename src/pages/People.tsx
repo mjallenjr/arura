@@ -142,7 +142,7 @@ const People = () => {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
-        <p className="label-signal">people</p>
+        <p className="label-signal">embers</p>
         <div className="w-5" />
       </div>
 
