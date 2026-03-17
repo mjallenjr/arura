@@ -209,6 +209,24 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     }, 600);
   }, [currentUser, userId, refueled, data?.display_name]);
 
+  const handleIgnite = useCallback(async () => {
+    if (!currentUser || isFollowing) return;
+    setIgniting(true);
+
+    const { error } = await supabase.from("follows").insert({
+      follower_id: currentUser,
+      following_id: userId,
+    });
+
+    setTimeout(() => {
+      setIgniting(false);
+      if (!error) {
+        setIsFollowing(true);
+        toast({ title: "🔥 ignited", description: `You ignited ${data?.display_name}` });
+      }
+    }, 800);
+  }, [currentUser, userId, isFollowing, data?.display_name]);
+
   const initial = data?.display_name?.charAt(0).toUpperCase() ?? "?";
   const isSelf = currentUser === userId;
 
