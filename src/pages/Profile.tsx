@@ -84,6 +84,13 @@ const Profile = () => {
     requestPayout,
   } = useCreatorEarnings();
   const { isPro, subscriptionEnd, loading: subLoading, startCheckout, openPortal, checkSubscription } = useSubscription();
+  const {
+    isSubscribed: pushSubscribed,
+    loading: pushLoading,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe,
+    isSupported: pushSupported,
+  } = usePushNotifications();
 
   // Check subscription after returning from checkout
   useEffect(() => {
