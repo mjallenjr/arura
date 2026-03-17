@@ -62,6 +62,11 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
     }
 
     if (mode === "signup") {
+      if (!ageConfirmed) {
+        toast.error("Please confirm you are at least 13 years old");
+        setSubmitting(false);
+        return;
+      }
       const { error } = await signUp(email, password, displayName || email.split("@")[0]);
       if (error) {
         toast.error(error.message);
