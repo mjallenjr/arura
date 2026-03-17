@@ -206,11 +206,44 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         })
         .sort((a, b) => (auraRank.get(a.user_id) ?? 999) - (auraRank.get(b.user_id) ?? 999));
 
-      setSignals(enriched);
+      // Insert ads every 4th position
+      const withAds = await interleaveAds(enriched, user.id);
+      setSignals(withAds);
       setLoading(false);
     };
     fetchSignals();
-  }, [user, fetchDiscovery]);
+  }, [user, fetchDiscovery, fetchTargetedAd]);
+
+  // Insert an ad every 4th slot
+  const interleaveAds = useCallback(async (items: Signal[], userId: string): Promise<Signal[]> => {
+    if (items.length < 3) return items;
+    const result: Signal[] = [];
+    let contentCount = 0;
+    for (const item of items) {
+      contentCount++;
+      result.push(item);
+      if (contentCount % 3 === 0) {
+        const ad = await fetchTargetedAd(userId, "feed");
+        if (ad) {
+          result.push({
+            id: `ad-${ad.id}-${contentCount}`,
+            user_id: "",
+            type: ad.media_type === "video" ? "video" : "photo",
+            storage_path: null,
+            song_clip_url: null,
+            song_title: null,
+            stitch_word: null,
+            created_at: "",
+            display_name: ad.company_name,
+            media_url: ad.media_url,
+            isAd: true,
+            ad,
+          });
+        }
+      }
+    }
+    return result;
+  }, [fetchTargetedAd]);
 
   const advanceSignal = useCallback(() => {
     if (currentIndex < signals.length - 1) {
