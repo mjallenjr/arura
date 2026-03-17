@@ -9,6 +9,7 @@ import InterestPicker from "@/components/InterestPicker";
 import { useReferral } from "@/hooks/useReferral";
 import { useCreatorEarnings } from "@/hooks/useCreatorEarnings";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -83,6 +84,13 @@ const Profile = () => {
     requestPayout,
   } = useCreatorEarnings();
   const { isPro, subscriptionEnd, loading: subLoading, startCheckout, openPortal, checkSubscription } = useSubscription();
+  const {
+    isSubscribed: pushSubscribed,
+    loading: pushLoading,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe,
+    isSupported: pushSupported,
+  } = usePushNotifications();
 
   // Check subscription after returning from checkout
   useEffect(() => {
@@ -781,6 +789,30 @@ const Profile = () => {
                   )}
                 </button>
               </div>
+
+              {/* Push Notifications */}
+              {pushSupported && (
+                <div className="signal-surface rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Push Notifications</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {pushSubscribed ? "You'll get notified for stitches & felts" : "Get notified when embers interact"}
+                    </p>
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={pushSubscribed ? pushUnsubscribe : pushSubscribe}
+                    disabled={pushLoading}
+                    className={`rounded-full px-4 py-1.5 text-xs font-medium signal-ease ${
+                      pushSubscribed
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary text-primary-foreground"
+                    }`}
+                  >
+                    {pushLoading ? "..." : pushSubscribed ? "Disable" : "Enable"}
+                  </motion.button>
+                </div>
+              )}
 
               <motion.button
                 whileTap={{ scale: 0.97 }}
