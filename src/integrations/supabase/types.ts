@@ -563,6 +563,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_interest_search: {
+        Args: { p_term: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
