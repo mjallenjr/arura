@@ -278,6 +278,28 @@ const Profile = () => {
     navigate("/auth");
   }, [signOut, navigate]);
 
+  const handleShowList = useCallback(async (type: "ignited" | "fueling") => {
+    if (!user) return;
+    setShowingList(type);
+    setLoadingList(true);
+
+    const { data: followData } = type === "ignited"
+      ? await supabase.from("follows").select("following_id").eq("follower_id", user.id)
+      : await supabase.from("follows").select("follower_id").eq("following_id", user.id);
+
+    if (followData && followData.length > 0) {
+      const ids = followData.map(f => (f as any).following_id ?? (f as any).follower_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", ids);
+      setListEmbers(profiles ?? []);
+    } else {
+      setListEmbers([]);
+    }
+    setLoadingList(false);
+  }, [user]);
+
   const initial = displayName ? displayName.charAt(0).toUpperCase() : "?";
 
   const timeLeft = (expiresAt: string) => {
