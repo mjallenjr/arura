@@ -64,6 +64,16 @@ const Profile = () => {
   const [deleting, setDeleting] = useState(false);
   const { referralCode, referralCount, shareLink } = useReferral();
   const { impressions: creatorImpressions, creatorShare } = useCreatorEarnings();
+  const { isPro, subscriptionEnd, loading: subLoading, startCheckout, openPortal, checkSubscription } = useSubscription();
+
+  // Check subscription after returning from checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "true") {
+      checkSubscription();
+      window.history.replaceState({}, "", "/profile");
+    }
+  }, [checkSubscription]);
 
   useEffect(() => {
     if (!user) return;
