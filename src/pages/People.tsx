@@ -71,7 +71,7 @@ const People = () => {
     let founderProfile: ProfileResult | null = null;
     if (user.id !== EMBER_FOUNDER_ID && !myFollowingIds.has(EMBER_FOUNDER_ID)) {
       const { data: fp } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url, qr_code")
         .eq("user_id", EMBER_FOUNDER_ID)
         .single();
