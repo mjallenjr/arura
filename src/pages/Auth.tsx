@@ -24,7 +24,7 @@ const Auth = () => {
     if (!user || !refCode) return;
     const claim = async () => {
       const { data: referrer } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id")
         .eq("referral_code", refCode)
         .single();

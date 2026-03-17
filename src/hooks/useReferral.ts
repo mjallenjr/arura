@@ -29,7 +29,7 @@ export function useReferral() {
 
     // Find referrer by code
     const { data: referrer } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id")
       .eq("referral_code", code)
       .single();
