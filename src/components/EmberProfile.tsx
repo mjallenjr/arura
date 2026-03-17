@@ -136,7 +136,47 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     );
   }, [currentUser, userId]);
 
-  // Check if current user already sparked the top drop
+  // Check mutual spark (both users have felted each other's signals)
+  useEffect(() => {
+    if (!currentUser || currentUser === userId) return;
+    const check = async () => {
+      // Did I felt any of their signals?
+      const { data: theirSignals } = await supabase
+        .from("signals")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(50);
+      if (!theirSignals || theirSignals.length === 0) return;
+
+      const { data: myFelts } = await supabase
+        .from("felts")
+        .select("id")
+        .eq("user_id", currentUser)
+        .in("signal_id", theirSignals.map((s) => s.id))
+        .limit(1);
+
+      // Did they felt any of my signals?
+      const { data: mySignals } = await supabase
+        .from("signals")
+        .select("id")
+        .eq("user_id", currentUser)
+        .limit(50);
+      if (!mySignals || mySignals.length === 0) return;
+
+      const { data: theirFelts } = await supabase
+        .from("felts")
+        .select("id")
+        .eq("user_id", userId)
+        .in("signal_id", mySignals.map((s) => s.id))
+        .limit(1);
+
+      if (myFelts && myFelts.length > 0 && theirFelts && theirFelts.length > 0) {
+        setHasMutualSpark(true);
+      }
+    };
+    check();
+  }, [currentUser, userId]);
+
   useEffect(() => {
     if (!data?.topDrop?.signal_id || !currentUser) return;
     supabase
