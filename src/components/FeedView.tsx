@@ -582,7 +582,46 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
       {/* Stitch input overlay — positioned near bottom */}
       {showStitchInput && (
-        <div className="absolute bottom-24 left-0 right-0 z-20 flex flex-col items-center gap-2 px-8" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute bottom-24 left-0 right-0 z-20 flex flex-col items-center gap-2 px-6" onClick={(e) => e.stopPropagation()}>
+          {/* AI suggestion chips */}
+          <AnimatePresence>
+            {(stitchSuggestions.length > 0 || loadingSuggestions) && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-wrap justify-center gap-1.5 mb-1"
+              >
+                {loadingSuggestions ? (
+                  <motion.div
+                    animate={{ opacity: [0.3, 0.7, 0.3] }}
+                    transition={{ repeat: Infinity, duration: 1.2 }}
+                    className="text-[10px] text-muted-foreground/50"
+                  >
+                    ✦ conjuring vibes...
+                  </motion.div>
+                ) : (
+                  stitchSuggestions.map((word, i) => (
+                    <motion.button
+                      key={word}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ ...signalTransition, delay: i * 0.06 }}
+                      onClick={() => setStitchInput(word)}
+                      className={`rounded-full px-3 py-1 text-[11px] font-medium signal-ease ${
+                        stitchInput === word
+                          ? "bg-primary/25 text-primary ring-1 ring-primary/40"
+                          : "bg-background/60 backdrop-blur-sm text-foreground/70 hover:text-primary"
+                      }`}
+                    >
+                      {word}
+                    </motion.button>
+                  ))
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <p className="text-[10px] text-muted-foreground/60">pinch to resize & rotate</p>
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -602,7 +641,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
             <button onClick={handleStitchSubmit} disabled={!stitchInput.trim()} className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground disabled:opacity-30">
               stitch
             </button>
-            <button onClick={() => { setShowStitchInput(false); setStitchInput(""); }} className="text-muted-foreground/50 text-xs">✕</button>
+            <button onClick={() => { setShowStitchInput(false); setStitchInput(""); setStitchSuggestions([]); }} className="text-muted-foreground/50 text-xs">✕</button>
           </motion.div>
         </div>
       )}
