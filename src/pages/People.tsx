@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAds, type Ad } from "@/hooks/useAds";
 import QRCode from "@/components/QRCode";
 import QRScanner from "@/components/QRScanner";
 
