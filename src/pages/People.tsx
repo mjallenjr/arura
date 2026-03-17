@@ -102,7 +102,7 @@ const People = () => {
         setResults((prev) =>
           prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: true } : r))
         );
-        toast.success("Now trailing");
+        toast.success("Ignited 🔥");
       }
     },
     [user, followingIds]
@@ -124,7 +124,7 @@ const People = () => {
           .from("follows")
           .upsert({ follower_id: user.id, following_id: data.user_id });
         setFollowingIds((prev) => new Set(prev).add(data.user_id));
-        toast.success(`Now trailing ${data.display_name}`);
+        toast.success(`Ignited ${data.display_name} 🔥`);
         setTab("search");
       } else {
         toast.error("User not found");
@@ -142,7 +142,7 @@ const People = () => {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
-        <p className="label-signal">people</p>
+        <p className="label-signal">embers</p>
         <div className="w-5" />
       </div>
 
@@ -207,7 +207,7 @@ const People = () => {
                           : "bg-primary text-primary-foreground"
                       }`}
                     >
-                      {person.isFollowing ? "Slap" : "Trail"}
+                      {person.isFollowing ? "Extinguish" : "Ignite"}
                     </motion.button>
                   </motion.div>
                 ))}
