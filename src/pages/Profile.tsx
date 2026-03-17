@@ -152,6 +152,49 @@ const Profile = () => {
     loadDrops();
   }, [user]);
 
+  // Load notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const loadNotifications = async () => {
+      const { data: notifs } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (!notifs || notifs.length === 0) {
+        setNotifications([]);
+        return;
+      }
+
+      const fromIds = [...new Set(notifs.map((n) => n.from_user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", fromIds);
+
+      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+
+      setNotifications(
+        notifs.map((n) => ({ ...n, from_name: nameMap.get(n.from_user_id) ?? "someone" }))
+      );
+    };
+
+    loadNotifications();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel("notif-updates")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => {
+        loadNotifications();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
   const handleViewDrop = useCallback(async (drop: MyDrop) => {
     if (!user) return;
 
