@@ -17,6 +17,7 @@ interface Signal {
   storage_path: string | null;
   song_clip_url: string | null;
   song_title: string | null;
+  stitch_word: string | null;
   created_at: string;
   display_name: string;
   media_url: string | null;
