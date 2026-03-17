@@ -195,34 +195,98 @@ const People = () => {
               />
 
               <div className="flex flex-col gap-2">
-                {results.map((person) => (
-                  <motion.div
-                    key={person.user_id}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-between signal-surface rounded-xl p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-                        <span className="text-xs font-medium text-secondary-foreground">
-                          {person.display_name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <p className="text-sm font-medium text-foreground">{person.display_name}</p>
-                    </div>
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => toggleFollow(person.user_id)}
-                      className={`rounded-full px-4 py-1.5 text-xs font-medium signal-ease ${
-                        person.isFollowing
-                          ? "bg-destructive/10 text-destructive"
-                          : "bg-primary text-primary-foreground"
-                      }`}
+                {results.map((person) => {
+                  const isIgniting = animating?.id === person.user_id && animating.type === "ignite";
+                  const isExtinguishing = animating?.id === person.user_id && animating.type === "extinguish";
+
+                  return (
+                    <motion.div
+                      key={person.user_id}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between signal-surface rounded-xl p-3 relative overflow-hidden"
                     >
-                      {person.isFollowing ? "Extinguish" : "Ignite"}
-                    </motion.button>
-                  </motion.div>
-                ))}
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
+                          <span className="text-xs font-medium text-secondary-foreground">
+                            {person.display_name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="relative">
+                          <motion.p
+                            className="text-sm font-medium"
+                            animate={
+                              isIgniting
+                                ? { color: ["hsl(var(--foreground))", "hsl(30 100% 60%)", "hsl(var(--foreground))"] }
+                                : isExtinguishing
+                                ? { color: ["hsl(var(--foreground))", "hsl(0 0% 50%)", "hsl(0 0% 35%)"], opacity: [1, 0.6, 1] }
+                                : { color: "hsl(var(--foreground))" }
+                            }
+                            transition={{ duration: isIgniting ? 1.2 : 0.9, ease: "easeInOut" }}
+                          >
+                            {isExtinguishing ? "ashes..." : person.display_name}
+                          </motion.p>
+
+                          {/* Ignite glow */}
+                          <AnimatePresence>
+                            {isIgniting && (
+                              <motion.div
+                                className="absolute -inset-3 rounded-full pointer-events-none"
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{
+                                  opacity: [0, 0.8, 0.4, 0],
+                                  scale: [0.5, 1.4, 1.8, 2.2],
+                                }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 1.2, ease: "easeOut" }}
+                                style={{
+                                  background: "radial-gradient(circle, hsla(30,100%,60%,0.6) 0%, hsla(15,100%,50%,0.3) 40%, transparent 70%)",
+                                  filter: "blur(6px)",
+                                }}
+                              />
+                            )}
+                          </AnimatePresence>
+
+                          {/* Extinguish ash particles */}
+                          <AnimatePresence>
+                            {isExtinguishing && (
+                              <>
+                                {[...Array(6)].map((_, i) => (
+                                  <motion.span
+                                    key={i}
+                                    className="absolute text-[8px] pointer-events-none"
+                                    initial={{ opacity: 1, x: 0, y: 0 }}
+                                    animate={{
+                                      opacity: [1, 0.6, 0],
+                                      x: (i % 2 === 0 ? 1 : -1) * (8 + i * 4),
+                                      y: -(6 + i * 5),
+                                    }}
+                                    transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
+                                    style={{ left: `${20 + i * 12}%`, top: "0%" }}
+                                  >
+                                    ░
+                                  </motion.span>
+                                ))}
+                              </>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleFollow(person.user_id)}
+                        disabled={!!animating}
+                        className={`rounded-full px-4 py-1.5 text-xs font-medium signal-ease ${
+                          person.isFollowing
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-primary text-primary-foreground"
+                        }`}
+                      >
+                        {person.isFollowing ? "Extinguish" : "Ignite"}
+                      </motion.button>
+                    </motion.div>
+                  );
+                })}
 
                 {query.length >= 2 && results.length === 0 && (
                   <p className="text-center text-xs text-muted-foreground py-8">
