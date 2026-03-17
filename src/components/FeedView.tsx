@@ -492,25 +492,61 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         </div>
       )}
 
-      {/* Name + song overlay */}
+      {/* Name + song overlay OR Ad overlay */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
-        <motion.p key={signal.display_name} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 0.6, y: 0 }} transition={signalTransition} className="label-signal">
-          {signal.display_name}
-        </motion.p>
-        {signal.song_title && <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>}
+        {signal.isAd && signal.ad ? (
+          <motion.div
+            key={`ad-${signal.id}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={signalTransition}
+            className="flex flex-col gap-2"
+          >
+            <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-widest">sponsored</span>
+            <p className="text-lg font-bold text-foreground tracking-tight" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>
+              {signal.ad.headline}
+            </p>
+            {signal.ad.description && (
+              <p className="text-xs text-foreground/70" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                {signal.ad.description}
+              </p>
+            )}
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-[10px] text-muted-foreground/60">{signal.ad.company_name}</span>
+              {signal.ad.cta_url && (
+                <a
+                  href={signal.ad.cta_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-medium text-primary-foreground"
+                >
+                  {signal.ad.cta_text || "Learn More"}
+                </a>
+              )}
+            </div>
+          </motion.div>
+        ) : (
+          <>
+            <motion.p key={signal.display_name} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 0.6, y: 0 }} transition={signalTransition} className="label-signal">
+              {signal.display_name}
+            </motion.p>
+            {signal.song_title && <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>}
 
-        {user && signal.user_id === user.id && stitchCounts[signal.id] && (
-          <p className="mt-1 text-xs text-primary/80">✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}</p>
-        )}
+            {user && signal.user_id === user.id && stitchCounts[signal.id] && (
+              <p className="mt-1 text-xs text-primary/80">✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}</p>
+            )}
 
-        {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ delay: 1.5 }} className="mt-2 text-[10px] text-muted-foreground">
-            double tap to stitch ✦
-          </motion.p>
-        )}
+            {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ delay: 1.5 }} className="mt-2 text-[10px] text-muted-foreground">
+                double tap to stitch ✦
+              </motion.p>
+            )}
 
-        {hasStitched[signal.id] && !submittedStitch && (
-          <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
+            {hasStitched[signal.id] && !submittedStitch && (
+              <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
+            )}
+          </>
         )}
       </div>
 
