@@ -19,6 +19,7 @@ import Advertise from "./pages/Advertise";
 import Legal from "./pages/Legal";
 import EmberPublicProfile from "./pages/EmberPublicProfile";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const AppRoutes = () => {
         <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/legal" element={<Legal />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}

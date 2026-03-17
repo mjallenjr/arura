@@ -15,6 +15,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -41,6 +42,20 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+
+    if (forgotMode) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Check your email for a reset link.");
+        setForgotMode(false);
+      }
+      setSubmitting(false);
+      return;
+    }
 
     if (mode === "signup") {
       const { error } = await signUp(email, password, displayName || email.split("@")[0]);
@@ -70,11 +85,11 @@ const Auth = () => {
       >
         <h1 className="display-signal text-center mb-2">arura</h1>
         <p className="text-sm text-muted-foreground text-center mb-8">
-          {mode === "signin" ? "Welcome back" : "Join the moment"}
+          {forgotMode ? "Reset your password" : mode === "signin" ? "Welcome back" : "Join the moment"}
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {mode === "signup" && (
+          {mode === "signup" && !forgotMode && (
             <input
               type="text"
               placeholder="Display name"
@@ -91,15 +106,17 @@ const Auth = () => {
             required
             className="signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
-          />
+          {!forgotMode && (
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
+            />
+          )}
 
           <motion.button
             type="submit"
@@ -107,15 +124,24 @@ const Auth = () => {
             disabled={submitting}
             className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow signal-ease disabled:opacity-50 mt-2"
           >
-            {submitting ? "..." : mode === "signin" ? "Enter" : "Create"}
+            {submitting ? "..." : forgotMode ? "Send Reset Link" : mode === "signin" ? "Enter" : "Create"}
           </motion.button>
         </form>
 
+        {mode === "signin" && !forgotMode && (
+          <button
+            onClick={() => setForgotMode(true)}
+            className="mt-3 w-full text-center text-xs text-muted-foreground/70"
+          >
+            Forgot password?
+          </button>
+        )}
+
         <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+          onClick={() => { setForgotMode(false); setMode(mode === "signin" ? "signup" : "signin"); }}
           className="mt-6 w-full text-center text-xs text-muted-foreground"
         >
-          {mode === "signin" ? "Don't have an account? Join" : "Already here? Sign in"}
+          {forgotMode ? "Back to sign in" : mode === "signin" ? "Don't have an account? Join" : "Already here? Sign in"}
         </button>
       </motion.div>
     </div>

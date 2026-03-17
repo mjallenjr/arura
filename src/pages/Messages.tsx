@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/Skeletons";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -346,19 +347,15 @@ const Messages = () => {
             </motion.button>
           ))}
           {conversations.length === 0 && !showNewDm && (
-            <div className="flex flex-col items-center gap-4 py-16">
-              <p className="text-sm text-muted-foreground">No conversations yet</p>
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => {
-                  setShowNewDm(true);
-                  loadFollowers();
-                }}
-                className="rounded-full bg-primary px-6 py-2.5 text-xs font-medium text-primary-foreground"
-              >
-                Start a conversation
-              </motion.button>
-            </div>
+            <EmptyState
+              emoji="💬"
+              title="No conversations yet"
+              subtitle="Start a chat with someone who follows you"
+              action={{
+                label: "Start a conversation",
+                onClick: () => { setShowNewDm(true); loadFollowers(); },
+              }}
+            />
           )}
         </div>
       </div>
