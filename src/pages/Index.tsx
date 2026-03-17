@@ -4,6 +4,7 @@ import SignalButton from "@/components/SignalButton";
 import PostActions from "@/components/PostActions";
 import FeedView from "@/components/FeedView";
 import CameraViewfinder from "@/components/CameraViewfinder";
+import Onboarding from "@/components/Onboarding";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -25,6 +26,11 @@ const Index = () => {
   const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState(5.0);
+
+  // Onboarding
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem("arura_onboarded");
+  });
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("environment");
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
@@ -197,6 +203,17 @@ const Index = () => {
     <div className="relative h-svh w-full overflow-hidden bg-background">
       <canvas ref={canvasRef} className="hidden" />
 
+      {/* Onboarding overlay */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <Onboarding
+            onComplete={() => {
+              setShowOnboarding(false);
+              localStorage.setItem("arura_onboarded", "true");
+            }}
+          />
+        )}
+      </AnimatePresence>
       {cameraActive && (
         <CameraViewfinder
           videoRef={videoRef}
@@ -381,6 +398,26 @@ const Index = () => {
             className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8"
           >
             <div className="absolute inset-0 bg-background/70 signal-blur" />
+
+            {/* Video/Photo preview */}
+            {recordedBlob && captureMode === "video" && (
+              <video
+                src={URL.createObjectURL(recordedBlob)}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover opacity-40"
+              />
+            )}
+            {photoBlob && captureMode === "photo" && (
+              <img
+                src={URL.createObjectURL(photoBlob)}
+                alt="Preview"
+                className="absolute inset-0 h-full w-full object-cover opacity-40"
+              />
+            )}
+
             <div className="relative z-10 w-full max-w-sm">
               <PostActions
                 onPost={handlePost}
