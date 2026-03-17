@@ -237,6 +237,25 @@ const Profile = () => {
     setSaving(false);
   }, [user, displayName, phone]);
 
+  const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !e.target.files?.[0]) return;
+    setUploadingAvatar(true);
+    const file = e.target.files[0];
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (uploadErr) { toast.error("Upload failed"); setUploadingAvatar(false); return; }
+
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+    await supabase.from("profiles").update({ avatar_url: newUrl }).eq("user_id", user.id);
+    setAvatarUrl(newUrl);
+    setUploadingAvatar(false);
+    toast.success("Avatar updated");
+  }, [user]);
+
   const handleSignOut = useCallback(async () => {
     await signOut();
     navigate("/auth");
