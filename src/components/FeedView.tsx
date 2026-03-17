@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import FeltEffect from "@/components/FeltEffect";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAds, type Ad } from "@/hooks/useAds";
 import { toast } from "sonner";
 
 interface FeedViewProps {
@@ -23,6 +24,8 @@ interface Signal {
   display_name: string;
   media_url: string | null;
   isDiscovery?: boolean;
+  isAd?: boolean;
+  ad?: Ad;
 }
 
 const FALLBACK_DISCOVERY: Signal[] = [
@@ -56,6 +59,7 @@ function getTouchAngle(t1: Touch, t2: Touch) {
 
 const FeedView = ({ onEnd }: FeedViewProps) => {
   const { user } = useAuth();
+  const { fetchTargetedAd } = useAds();
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -202,11 +206,44 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         })
         .sort((a, b) => (auraRank.get(a.user_id) ?? 999) - (auraRank.get(b.user_id) ?? 999));
 
-      setSignals(enriched);
+      // Insert ads every 4th position
+      const withAds = await interleaveAds(enriched, user.id);
+      setSignals(withAds);
       setLoading(false);
     };
     fetchSignals();
-  }, [user, fetchDiscovery]);
+  }, [user, fetchDiscovery, fetchTargetedAd]);
+
+  // Insert an ad every 4th slot
+  const interleaveAds = useCallback(async (items: Signal[], userId: string): Promise<Signal[]> => {
+    if (items.length < 3) return items;
+    const result: Signal[] = [];
+    let contentCount = 0;
+    for (const item of items) {
+      contentCount++;
+      result.push(item);
+      if (contentCount % 3 === 0) {
+        const ad = await fetchTargetedAd(userId, "feed");
+        if (ad) {
+          result.push({
+            id: `ad-${ad.id}-${contentCount}`,
+            user_id: "",
+            type: ad.media_type === "video" ? "video" : "photo",
+            storage_path: null,
+            song_clip_url: null,
+            song_title: null,
+            stitch_word: null,
+            created_at: "",
+            display_name: ad.company_name,
+            media_url: ad.media_url,
+            isAd: true,
+            ad,
+          });
+        }
+      }
+    }
+    return result;
+  }, [fetchTargetedAd]);
 
   const advanceSignal = useCallback(() => {
     if (currentIndex < signals.length - 1) {
@@ -320,6 +357,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       // Convert to percentage for responsive positioning
       const xPct = (x / rect.width) * 100;
       const yPct = (y / rect.height) * 100;
+
+      const current = signals[currentIndex];
+      if (current?.isAd) return; // No interactions on ads
 
       if (timeSinceLastTap < 300) {
         // DOUBLE TAP
@@ -455,25 +495,61 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         </div>
       )}
 
-      {/* Name + song overlay */}
+      {/* Name + song overlay OR Ad overlay */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
-        <motion.p key={signal.display_name} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 0.6, y: 0 }} transition={signalTransition} className="label-signal">
-          {signal.display_name}
-        </motion.p>
-        {signal.song_title && <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>}
+        {signal.isAd && signal.ad ? (
+          <motion.div
+            key={`ad-${signal.id}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={signalTransition}
+            className="flex flex-col gap-2"
+          >
+            <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-widest">sponsored</span>
+            <p className="text-lg font-bold text-foreground tracking-tight" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>
+              {signal.ad.headline}
+            </p>
+            {signal.ad.description && (
+              <p className="text-xs text-foreground/70" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                {signal.ad.description}
+              </p>
+            )}
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-[10px] text-muted-foreground/60">{signal.ad.company_name}</span>
+              {signal.ad.cta_url && (
+                <a
+                  href={signal.ad.cta_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-medium text-primary-foreground"
+                >
+                  {signal.ad.cta_text || "Learn More"}
+                </a>
+              )}
+            </div>
+          </motion.div>
+        ) : (
+          <>
+            <motion.p key={signal.display_name} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 0.6, y: 0 }} transition={signalTransition} className="label-signal">
+              {signal.display_name}
+            </motion.p>
+            {signal.song_title && <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>}
 
-        {user && signal.user_id === user.id && stitchCounts[signal.id] && (
-          <p className="mt-1 text-xs text-primary/80">✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}</p>
-        )}
+            {user && signal.user_id === user.id && stitchCounts[signal.id] && (
+              <p className="mt-1 text-xs text-primary/80">✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}</p>
+            )}
 
-        {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ delay: 1.5 }} className="mt-2 text-[10px] text-muted-foreground">
-            double tap to stitch ✦
-          </motion.p>
-        )}
+            {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ delay: 1.5 }} className="mt-2 text-[10px] text-muted-foreground">
+                double tap to stitch ✦
+              </motion.p>
+            )}
 
-        {hasStitched[signal.id] && !submittedStitch && (
-          <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
+            {hasStitched[signal.id] && !submittedStitch && (
+              <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
+            )}
+          </>
         )}
       </div>
 

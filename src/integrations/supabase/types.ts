@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_impressions: {
+        Row: {
+          ad_id: string
+          created_at: string
+          id: string
+          placement: string
+          revenue: number
+          user_id: string
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          id?: string
+          placement?: string
+          revenue?: number
+          user_id: string
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          id?: string
+          placement?: string
+          revenue?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_impressions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "advertisements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advertisements: {
+        Row: {
+          active: boolean | null
+          company_name: string
+          cost_per_impression: number | null
+          created_at: string
+          cta_text: string | null
+          cta_url: string | null
+          description: string | null
+          headline: string
+          id: string
+          media_type: string
+          media_url: string
+          target_interests: string[] | null
+        }
+        Insert: {
+          active?: boolean | null
+          company_name: string
+          cost_per_impression?: number | null
+          created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          description?: string | null
+          headline: string
+          id?: string
+          media_type?: string
+          media_url: string
+          target_interests?: string[] | null
+        }
+        Update: {
+          active?: boolean | null
+          company_name?: string
+          cost_per_impression?: number | null
+          created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          description?: string | null
+          headline?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          target_interests?: string[] | null
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           created_at: string
