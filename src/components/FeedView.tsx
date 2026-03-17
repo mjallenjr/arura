@@ -178,7 +178,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       const rankedIds = auraData?.map((a: any) => a.following_id) ?? [];
 
       if (rankedIds.length === 0) {
-        setSignals(await fetchDiscovery());
+        const discovery = await fetchDiscovery();
+        setSignals(await interleaveAds(discovery, user.id));
         setLoading(false);
         return;
       }
