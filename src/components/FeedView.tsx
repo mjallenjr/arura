@@ -59,6 +59,7 @@ function getTouchAngle(t1: Touch, t2: Touch) {
 
 const FeedView = ({ onEnd }: FeedViewProps) => {
   const { user } = useAuth();
+  const { fetchTargetedAd } = useAds();
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
