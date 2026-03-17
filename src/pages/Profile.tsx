@@ -50,6 +50,10 @@ const Profile = () => {
   const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
   const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showingList, setShowingList] = useState<"ignited" | "fueling" | null>(null);
+  const [listEmbers, setListEmbers] = useState<{ user_id: string; display_name: string; avatar_url: string | null }[]>([]);
+  const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
+  const [loadingList, setLoadingList] = useState(false);
 
 
   useEffect(() => {
