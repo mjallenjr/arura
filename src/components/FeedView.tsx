@@ -677,7 +677,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
             {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ delay: 1.5 }} className="mt-2 text-[10px] text-muted-foreground">
-                double tap to stitch ✦
+                double tap to stitch{signal.isSuggested ? " & ignite" : ""} ✦
               </motion.p>
             )}
 
