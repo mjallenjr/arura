@@ -90,9 +90,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         .limit(20);
 
       if (!rawSignals || rawSignals.length === 0) {
-        setSignals([]);
+        // No active signals — show discovery content
+        setSignals(shuffleArray(DISCOVERY_ITEMS).slice(0, 5));
         setLoading(false);
-        setEnded(true);
         return;
       }
 
