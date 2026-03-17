@@ -13,12 +13,21 @@ const EMBER_FOUNDER_ID = "52c9cc57-3d25-4722-b0a9-1dac99e79354";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
+const INTEREST_TAGS = [
+  "music", "photography", "travel", "fitness", "art", "fashion",
+  "coffee", "nature", "gaming", "cooking", "surfing", "meditation",
+  "film", "dancing", "tattoos", "painting", "running", "tech",
+  "hiking", "yoga", "poetry", "reading", "skateboarding", "design",
+  "sunsets", "camping", "astronomy", "vinyl", "plants", "baking",
+];
+
 interface ProfileResult {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
   qr_code: string | null;
   isFollowing: boolean;
+  interests?: string[];
 }
 
 type AnimatingId = { id: string; type: "ignite" | "extinguish" };
@@ -34,6 +43,12 @@ const People = () => {
   const [animating, setAnimating] = useState<AnimatingId | null>(null);
   const [suggested, setSuggested] = useState<ProfileResult[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedInterest, setSelectedInterest] = useState<string | null>(null);
+  const [interestResults, setInterestResults] = useState<ProfileResult[]>([]);
+  const [loadingInterest, setLoadingInterest] = useState(false);
+  const [suggestedPage, setSuggestedPage] = useState(0);
+  const [allSuggestions, setAllSuggestions] = useState<ProfileResult[]>([]);
+  const SUGGESTIONS_PER_PAGE = 6;
 
   // Pull-to-refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -69,35 +84,54 @@ const People = () => {
         const candidateIds = [...new Set(fof.map((f) => f.following_id))]
           .filter((id) => id !== user.id && id !== EMBER_FOUNDER_ID && !myFollowingIds.has(id));
 
-        // Shuffle candidates for variety on refresh
         const shuffled = candidateIds.sort(() => Math.random() - 0.5);
 
         if (shuffled.length > 0) {
           const { data: profiles } = await supabase
             .from("profiles")
             .select("user_id, display_name, avatar_url, qr_code")
-            .in("user_id", shuffled.slice(0, 10));
+            .in("user_id", shuffled.slice(0, 20));
 
           if (profiles) {
             suggestionList = profiles.sort(() => Math.random() - 0.5).map((p) => ({ ...p, isFollowing: false }));
           }
         }
       }
-    } else {
-      const { data: randomEmbers } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url, qr_code")
-        .neq("user_id", user.id)
-        .neq("user_id", EMBER_FOUNDER_ID)
-        .limit(20);
-      if (randomEmbers) {
-        suggestionList = randomEmbers.sort(() => Math.random() - 0.5).slice(0, 10).map((p) => ({ ...p, isFollowing: false }));
-      }
+    }
+
+    // Also fetch random embers not yet following
+    const { data: randomEmbers } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, avatar_url, qr_code")
+      .neq("user_id", user.id)
+      .neq("user_id", EMBER_FOUNDER_ID)
+      .limit(30);
+
+    if (randomEmbers) {
+      const existingIds = new Set(suggestionList.map(s => s.user_id));
+      const additional = randomEmbers
+        .filter(p => !existingIds.has(p.user_id) && !myFollowingIds.has(p.user_id))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 20 - suggestionList.length)
+        .map(p => ({ ...p, isFollowing: false }));
+      suggestionList.push(...additional);
     }
 
     if (founderProfile) suggestionList.unshift(founderProfile);
-    setSuggested(suggestionList);
+    setAllSuggestions(suggestionList);
+    setSuggestedPage(0);
+    setSuggested(suggestionList.slice(0, SUGGESTIONS_PER_PAGE));
   }, [user, followingIds]);
+
+  const loadMoreSuggestions = useCallback(() => {
+    const nextPage = suggestedPage + 1;
+    const start = nextPage * SUGGESTIONS_PER_PAGE;
+    const nextBatch = allSuggestions.slice(start, start + SUGGESTIONS_PER_PAGE);
+    if (nextBatch.length > 0) {
+      setSuggested(prev => [...prev, ...nextBatch]);
+      setSuggestedPage(nextPage);
+    }
+  }, [suggestedPage, allSuggestions]);
 
   // Load my QR code, following list, and suggested embers
   useEffect(() => {
@@ -150,12 +184,37 @@ const People = () => {
     }
   }, [pullDistance, refreshing, handleRefresh]);
 
+  // Search by interest
+  const searchByInterest = useCallback(async (interest: string) => {
+    if (!user) return;
+    setLoadingInterest(true);
+    setSelectedInterest(interest);
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, display_name, avatar_url, qr_code, interests")
+      .contains("interests", [interest])
+      .neq("user_id", user.id)
+      .limit(20);
+
+    if (data) {
+      setInterestResults(
+        data.map((p) => ({
+          ...p,
+          interests: (p as any).interests ?? [],
+          isFollowing: followingIds.has(p.user_id),
+        }))
+      );
+    }
+    setLoadingInterest(false);
+  }, [user, followingIds]);
+
   const search = useCallback(async () => {
     if (!query.trim() || !user) return;
 
     const { data } = await supabase
       .from("profiles")
-      .select("user_id, display_name, avatar_url, qr_code")
+      .select("user_id, display_name, avatar_url, qr_code, interests")
       .or(`display_name.ilike.%${query}%,phone.ilike.%${query}%`)
       .neq("user_id", user.id)
       .limit(20);
@@ -164,6 +223,7 @@ const People = () => {
       setResults(
         data.map((p) => ({
           ...p,
+          interests: (p as any).interests ?? [],
           isFollowing: followingIds.has(p.user_id),
         }))
       );
@@ -172,8 +232,12 @@ const People = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (query.length >= 2) search();
-      else setResults([]);
+      if (query.length >= 2) {
+        search();
+        setSelectedInterest(null);
+      } else {
+        setResults([]);
+      }
     }, 300);
     return () => clearTimeout(timer);
   }, [query, search]);
@@ -183,7 +247,6 @@ const People = () => {
       if (!user) return;
       const isUnfollow = followingIds.has(targetUserId);
 
-      // Start animation
       setAnimating({ id: targetUserId, type: isUnfollow ? "extinguish" : "ignite" });
 
       if (isUnfollow) {
@@ -193,16 +256,16 @@ const People = () => {
           .eq("follower_id", user.id)
           .eq("following_id", targetUserId);
 
-        // Wait for extinguish animation before updating state
         setTimeout(() => {
           setFollowingIds((prev) => {
             const next = new Set(prev);
             next.delete(targetUserId);
             return next;
           });
-          setResults((prev) =>
-            prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: false } : r))
-          );
+          const updateFollow = (list: ProfileResult[]) =>
+            list.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: false } : r));
+          setResults(updateFollow);
+          setInterestResults(updateFollow);
           setAnimating(null);
         }, 900);
       } else {
@@ -211,9 +274,10 @@ const People = () => {
           .insert({ follower_id: user.id, following_id: targetUserId });
 
         setFollowingIds((prev) => new Set(prev).add(targetUserId));
-        setResults((prev) =>
-          prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: true } : r))
-        );
+        const updateFollow = (list: ProfileResult[]) =>
+          list.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: true } : r));
+        setResults(updateFollow);
+        setInterestResults(updateFollow);
         toast.success("Ignited 🔥");
         setTimeout(() => setAnimating(null), 1200);
       }
@@ -245,6 +309,108 @@ const People = () => {
     },
     [user]
   );
+
+  // Shared ember row renderer
+  const renderEmberRow = (person: ProfileResult, showInterests = false) => {
+    const isIgniting = animating?.id === person.user_id && animating.type === "ignite";
+    const isExtinguishing = animating?.id === person.user_id && animating.type === "extinguish";
+
+    return (
+      <motion.div
+        key={person.user_id}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between signal-surface rounded-xl p-3 relative overflow-hidden"
+      >
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className={`h-10 w-10 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center overflow-hidden ${person.user_id === EMBER_FOUNDER_ID ? 'animate-ember-glow' : ''}`}>
+            {person.avatar_url ? (
+              <img src={person.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-xs font-medium text-secondary-foreground">
+                {person.display_name.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="relative flex-1 min-w-0">
+            <motion.p
+              className="text-sm font-medium truncate"
+              animate={
+                isIgniting
+                  ? { color: ["hsl(var(--foreground))", "hsl(30 100% 60%)", "hsl(var(--foreground))"] }
+                  : isExtinguishing
+                  ? { color: ["hsl(var(--foreground))", "hsl(0 0% 50%)", "hsl(0 0% 35%)"], opacity: [1, 0.6, 1] }
+                  : { color: "hsl(var(--foreground))" }
+              }
+              transition={{ duration: isIgniting ? 1.2 : 0.9, ease: "easeInOut" }}
+            >
+              {isExtinguishing ? "ashes..." : person.display_name}
+            </motion.p>
+            {showInterests && person.interests && person.interests.length > 0 && (
+              <div className="flex gap-1 mt-0.5 flex-wrap">
+                {person.interests.slice(0, 3).map(tag => (
+                  <span key={tag} className="text-[9px] text-primary/70 bg-primary/10 rounded-full px-1.5 py-0.5">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <AnimatePresence>
+              {isIgniting && (
+                <motion.div
+                  className="absolute -inset-3 rounded-full pointer-events-none"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: [0, 0.8, 0.4, 0], scale: [0.5, 1.4, 1.8, 2.2] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  style={{
+                    background: "radial-gradient(circle, hsla(30,100%,60%,0.6) 0%, hsla(15,100%,50%,0.3) 40%, transparent 70%)",
+                    filter: "blur(6px)",
+                  }}
+                />
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {isExtinguishing && (
+                <>
+                  {[...Array(6)].map((_, i) => (
+                    <motion.span
+                      key={i}
+                      className="absolute text-[8px] pointer-events-none"
+                      initial={{ opacity: 1, x: 0, y: 0 }}
+                      animate={{
+                        opacity: [1, 0.6, 0],
+                        x: (i % 2 === 0 ? 1 : -1) * (8 + i * 4),
+                        y: -(6 + i * 5),
+                      }}
+                      transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
+                      style={{ left: `${20 + i * 12}%`, top: "0%" }}
+                    >
+                      ░
+                    </motion.span>
+                  ))}
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => toggleFollow(person.user_id)}
+          disabled={!!animating}
+          className={`rounded-full px-4 py-1.5 text-xs font-medium signal-ease flex-shrink-0 ml-2 ${
+            person.isFollowing
+              ? "bg-destructive/10 text-destructive"
+              : "bg-primary text-primary-foreground"
+          }`}
+        >
+          {person.isFollowing ? "Extinguish" : "Ignite"}
+        </motion.button>
+      </motion.div>
+    );
+  };
 
   return (
     <div className="flex h-svh w-full flex-col bg-background">
@@ -279,7 +445,7 @@ const People = () => {
       {/* Content */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4"
+        className="flex-1 overflow-y-auto px-4 pb-8"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -304,6 +470,7 @@ const People = () => {
             </span>
           </motion.div>
         </motion.div>
+
         <AnimatePresence mode="wait">
           {tab === "search" && (
             <motion.div
@@ -313,177 +480,96 @@ const People = () => {
               exit={{ opacity: 0 }}
               transition={signalTransition}
             >
+              {/* Search input */}
               <input
                 type="text"
-                placeholder="Search by name, phone, or email..."
+                placeholder="Search by name or phone..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30 mb-4"
               />
 
-              {/* Suggested Embers */}
-              {query.length < 2 && suggested.length > 0 && (
-                <div className="mb-4">
-                  <p className="label-signal mb-3">embers you may know</p>
-                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-                    {suggested.map((ember) => {
-                      const isIgniting = animating?.id === ember.user_id && animating.type === "ignite";
-                      return (
-                        <motion.div
-                          key={ember.user_id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="flex flex-col items-center gap-2 min-w-[80px] signal-surface rounded-xl p-3 relative"
-                        >
-                          <div className="relative">
-                            <div className={`h-12 w-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden ${ember.user_id === EMBER_FOUNDER_ID ? 'animate-ember-glow' : ''}`}>
-                              {ember.avatar_url ? (
-                                <img src={ember.avatar_url} alt="" className="h-full w-full object-cover" />
-                              ) : (
-                                <span className="text-sm font-medium text-secondary-foreground">
-                                  {ember.display_name.charAt(0).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            <AnimatePresence>
-                              {isIgniting && (
-                                <motion.div
-                                  className="absolute -inset-2 rounded-full pointer-events-none"
-                                  initial={{ opacity: 0, scale: 0.5 }}
-                                  animate={{ opacity: [0, 0.8, 0], scale: [0.5, 1.6, 2] }}
-                                  exit={{ opacity: 0 }}
-                                  transition={{ duration: 1.2, ease: "easeOut" }}
-                                  style={{
-                                    background: "radial-gradient(circle, hsla(30,100%,60%,0.5) 0%, transparent 70%)",
-                                    filter: "blur(4px)",
-                                  }}
-                                />
-                              )}
-                            </AnimatePresence>
-                          </div>
-                          <p className="text-[10px] font-medium text-foreground text-center truncate w-full">
-                            {ember.display_name}
-                          </p>
-                          <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => toggleFollow(ember.user_id)}
-                            disabled={!!animating}
-                            className="rounded-full bg-primary text-primary-foreground px-3 py-1 text-[10px] font-medium"
-                          >
-                            Ignite
-                          </motion.button>
-                        </motion.div>
-                      );
-                    })}
+              {/* Interest tags */}
+              {query.length < 2 && (
+                <div className="mb-5">
+                  <p className="label-signal mb-2">search by interest</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {INTEREST_TAGS.slice(0, 15).map(tag => (
+                      <motion.button
+                        key={tag}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => selectedInterest === tag ? setSelectedInterest(null) : searchByInterest(tag)}
+                        className={`rounded-full px-3 py-1.5 text-[11px] font-medium signal-ease ${
+                          selectedInterest === tag
+                            ? "bg-primary text-primary-foreground"
+                            : "signal-surface text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {tag}
+                      </motion.button>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Search results */}
-              <div className="flex flex-col gap-2">
-                {results.map((person) => {
-                  const isIgniting = animating?.id === person.user_id && animating.type === "ignite";
-                  const isExtinguishing = animating?.id === person.user_id && animating.type === "extinguish";
-
-                  return (
-                    <motion.div
-                      key={person.user_id}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between signal-surface rounded-xl p-3 relative overflow-hidden"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden ${person.user_id === EMBER_FOUNDER_ID ? 'animate-ember-glow' : ''}`}>
-                          {person.avatar_url ? (
-                            <img src={person.avatar_url} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            <span className="text-xs font-medium text-secondary-foreground">
-                              {person.display_name.charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <div className="relative">
-                          <motion.p
-                            className="text-sm font-medium"
-                            animate={
-                              isIgniting
-                                ? { color: ["hsl(var(--foreground))", "hsl(30 100% 60%)", "hsl(var(--foreground))"] }
-                                : isExtinguishing
-                                ? { color: ["hsl(var(--foreground))", "hsl(0 0% 50%)", "hsl(0 0% 35%)"], opacity: [1, 0.6, 1] }
-                                : { color: "hsl(var(--foreground))" }
-                            }
-                            transition={{ duration: isIgniting ? 1.2 : 0.9, ease: "easeInOut" }}
-                          >
-                            {isExtinguishing ? "ashes..." : person.display_name}
-                          </motion.p>
-
-                          {/* Ignite glow */}
-                          <AnimatePresence>
-                            {isIgniting && (
-                              <motion.div
-                                className="absolute -inset-3 rounded-full pointer-events-none"
-                                initial={{ opacity: 0, scale: 0.5 }}
-                                animate={{
-                                  opacity: [0, 0.8, 0.4, 0],
-                                  scale: [0.5, 1.4, 1.8, 2.2],
-                                }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 1.2, ease: "easeOut" }}
-                                style={{
-                                  background: "radial-gradient(circle, hsla(30,100%,60%,0.6) 0%, hsla(15,100%,50%,0.3) 40%, transparent 70%)",
-                                  filter: "blur(6px)",
-                                }}
-                              />
-                            )}
-                          </AnimatePresence>
-
-                          {/* Extinguish ash particles */}
-                          <AnimatePresence>
-                            {isExtinguishing && (
-                              <>
-                                {[...Array(6)].map((_, i) => (
-                                  <motion.span
-                                    key={i}
-                                    className="absolute text-[8px] pointer-events-none"
-                                    initial={{ opacity: 1, x: 0, y: 0 }}
-                                    animate={{
-                                      opacity: [1, 0.6, 0],
-                                      x: (i % 2 === 0 ? 1 : -1) * (8 + i * 4),
-                                      y: -(6 + i * 5),
-                                    }}
-                                    transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
-                                    style={{ left: `${20 + i * 12}%`, top: "0%" }}
-                                  >
-                                    ░
-                                  </motion.span>
-                                ))}
-                              </>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => toggleFollow(person.user_id)}
-                        disabled={!!animating}
-                        className={`rounded-full px-4 py-1.5 text-xs font-medium signal-ease ${
-                          person.isFollowing
-                            ? "bg-destructive/10 text-destructive"
-                            : "bg-primary text-primary-foreground"
-                        }`}
-                      >
-                        {person.isFollowing ? "Extinguish" : "Ignite"}
-                      </motion.button>
-                    </motion.div>
-                  );
-                })}
-
-                {query.length >= 2 && results.length === 0 && (
-                  <p className="text-center text-xs text-muted-foreground py-8">
-                    No one found. Try a different name.
+              {/* Interest search results */}
+              {selectedInterest && query.length < 2 && (
+                <div className="mb-5">
+                  <p className="label-signal mb-3">
+                    embers into <span className="text-primary">{selectedInterest}</span>
                   </p>
-                )}
-              </div>
+                  {loadingInterest ? (
+                    <div className="flex justify-center py-6">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+                        className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full"
+                      />
+                    </div>
+                  ) : interestResults.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {interestResults.map((p) => renderEmberRow(p, true))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-xs text-muted-foreground py-4">
+                      No embers found with this interest yet
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Search results */}
+              {query.length >= 2 && (
+                <div className="flex flex-col gap-2 mb-5">
+                  {results.map((p) => renderEmberRow(p, true))}
+                  {results.length === 0 && (
+                    <p className="text-center text-xs text-muted-foreground py-8">
+                      No one found. Try a different name.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Suggested Embers - vertical list */}
+              {query.length < 2 && !selectedInterest && suggested.length > 0 && (
+                <div className="mb-4">
+                  <p className="label-signal mb-3">embers you may know</p>
+                  <div className="flex flex-col gap-2">
+                    {suggested.map((ember) => renderEmberRow(ember, false))}
+                  </div>
+
+                  {/* Load more */}
+                  {suggested.length < allSuggestions.length && (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={loadMoreSuggestions}
+                      className="w-full mt-3 rounded-xl signal-surface py-3 text-xs font-medium text-muted-foreground hover:text-foreground signal-ease"
+                    >
+                      show more embers
+                    </motion.button>
+                  )}
+                </div>
+              )}
             </motion.div>
           )}
 
