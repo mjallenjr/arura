@@ -233,7 +233,7 @@ const Messages = () => {
         </div>
 
         {/* Input */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 p-4 pb-safe bg-background/80 signal-blur">
+        <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 pb-safe bg-background/80 signal-blur">
           <div className="flex items-center gap-2 signal-surface rounded-2xl px-4 py-2">
             <input
               type="text"
