@@ -514,7 +514,7 @@ const People = () => {
               {/* Search input */}
               <input
                 type="text"
-                placeholder="Search by name or phone..."
+                placeholder="Roam Your World…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30 mb-4"
