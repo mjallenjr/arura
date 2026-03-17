@@ -75,6 +75,10 @@ export default {
           "0%": { transform: "scale(1)", opacity: "0.5" },
           "100%": { transform: "scale(4)", opacity: "0" },
         },
+        "ember-glow": {
+          "0%, 100%": { boxShadow: "0 0 8px 2px hsla(25, 100%, 55%, 0.4), 0 0 16px 4px hsla(15, 100%, 50%, 0.2)" },
+          "50%": { boxShadow: "0 0 14px 4px hsla(25, 100%, 60%, 0.6), 0 0 28px 8px hsla(15, 100%, 50%, 0.3)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
