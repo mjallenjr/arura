@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAds, type Ad } from "@/hooks/useAds";
 import QRCode from "@/components/QRCode";
 import QRScanner from "@/components/QRScanner";
+import EmberProfile from "@/components/EmberProfile";
 
 type Tab = "search" | "qr" | "scan";
 
