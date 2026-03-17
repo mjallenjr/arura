@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN bio_word text DEFAULT NULL;
