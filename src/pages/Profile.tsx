@@ -57,6 +57,8 @@ const Profile = () => {
   const [loadingList, setLoadingList] = useState(false);
   const [showInterestPicker, setShowInterestPicker] = useState(false);
   const [myInterests, setMyInterests] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
