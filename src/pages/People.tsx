@@ -48,7 +48,19 @@ const People = () => {
       const myFollowingIds = new Set(followsRes.data?.map((f) => f.following_id) ?? []);
       setFollowingIds(myFollowingIds);
 
-      // Suggested: friends of friends (people followed by people I follow, that I don't follow)
+      // Always suggest the founder "Ember" if not already following and not self
+      let founderProfile: ProfileResult | null = null;
+      if (user.id !== EMBER_FOUNDER_ID && !myFollowingIds.has(EMBER_FOUNDER_ID)) {
+        const { data: fp } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url, qr_code")
+          .eq("user_id", EMBER_FOUNDER_ID)
+          .single();
+        if (fp) founderProfile = { ...fp, isFollowing: false };
+      }
+
+      // Suggested: friends of friends
+      let suggestionList: ProfileResult[] = [];
       if (myFollowingIds.size > 0) {
         const { data: fof } = await supabase
           .from("follows")
@@ -58,7 +70,7 @@ const People = () => {
 
         if (fof) {
           const candidateIds = [...new Set(fof.map((f) => f.following_id))]
-            .filter((id) => id !== user.id && !myFollowingIds.has(id));
+            .filter((id) => id !== user.id && id !== EMBER_FOUNDER_ID && !myFollowingIds.has(id));
 
           if (candidateIds.length > 0) {
             const { data: profiles } = await supabase
@@ -67,23 +79,26 @@ const People = () => {
               .in("user_id", candidateIds.slice(0, 10));
 
             if (profiles) {
-              setSuggested(profiles.map((p) => ({ ...p, isFollowing: false })));
+              suggestionList = profiles.map((p) => ({ ...p, isFollowing: false }));
             }
           }
         }
-      }
-
-      // If no friends-of-friends, show random embers
-      if (myFollowingIds.size === 0) {
+      } else {
+        // No connections yet — show random embers
         const { data: randomEmbers } = await supabase
           .from("profiles")
           .select("user_id, display_name, avatar_url, qr_code")
           .neq("user_id", user.id)
+          .neq("user_id", EMBER_FOUNDER_ID)
           .limit(10);
         if (randomEmbers) {
-          setSuggested(randomEmbers.map((p) => ({ ...p, isFollowing: false })));
+          suggestionList = randomEmbers.map((p) => ({ ...p, isFollowing: false }));
         }
       }
+
+      // Founder always first
+      if (founderProfile) suggestionList.unshift(founderProfile);
+      setSuggested(suggestionList);
     };
     loadData();
   }, [user]);
