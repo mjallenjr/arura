@@ -30,6 +30,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   const [refueled, setRefueled] = useState(false);
   const [extinguishing, setExtinguishing] = useState(false);
   const [refueling, setRefueling] = useState(false);
+  const [igniting, setIgniting] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: d }) => setCurrentUser(d.user?.id ?? null));
