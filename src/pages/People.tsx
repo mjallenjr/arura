@@ -94,7 +94,7 @@ const People = () => {
 
         if (shuffled.length > 0) {
           const { data: profiles } = await supabase
-            .from("profiles")
+            .from("public_profiles")
             .select("user_id, display_name, avatar_url, qr_code")
             .in("user_id", shuffled.slice(0, 20));
 
