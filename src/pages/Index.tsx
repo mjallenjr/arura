@@ -229,14 +229,16 @@ const Index = () => {
                 transition={{ ...signalTransition, delay: 0.1 }}
                 className="flex flex-col items-center gap-3"
               >
-                <motion.span
+                <motion.svg
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ ...signalTransition, delay: 0.05 }}
-                  className="text-4xl"
+                  width="36" height="36" viewBox="0 0 24 24" fill="none" className="text-primary"
                 >
-                  🔥
-                </motion.span>
+                  <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" opacity="0.2" />
+                  <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <path d="M12 18a3 3 0 003-3c0-2-1.5-3-2-5-.5 1-1.5 1.5-2 0-.5 2-2 3-2 5a3 3 0 003 3z" fill="currentColor" opacity="0.4" />
+                </motion.svg>
                 <h1 className="text-3xl font-medium tracking-[-0.06em] text-foreground">arura</h1>
                 <p className="text-xs text-muted-foreground tracking-wide">life, briefly witnessed</p>
               </motion.div>
