@@ -264,12 +264,46 @@ const Profile = () => {
     }
 
     setViewingDrop(drop);
+    setViewers([]);
 
     // Record that we viewed our own drop
     await supabase.from("signal_owner_views").upsert(
       { user_id: user.id, signal_id: drop.id },
       { onConflict: "signal_id,user_id" }
     );
+
+    // Load viewer insights for Pro users
+    if (isPro) {
+      setLoadingViewers(true);
+      const { data: viewData } = await supabase
+        .from("signal_views")
+        .select("user_id, created_at")
+        .eq("signal_id", drop.id)
+        .neq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (viewData && viewData.length > 0) {
+        const viewerIds = [...new Set(viewData.map(v => v.user_id))];
+        const { data: profiles } = await supabase
+          .from("public_profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", viewerIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? []);
+        setViewers(
+          viewData
+            .filter((v, i, arr) => arr.findIndex(a => a.user_id === v.user_id) === i)
+            .map(v => ({
+              user_id: v.user_id,
+              display_name: (profileMap.get(v.user_id) as any)?.display_name ?? "someone",
+              avatar_url: (profileMap.get(v.user_id) as any)?.avatar_url ?? null,
+              viewed_at: v.created_at,
+            }))
+        );
+      }
+      setLoadingViewers(false);
+    }
 
     // Update local state
     setMyDrops((prev) =>
