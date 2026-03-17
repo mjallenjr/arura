@@ -564,6 +564,47 @@ const People = () => {
                 </div>
               )}
 
+              {/* Ad card from refresh */}
+              {query.length < 2 && !selectedInterest && currentAd && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={signalTransition}
+                  className="mb-4 rounded-2xl overflow-hidden relative"
+                >
+                  <img src={currentAd.media_url} alt="" className="w-full h-44 object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-widest">sponsored</span>
+                    <p className="text-sm font-bold text-foreground mt-1" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>
+                      {currentAd.headline}
+                    </p>
+                    {currentAd.description && (
+                      <p className="text-[11px] text-foreground/70 mt-0.5">{currentAd.description}</p>
+                    )}
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-[10px] text-muted-foreground/60">{currentAd.company_name}</span>
+                      {currentAd.cta_url && (
+                        <a
+                          href={currentAd.cta_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground"
+                        >
+                          {currentAd.cta_text || "Learn More"}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setCurrentAd(null)}
+                    className="absolute top-2 right-2 h-6 w-6 rounded-full bg-background/60 flex items-center justify-center text-muted-foreground text-xs"
+                  >
+                    ✕
+                  </button>
+                </motion.div>
+              )}
+
               {/* Suggested Embers - vertical list */}
               {query.length < 2 && !selectedInterest && suggested.length > 0 && (
                 <div className="mb-4">
