@@ -9,6 +9,8 @@ interface PostActionsProps {
   songTitle?: string;
   onSongUrlChange?: (url: string) => void;
   onSongTitleChange?: (title: string) => void;
+  stitchWord?: string;
+  onStitchWordChange?: (word: string) => void;
 }
 
 const signalTransition = {
