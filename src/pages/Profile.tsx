@@ -456,6 +456,50 @@ const Profile = () => {
             ) : (
               <p className="text-xs text-muted-foreground text-center">No stitches yet</p>
             )}
+
+            {/* Viewer Insights (Pro only) */}
+            {isPro && (
+              <div className="mt-4">
+                <p className="label-signal mb-2">👁 viewers</p>
+                {loadingViewers ? (
+                  <p className="text-[10px] text-muted-foreground">Loading...</p>
+                ) : viewers.length > 0 ? (
+                  <div className="flex flex-col gap-1.5">
+                    {viewers.map((v) => {
+                      const ago = (() => {
+                        const diff = Date.now() - new Date(v.viewed_at).getTime();
+                        const mins = Math.floor(diff / 60000);
+                        if (mins < 1) return "just now";
+                        if (mins < 60) return `${mins}m ago`;
+                        return `${Math.floor(mins / 60)}h ago`;
+                      })();
+                      return (
+                        <motion.div
+                          key={v.user_id}
+                          initial={{ opacity: 0, x: -6 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <div className="h-5 w-5 rounded-full bg-secondary overflow-hidden flex-shrink-0">
+                            {v.avatar_url ? (
+                              <img src={v.avatar_url} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="flex h-full w-full items-center justify-center text-[8px] font-medium text-secondary-foreground">
+                                {v.display_name.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-foreground/70">{v.display_name}</span>
+                          <span className="text-[8px] text-muted-foreground/50 ml-auto">{ago}</span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground/50">No views yet</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
