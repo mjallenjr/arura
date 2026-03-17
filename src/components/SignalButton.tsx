@@ -6,15 +6,17 @@ interface SignalButtonProps {
   progress: number;
   onStart: () => void;
   onStop: () => void;
+  disabled?: boolean;
 }
 
-const SignalButton = ({ isRecording, progress, onStart, onStop }: SignalButtonProps) => {
+const SignalButton = ({ isRecording, progress, onStart, onStop, disabled }: SignalButtonProps) => {
   const holdRef = useRef(false);
 
   const handlePointerDown = useCallback(() => {
+    if (disabled) return;
     holdRef.current = true;
     onStart();
-  }, [onStart]);
+  }, [onStart, disabled]);
 
   const handlePointerUp = useCallback(() => {
     if (holdRef.current) {
@@ -29,13 +31,7 @@ const SignalButton = ({ isRecording, progress, onStart, onStop }: SignalButtonPr
   return (
     <div className="relative flex items-center justify-center">
       {/* Progress ring */}
-      <svg
-        className="absolute"
-        width="96"
-        height="96"
-        viewBox="0 0 80 80"
-      >
-        {/* Track */}
+      <svg className="absolute" width="96" height="96" viewBox="0 0 80 80">
         <circle
           cx="40"
           cy="40"
@@ -45,7 +41,6 @@ const SignalButton = ({ isRecording, progress, onStart, onStop }: SignalButtonPr
           strokeWidth="2"
           opacity={isRecording ? 0.3 : 0}
         />
-        {/* Progress */}
         {isRecording && (
           <circle
             cx="40"
@@ -63,7 +58,6 @@ const SignalButton = ({ isRecording, progress, onStart, onStop }: SignalButtonPr
         )}
       </svg>
 
-      {/* Button */}
       <motion.button
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
@@ -75,6 +69,8 @@ const SignalButton = ({ isRecording, progress, onStart, onStop }: SignalButtonPr
           ${
             isRecording
               ? "border-primary signal-glow bg-primary/10"
+              : disabled
+              ? "border-foreground/10 bg-foreground/5 opacity-50"
               : "border-foreground/20 bg-foreground/5"
           }
         `}
