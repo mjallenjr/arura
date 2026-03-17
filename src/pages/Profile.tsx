@@ -55,14 +55,14 @@ const Profile = () => {
     if (!user) return;
 
     const load = async () => {
-      const [profileRes, followersRes, followingRes, stitchesGivenRes, stitchesReceivedRes] = await Promise.all([
+      const [profileRes, followersRes, followingRes, iFollowRes, followMeRes] = await Promise.all([
         supabase.from("profiles").select("display_name, phone, avatar_url").eq("user_id", user.id).single(),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", user.id),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", user.id),
-        // Unique users I've stitched
-        supabase.from("stitches").select("signal_id").eq("user_id", user.id),
-        // Stitches on my signals (to find unique users who stitched me)
-        supabase.from("signals").select("id").eq("user_id", user.id),
+        // Users I ignited
+        supabase.from("follows").select("following_id").eq("follower_id", user.id),
+        // Users fueling me
+        supabase.from("follows").select("follower_id").eq("following_id", user.id),
       ]);
 
       if (profileRes.data) {
@@ -74,24 +74,14 @@ const Profile = () => {
       setIgnitedCount(followingRes.count ?? 0);
       setFuelingCount(followersRes.count ?? 0);
 
-      // Calculate unique embers sparked with (union of unique users I stitched + unique users who stitched me)
-      const mySignalIds = (stitchesReceivedRes.data ?? []).map(s => s.id);
-      const usersIStitched = new Set<string>();
-      // We need signal owners for stitches I gave
-      if (stitchesGivenRes.data && stitchesGivenRes.data.length > 0) {
-        const sigIds = [...new Set(stitchesGivenRes.data.map(s => s.signal_id))];
-        const { data: sigs } = await supabase.from("signals").select("id, user_id").in("id", sigIds);
-        sigs?.forEach(s => { if (s.user_id !== user.id) usersIStitched.add(s.user_id); });
+      // Sparked = mutual follows (I ignited them AND they fuel me)
+      const iFollow = new Set((iFollowRes.data ?? []).map(f => f.following_id));
+      const followMe = new Set((followMeRes.data ?? []).map(f => f.follower_id));
+      let mutualCount = 0;
+      for (const id of iFollow) {
+        if (followMe.has(id)) mutualCount++;
       }
-      // Users who stitched my signals
-      const usersWhoStitchedMe = new Set<string>();
-      if (mySignalIds.length > 0) {
-        const { data: theirStitches } = await supabase.from("stitches").select("user_id").in("signal_id", mySignalIds);
-        theirStitches?.forEach(s => { if (s.user_id !== user.id) usersWhoStitchedMe.add(s.user_id); });
-      }
-      // Union
-      const allSparked = new Set([...usersIStitched, ...usersWhoStitchedMe]);
-      setSparkedCount(allSparked.size);
+      setSparkedCount(mutualCount);
     };
     load();
   }, [user]);
