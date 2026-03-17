@@ -55,7 +55,8 @@ const Profile = () => {
   const [listEmbers, setListEmbers] = useState<{ user_id: string; display_name: string; avatar_url: string | null }[]>([]);
   const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState(false);
-
+  const [showInterestPicker, setShowInterestPicker] = useState(false);
+  const [myInterests, setMyInterests] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user) return;
