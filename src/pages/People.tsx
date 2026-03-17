@@ -9,6 +9,8 @@ import QRScanner from "@/components/QRScanner";
 
 type Tab = "search" | "qr" | "scan";
 
+const EMBER_FOUNDER_ID = "52c9cc57-3d25-4722-b0a9-1dac99e79354";
+
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
 interface ProfileResult {
