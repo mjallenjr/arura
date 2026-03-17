@@ -468,7 +468,7 @@ const People = () => {
                 : "signal-surface text-muted-foreground"
             }`}
           >
-            {t === "search" ? "Search" : t === "qr" ? "My QR" : "Scan"}
+            {t === "search" ? "Wonder" : t === "qr" ? "My QR" : "Scan"}
           </button>
         ))}
       </div>
