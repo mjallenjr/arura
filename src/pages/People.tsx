@@ -207,7 +207,7 @@ const People = () => {
                           : "bg-primary text-primary-foreground"
                       }`}
                     >
-                      {person.isFollowing ? "Slap" : "Trail"}
+                      {person.isFollowing ? "Extinguish" : "Ignite"}
                     </motion.button>
                   </motion.div>
                 ))}
