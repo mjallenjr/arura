@@ -233,13 +233,13 @@ const People = () => {
     const q = query.trim();
     const [nameRes, interestRes] = await Promise.all([
       supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url, qr_code, interests")
         .ilike("display_name", `%${q}%`)
         .neq("user_id", user.id)
         .limit(20),
       supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url, qr_code, interests")
         .contains("interests", [q.toLowerCase()])
         .neq("user_id", user.id)
