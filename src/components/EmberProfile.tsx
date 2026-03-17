@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -26,6 +26,10 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   const [sparked, setSparked] = useState(false);
   const [showFelt, setShowFelt] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [refueled, setRefueled] = useState(false);
+  const [extinguishing, setExtinguishing] = useState(false);
+  const [refueling, setRefueling] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: d }) => setCurrentUser(d.user?.id ?? null));
@@ -82,6 +86,19 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     load();
   }, [userId]);
 
+  // Check follow status
+  useEffect(() => {
+    if (!currentUser || currentUser === userId) return;
+    supabase
+      .from("follows")
+      .select("id")
+      .eq("follower_id", currentUser)
+      .eq("following_id", userId)
+      .then(({ data: rows }) => {
+        setIsFollowing(rows !== null && rows.length > 0);
+      });
+  }, [currentUser, userId]);
+
   // Check if current user already sparked the top drop
   useEffect(() => {
     if (!data?.topDrop?.signal_id || !currentUser) return;
@@ -111,7 +128,6 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
       return;
     }
 
-    // Update local count
     setData(prev => prev && prev.topDrop ? {
       ...prev,
       topDrop: { ...prev.topDrop, felt_count: prev.topDrop.felt_count + 1 },
@@ -120,7 +136,47 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     toast({ title: "✦ sparked", description: `You sparked ${data.display_name}'s top drop` });
   };
 
+  const handleExtinguish = useCallback(async () => {
+    if (!currentUser || !isFollowing) return;
+    setExtinguishing(true);
+
+    const { error } = await supabase
+      .from("follows")
+      .delete()
+      .eq("follower_id", currentUser)
+      .eq("following_id", userId);
+
+    setTimeout(() => {
+      setExtinguishing(false);
+      if (!error) {
+        setIsFollowing(false);
+        toast({ title: "extinguished", description: `You extinguished ${data?.display_name}` });
+      }
+    }, 800);
+  }, [currentUser, userId, isFollowing, data?.display_name]);
+
+  const handleRefuel = useCallback(async () => {
+    if (!currentUser || refueled) return;
+    setRefueling(true);
+
+    const { error } = await supabase.from("notifications").insert({
+      user_id: userId,
+      from_user_id: currentUser,
+      type: "refuel",
+      word: "wants to see more of your world",
+    });
+
+    setTimeout(() => {
+      setRefueling(false);
+      if (!error) {
+        setRefueled(true);
+        toast({ title: "🔥 refueled", description: `${data?.display_name} will know a roaming ember wants more` });
+      }
+    }, 600);
+  }, [currentUser, userId, refueled, data?.display_name]);
+
   const initial = data?.display_name?.charAt(0).toUpperCase() ?? "?";
+  const isSelf = currentUser === userId;
 
   return (
     <motion.div
@@ -186,6 +242,85 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
               </motion.div>
             )}
           </motion.div>
+
+          {/* Extinguish & Refuel Actions */}
+          {!isSelf && currentUser && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...signalTransition, delay: 0.08 }}
+              className="flex gap-3 mb-6"
+            >
+              {/* Extinguish button */}
+              {isFollowing && (
+                <motion.button
+                  onClick={handleExtinguish}
+                  disabled={extinguishing}
+                  className="flex-1 relative overflow-hidden rounded-xl py-3 px-4 border border-destructive/30 bg-destructive/5 text-destructive text-xs font-medium tracking-wide uppercase transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <AnimatePresence>
+                    {extinguishing && (
+                      <motion.div
+                        className="absolute inset-0 flex items-center justify-center bg-destructive/10"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        {/* Ash particles */}
+                        {[...Array(8)].map((_, i) => (
+                          <motion.span
+                            key={i}
+                            className="absolute w-1 h-1 rounded-full bg-destructive/60"
+                            initial={{ opacity: 1, x: 0, y: 0 }}
+                            animate={{
+                              opacity: 0,
+                              x: (Math.random() - 0.5) * 60,
+                              y: Math.random() * -40 - 10,
+                            }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                          />
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  extinguish
+                </motion.button>
+              )}
+
+              {/* Refuel button */}
+              <motion.button
+                onClick={handleRefuel}
+                disabled={refueled || refueling}
+                className={`flex-1 relative overflow-hidden rounded-xl py-3 px-4 text-xs font-medium tracking-wide uppercase transition-all ${
+                  refueled
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "bg-primary text-primary-foreground hover:opacity-90"
+                } disabled:opacity-60`}
+                whileTap={{ scale: 0.97 }}
+              >
+                <AnimatePresence>
+                  {refueling && (
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      {/* Warm glow effect */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: [0, 1, 0], scale: [0.8, 1.1, 1] }}
+                        transition={{ duration: 0.6 }}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {refueled ? "🔥 refueled" : "refuel"}
+              </motion.button>
+            </motion.div>
+          )}
 
           {/* Stats */}
           <motion.div
