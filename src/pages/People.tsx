@@ -30,8 +30,9 @@ const People = () => {
   const [myQr, setMyQr] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [animating, setAnimating] = useState<AnimatingId | null>(null);
+  const [suggested, setSuggested] = useState<ProfileResult[]>([]);
 
-  // Load my QR code and following list
+  // Load my QR code, following list, and suggested embers
   useEffect(() => {
     if (!user) return;
 
@@ -42,8 +43,44 @@ const People = () => {
       ]);
 
       if (profileRes.data) setMyQr(profileRes.data.qr_code);
-      if (followsRes.data) {
-        setFollowingIds(new Set(followsRes.data.map((f) => f.following_id)));
+      const myFollowingIds = new Set(followsRes.data?.map((f) => f.following_id) ?? []);
+      setFollowingIds(myFollowingIds);
+
+      // Suggested: friends of friends (people followed by people I follow, that I don't follow)
+      if (myFollowingIds.size > 0) {
+        const { data: fof } = await supabase
+          .from("follows")
+          .select("following_id")
+          .in("follower_id", [...myFollowingIds])
+          .limit(100);
+
+        if (fof) {
+          const candidateIds = [...new Set(fof.map((f) => f.following_id))]
+            .filter((id) => id !== user.id && !myFollowingIds.has(id));
+
+          if (candidateIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from("profiles")
+              .select("user_id, display_name, avatar_url, qr_code")
+              .in("user_id", candidateIds.slice(0, 10));
+
+            if (profiles) {
+              setSuggested(profiles.map((p) => ({ ...p, isFollowing: false })));
+            }
+          }
+        }
+      }
+
+      // If no friends-of-friends, show random embers
+      if (myFollowingIds.size === 0) {
+        const { data: randomEmbers } = await supabase
+          .from("profiles")
+          .select("user_id, display_name, avatar_url, qr_code")
+          .neq("user_id", user.id)
+          .limit(10);
+        if (randomEmbers) {
+          setSuggested(randomEmbers.map((p) => ({ ...p, isFollowing: false })));
+        }
       }
     };
     loadData();
