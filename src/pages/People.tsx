@@ -36,6 +36,7 @@ type AnimatingId = { id: string; type: "ignite" | "extinguish" };
 const People = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { fetchTargetedAd } = useAds();
   const [tab, setTab] = useState<Tab>("search");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ProfileResult[]>([]);
