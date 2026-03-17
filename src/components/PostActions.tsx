@@ -27,7 +27,15 @@ const PostActions = ({
   songTitle,
   onSongUrlChange,
   onSongTitleChange,
+  stitchWord,
+  onStitchWordChange,
 }: PostActionsProps) => {
+  const handleStitchChange = (val: string) => {
+    // No spaces, max 12 chars
+    const cleaned = val.replace(/\s/g, "").slice(0, 12);
+    onStitchWordChange?.(cleaned);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
