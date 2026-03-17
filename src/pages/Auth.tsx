@@ -85,7 +85,7 @@ const Auth = () => {
       >
         <h1 className="display-signal text-center mb-2">arura</h1>
         <p className="text-sm text-muted-foreground text-center mb-8">
-          {mode === "signin" ? "Welcome back" : "Join the moment"}
+          {forgotMode ? "Reset your password" : mode === "signin" ? "Welcome back" : "Join the moment"}
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
