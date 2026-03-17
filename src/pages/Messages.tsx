@@ -158,7 +158,7 @@ const Messages = () => {
     });
 
     if (error) {
-      toast.error("Can't send — they must follow you");
+      toast.error("Can't send — start a conversation first");
     } else {
       setWord("");
       loadMessages(selectedUserId);
