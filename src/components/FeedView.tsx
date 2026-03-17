@@ -138,6 +138,17 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     }
   }, [currentIndex, signals.length]);
 
+  // Record view for the current signal
+  useEffect(() => {
+    if (loading || ended || signals.length === 0) return;
+    const signal = signals[currentIndex];
+    if (!user || !signal || signal.isDiscovery) return;
+    supabase.from("signal_views").upsert(
+      { user_id: user.id, signal_id: signal.id },
+      { onConflict: "user_id,signal_id" }
+    ).then(() => {});
+  }, [currentIndex, loading, ended, signals, user]);
+
   useEffect(() => {
     if (ended || loading || signals.length === 0) return;
 
