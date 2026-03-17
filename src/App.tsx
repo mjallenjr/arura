@@ -12,6 +12,8 @@ import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import AdminAds from "./pages/AdminAds";
+import AdminModeration from "./pages/AdminModeration";
+import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const AppRoutes = () => {
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/admin/ads" element={<ProtectedRoute><AdminAds /></ProtectedRoute>} />
+        <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
+        <Route path="/legal" element={<Legal />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
