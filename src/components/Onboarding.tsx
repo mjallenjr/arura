@@ -3,47 +3,88 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const signalTransition = { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as const };
 
+const BlueFlame = ({ size = 40 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="text-primary">
+    <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" opacity="0.2" />
+    <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    <path d="M12 18a3 3 0 003-3c0-2-1.5-3-2-5-.5 1-1.5 1.5-2 0-.5 2-2 3-2 5a3 3 0 003 3z" fill="currentColor" opacity="0.4" />
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-primary">
+    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.15" />
+    <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+  </svg>
+);
+
+const StitchIcon = () => (
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-primary">
+    <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M2 12h20M12 2v20" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.3" />
+  </svg>
+);
+
+const EmbersIcon = () => (
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-primary">
+    <circle cx="9" cy="8" r="4" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.15" />
+    <path d="M1 20c0-3.314 3.582-6 8-6s8 2.686 8 6" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <circle cx="18" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.15" />
+    <path d="M19 13c2.21.636 4 2.247 4 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+  </svg>
+);
+
+const WordIcon = () => (
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-primary">
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.15" />
+    <path d="M8 10h8M8 14h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+  </svg>
+);
+
+const stepIcons = [
+  <BlueFlame size={44} />,
+  <CameraIcon />,
+  <span className="text-primary text-4xl font-bold">✦</span>,
+  <StitchIcon />,
+  <EmbersIcon />,
+  <WordIcon />,
+];
+
 const steps = [
   {
     title: "welcome to arura",
     subtitle: "life, briefly witnessed",
     body: "A place where moments burn bright and fade fast. Nothing lasts forever here — and that's the point.",
-    icon: "🔥",
     gesture: null,
   },
   {
     title: "Drop",
     subtitle: "share something warm",
     body: "Record a 5-second video or snap a photo. Overlay a single word. Your Drop lives for 2 hours, then it's gone.",
-    icon: "📸",
     gesture: null,
   },
   {
     title: "Tap = Felt",
     subtitle: "feel the moment",
     body: "Single tap any signal to show you felt it. It's a pulse — no likes, no numbers, just energy.",
-    icon: "✦",
-    gesture: "tap",
+    gesture: "tap" as const,
   },
   {
     title: "Double-tap = Stitch",
     subtitle: "leave your mark",
     body: "Double-tap to place a word on their signal. It appears right where you tapped. Pinch to resize & rotate.",
-    icon: "🧵",
-    gesture: "double-tap",
+    gesture: "double-tap" as const,
   },
   {
     title: "Embers",
     subtitle: "your people, your fire",
     body: "Follow someone? You've Ignited them. Mutual follows? You've Sparked. The more you interact, the higher your Aura.",
-    icon: "🧡",
     gesture: null,
   },
   {
     title: "Words",
     subtitle: "say it in one word",
     body: "DMs are single words only. 12 characters max. No paragraphs, no novels — just a word that says it all.",
-    icon: "💬",
     gesture: null,
   },
 ];
