@@ -188,7 +188,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       const { data: rawSignals } = await supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(20);
 
       if (!rawSignals || rawSignals.length === 0) {
-        setSignals(await fetchDiscovery());
+        const discovery = await fetchDiscovery();
+        setSignals(await interleaveAds(discovery, user.id));
         setLoading(false);
         return;
       }
