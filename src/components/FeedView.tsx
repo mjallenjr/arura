@@ -24,6 +24,8 @@ interface Signal {
   display_name: string;
   media_url: string | null;
   isDiscovery?: boolean;
+  isAd?: boolean;
+  ad?: Ad;
 }
 
 const FALLBACK_DISCOVERY: Signal[] = [
