@@ -189,6 +189,21 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
                 />
               )}
 
+              {mode === "signup" && !forgotMode && (
+                <label className="flex items-start gap-2.5 mt-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ageConfirmed}
+                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <span className="text-[11px] text-muted-foreground leading-snug">
+                    I confirm I am at least 13 years old and agree to the{" "}
+                    <a href="/legal" className="text-primary underline" target="_blank" rel="noopener">Terms & Privacy</a>
+                  </span>
+                </label>
+              )}
+
               <motion.button
                 type="submit"
                 whileTap={{ scale: 0.97 }}
