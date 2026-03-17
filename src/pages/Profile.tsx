@@ -63,7 +63,16 @@ const Profile = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const { referralCode, referralCount, shareLink } = useReferral();
-  const { impressions: creatorImpressions, creatorShare } = useCreatorEarnings();
+  const {
+    impressions: creatorImpressions,
+    creatorShare,
+    available: availablePayout,
+    paidOut,
+    stripeConnected,
+    payingOut,
+    connectStripe,
+    requestPayout,
+  } = useCreatorEarnings();
   const { isPro, subscriptionEnd, loading: subLoading, startCheckout, openPortal, checkSubscription } = useSubscription();
 
   // Check subscription after returning from checkout
