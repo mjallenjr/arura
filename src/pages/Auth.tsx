@@ -95,7 +95,7 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
   }, [email]);
 
   return (
-    <div className="flex h-svh w-full items-center justify-center bg-background p-8">
+    <div ref={ref} className="flex h-svh w-full items-center justify-center bg-background p-8">
       <AnimatePresence mode="wait">
         {showVerify ? (
           <motion.div
