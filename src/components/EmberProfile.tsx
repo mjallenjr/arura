@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import FeltEffect from "./FeltEffect";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
@@ -31,6 +32,8 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   const [extinguishing, setExtinguishing] = useState(false);
   const [refueling, setRefueling] = useState(false);
   const [igniting, setIgniting] = useState(false);
+  const [hasMutualSpark, setHasMutualSpark] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: d }) => setCurrentUser(d.user?.id ?? null));
@@ -133,7 +136,47 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     );
   }, [currentUser, userId]);
 
-  // Check if current user already sparked the top drop
+  // Check mutual spark (both users have felted each other's signals)
+  useEffect(() => {
+    if (!currentUser || currentUser === userId) return;
+    const check = async () => {
+      // Did I felt any of their signals?
+      const { data: theirSignals } = await supabase
+        .from("signals")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(50);
+      if (!theirSignals || theirSignals.length === 0) return;
+
+      const { data: myFelts } = await supabase
+        .from("felts")
+        .select("id")
+        .eq("user_id", currentUser)
+        .in("signal_id", theirSignals.map((s) => s.id))
+        .limit(1);
+
+      // Did they felt any of my signals?
+      const { data: mySignals } = await supabase
+        .from("signals")
+        .select("id")
+        .eq("user_id", currentUser)
+        .limit(50);
+      if (!mySignals || mySignals.length === 0) return;
+
+      const { data: theirFelts } = await supabase
+        .from("felts")
+        .select("id")
+        .eq("user_id", userId)
+        .in("signal_id", mySignals.map((s) => s.id))
+        .limit(1);
+
+      if (myFelts && myFelts.length > 0 && theirFelts && theirFelts.length > 0) {
+        setHasMutualSpark(true);
+      }
+    };
+    check();
+  }, [currentUser, userId]);
+
   useEffect(() => {
     if (!data?.topDrop?.signal_id || !currentUser) return;
     supabase
@@ -397,6 +440,27 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                   )}
                 </AnimatePresence>
                 {refueled ? "🔥 refueled" : "refuel"}
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* Words button (mutual spark only) */}
+          {!isSelf && currentUser && hasMutualSpark && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...signalTransition, delay: 0.12 }}
+              className="mb-6"
+            >
+              <motion.button
+                onClick={() => {
+                  onClose();
+                  navigate(`/messages?dm=${userId}&name=${encodeURIComponent(data?.display_name ?? "")}`);
+                }}
+                className="w-full rounded-xl py-3 px-4 signal-surface border border-border/30 text-xs font-medium tracking-wide uppercase text-foreground/80 hover:text-foreground transition-colors"
+                whileTap={{ scale: 0.97 }}
+              >
+                words
               </motion.button>
             </motion.div>
           )}

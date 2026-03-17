@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
@@ -27,6 +27,7 @@ interface Message {
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedName, setSelectedName] = useState("");
@@ -34,6 +35,16 @@ const Messages = () => {
   const [word, setWord] = useState("");
   const [followers, setFollowers] = useState<{ user_id: string; display_name: string }[]>([]);
   const [showNewDm, setShowNewDm] = useState(false);
+
+  // Handle deep-link from ember profile
+  useEffect(() => {
+    const dmUserId = searchParams.get("dm");
+    const dmName = searchParams.get("name");
+    if (dmUserId && dmName) {
+      setSelectedUserId(dmUserId);
+      setSelectedName(decodeURIComponent(dmName));
+    }
+  }, [searchParams]);
 
   // Load conversations
   useEffect(() => {
