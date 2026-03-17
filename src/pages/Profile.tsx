@@ -440,7 +440,7 @@ const Profile = () => {
             <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
           </label>
           <p className="text-lg font-medium text-foreground tracking-tight">{displayName || "Anonymous"}</p>
-          <p className="text-xs text-muted-foreground">{user?.email}</p>
+          {/* Email hidden for privacy - only shown in settings */}
         </motion.div>
 
         {/* Stats */}
