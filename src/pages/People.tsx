@@ -263,7 +263,7 @@ const People = () => {
                           className="flex flex-col items-center gap-2 min-w-[80px] signal-surface rounded-xl p-3 relative"
                         >
                           <div className="relative">
-                            <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                            <div className={`h-12 w-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden ${ember.user_id === EMBER_FOUNDER_ID ? 'animate-ember-glow' : ''}`}>
                               {ember.avatar_url ? (
                                 <img src={ember.avatar_url} alt="" className="h-full w-full object-cover" />
                               ) : (
