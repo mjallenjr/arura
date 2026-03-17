@@ -251,7 +251,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                 <AnimatePresence>
                   {showFelt && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                      <FeltEffect />
+                      <FeltEffect x={0} y={0} />
                     </div>
                   )}
                 </AnimatePresence>
