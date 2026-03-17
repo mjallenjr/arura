@@ -27,6 +27,7 @@ interface Message {
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedName, setSelectedName] = useState("");
@@ -34,6 +35,16 @@ const Messages = () => {
   const [word, setWord] = useState("");
   const [followers, setFollowers] = useState<{ user_id: string; display_name: string }[]>([]);
   const [showNewDm, setShowNewDm] = useState(false);
+
+  // Handle deep-link from ember profile
+  useEffect(() => {
+    const dmUserId = searchParams.get("dm");
+    const dmName = searchParams.get("name");
+    if (dmUserId && dmName) {
+      setSelectedUserId(dmUserId);
+      setSelectedName(decodeURIComponent(dmName));
+    }
+  }, [searchParams]);
 
   // Load conversations
   useEffect(() => {
