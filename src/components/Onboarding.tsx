@@ -270,6 +270,8 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
       </div>
     </motion.div>
   );
-};
+});
+
+Onboarding.displayName = "Onboarding";
 
 export default Onboarding;
