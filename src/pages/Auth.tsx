@@ -8,7 +8,7 @@ import { lovable } from "@/integrations/lovable/index";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
-const Auth = () => {
+const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get("ref");
   const [mode, setMode] = useState<"signin" | "signup">(refCode ? "signup" : "signin");
