@@ -290,8 +290,13 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         )}
       </div>
 
-      {/* Counter */}
-      <div className="absolute right-8 top-12 z-10">
+      {/* Counter + discover badge */}
+      <div className="absolute right-8 top-12 z-10 flex items-center gap-2">
+        {isDiscoveryFeed && (
+          <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-medium text-primary">
+            discover
+          </span>
+        )}
         <p className="label-signal">
           {currentIndex + 1}/{signals.length}
         </p>
