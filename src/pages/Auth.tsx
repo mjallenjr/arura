@@ -16,6 +16,8 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
+  const [resending, setResending] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
