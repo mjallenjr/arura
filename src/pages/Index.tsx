@@ -227,8 +227,16 @@ const Index = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...signalTransition, delay: 0.1 }}
-                className="flex flex-col items-center gap-2"
+                className="flex flex-col items-center gap-3"
               >
+                <motion.span
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ ...signalTransition, delay: 0.05 }}
+                  className="text-4xl"
+                >
+                  🔥
+                </motion.span>
                 <h1 className="text-3xl font-medium tracking-[-0.06em] text-foreground">arura</h1>
                 <p className="text-xs text-muted-foreground tracking-wide">life, briefly witnessed</p>
               </motion.div>
