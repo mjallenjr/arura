@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import AdminAds from "./pages/AdminAds";
 import AdminModeration from "./pages/AdminModeration";
+import Advertise from "./pages/Advertise";
 import Legal from "./pages/Legal";
 import EmberPublicProfile from "./pages/EmberPublicProfile";
 import NotFound from "./pages/NotFound";
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/ember/:userId" element={<ProtectedRoute><EmberPublicProfile /></ProtectedRoute>} />
         <Route path="/admin/ads" element={<ProtectedRoute><AdminAds /></ProtectedRoute>} />
         <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
+        <Route path="/advertise" element={<Advertise />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

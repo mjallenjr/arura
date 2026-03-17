@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import EmberProfile from "@/components/EmberProfile";
 import InterestPicker from "@/components/InterestPicker";
+import { useReferral } from "@/hooks/useReferral";
+import { useCreatorEarnings } from "@/hooks/useCreatorEarnings";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -59,6 +61,8 @@ const Profile = () => {
   const [myInterests, setMyInterests] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { referralCode, referralCount, shareLink } = useReferral();
+  const { impressions: creatorImpressions, creatorShare } = useCreatorEarnings();
 
   useEffect(() => {
     if (!user) return;
@@ -707,6 +711,44 @@ const Profile = () => {
                 </svg>
                 Share Profile Link
               </motion.button>
+
+              {/* Creator Earnings */}
+              {creatorImpressions > 0 && (
+                <div className="signal-surface rounded-xl p-4">
+                  <p className="label-signal mb-2">💰 Creator Earnings</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-lg font-semibold text-foreground">{creatorImpressions}</p>
+                      <p className="text-[10px] text-muted-foreground">Ad impressions</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-primary">${creatorShare.toFixed(2)}</p>
+                      <p className="text-[10px] text-muted-foreground">Your share (30%)</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2">More signals = more earnings. Keep dropping!</p>
+                </div>
+              )}
+
+              {/* Referral */}
+              {shareLink && (
+                <div className="signal-surface rounded-xl p-4">
+                  <p className="label-signal mb-2">🔗 Invite & Earn</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    You've referred <span className="text-foreground font-semibold">{referralCount}</span> embers
+                  </p>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(shareLink).then(() => toast.success("Invite link copied!"));
+                    }}
+                    className="w-full rounded-full bg-primary/15 px-4 py-2.5 text-xs font-medium text-primary signal-ease hover:bg-primary/25"
+                  >
+                    Copy invite link
+                  </motion.button>
+                  <p className="text-[10px] text-muted-foreground text-center mt-2 font-mono-signal">{referralCode}</p>
+                </div>
+              )}
 
               <div className="flex justify-center mt-4 gap-3">
                 <motion.button

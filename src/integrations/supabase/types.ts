@@ -94,6 +94,39 @@ export type Database = {
         }
         Relationships: []
       }
+      advertiser_leads: {
+        Row: {
+          budget_range: string
+          company_name: string
+          contact_email: string
+          created_at: string
+          id: string
+          message: string | null
+          status: string
+          website: string | null
+        }
+        Insert: {
+          budget_range?: string
+          company_name: string
+          contact_email: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          website?: string | null
+        }
+        Update: {
+          budget_range?: string
+          company_name?: string
+          contact_email?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -264,6 +297,7 @@ export type Database = {
           interests: string[] | null
           phone: string | null
           qr_code: string | null
+          referral_code: string | null
           updated_at: string
           user_id: string
         }
@@ -276,6 +310,7 @@ export type Database = {
           interests?: string[] | null
           phone?: string | null
           qr_code?: string | null
+          referral_code?: string | null
           updated_at?: string
           user_id: string
         }
@@ -288,8 +323,36 @@ export type Database = {
           interests?: string[] | null
           phone?: string | null
           qr_code?: string | null
+          referral_code?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          rewarded: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          rewarded?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          rewarded?: boolean
         }
         Relationships: []
       }
