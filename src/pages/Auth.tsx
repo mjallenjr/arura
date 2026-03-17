@@ -1,19 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
 const Auth = () => {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get("ref");
+  const [mode, setMode] = useState<"signin" | "signup">(refCode ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+
+  // After signup + login, claim referral
+  useEffect(() => {
+    if (!user || !refCode) return;
+    const claim = async () => {
+      const { data: referrer } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("referral_code", refCode)
+        .single();
+      if (referrer && (referrer as any).user_id !== user.id) {
+        await supabase.from("referrals").insert({
+          referrer_id: (referrer as any).user_id,
+          referred_id: user.id,
+          code: refCode,
+        });
+      }
+    };
+    claim();
+  }, [user, refCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
