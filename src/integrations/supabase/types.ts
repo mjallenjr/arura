@@ -135,7 +135,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_aura_ranked_following: {
+        Args: { p_user_id: string }
+        Returns: {
+          aura_score: number
+          following_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
