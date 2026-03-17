@@ -171,6 +171,27 @@ export type Database = {
         }
         Relationships: []
       }
+      interest_searches: {
+        Row: {
+          created_at: string
+          id: string
+          search_count: number
+          term: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          search_count?: number
+          term: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          search_count?: number
+          term?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
