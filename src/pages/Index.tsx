@@ -255,7 +255,7 @@ const Index = () => {
                   <div className="relative z-10 flex flex-col items-center gap-1">
                     <span className="text-lg font-medium tracking-[-0.02em]">Drop</span>
                     <span className="text-[10px] font-medium uppercase tracking-[0.1em] opacity-60">
-                      share a moment
+                      share something warm
                     </span>
                   </div>
                 </motion.button>
@@ -271,7 +271,7 @@ const Index = () => {
                   <div className="relative z-10 flex flex-col items-center gap-1">
                     <span className="text-lg font-medium tracking-[-0.02em]">Indulge</span>
                     <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
-                      see what's new
+                      see what's hot
                     </span>
                   </div>
                 </motion.button>
