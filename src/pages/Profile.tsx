@@ -354,6 +354,7 @@ const Profile = () => {
   }, [user]);
 
   const handleSignOut = useCallback(async () => {
+    localStorage.removeItem("arura_onboarded");
     await signOut();
     navigate("/auth");
   }, [signOut, navigate]);
