@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import FeltEffect from "@/components/FeltEffect";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAds, type Ad } from "@/hooks/useAds";
 import { toast } from "sonner";
 
 interface FeedViewProps {
