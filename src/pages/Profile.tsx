@@ -427,14 +427,14 @@ const Profile = () => {
             You've Sparked with <span className="text-foreground font-semibold">{sparkedCount}</span> Embers
           </p>
           <div className="grid grid-cols-2 gap-3 w-full">
-            <div className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
+            <button onClick={() => handleShowList("ignited")} className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1 signal-ease hover:ring-1 hover:ring-primary/20 active:scale-[0.98]">
               <span className="text-xl font-medium text-foreground">{ignitedCount}</span>
               <span className="label-signal">Ignited</span>
-            </div>
-            <div className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
+            </button>
+            <button onClick={() => handleShowList("fueling")} className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1 signal-ease hover:ring-1 hover:ring-primary/20 active:scale-[0.98]">
               <span className="text-xl font-medium text-foreground">{fuelingCount}</span>
               <span className="label-signal">Fueling You</span>
-            </div>
+            </button>
           </div>
         </motion.div>
 
