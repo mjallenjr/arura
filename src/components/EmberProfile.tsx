@@ -295,7 +295,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
             )}
           </motion.div>
 
-          {/* Extinguish & Refuel Actions */}
+          {/* Ignite / Extinguish & Refuel Actions */}
           {!isSelf && currentUser && (
             <motion.div
               initial={{ opacity: 0, y: 6 }}
@@ -303,7 +303,36 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
               transition={{ ...signalTransition, delay: 0.08 }}
               className="flex gap-3 mb-6"
             >
-              {/* Extinguish button */}
+              {/* Ignite button (when not following) */}
+              {!isFollowing && (
+                <motion.button
+                  onClick={handleIgnite}
+                  disabled={igniting}
+                  className="flex-1 relative overflow-hidden rounded-xl py-3 px-4 bg-primary text-primary-foreground text-xs font-medium tracking-wide uppercase transition-colors hover:opacity-90 disabled:opacity-50"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <AnimatePresence>
+                    {igniting && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-radial from-primary/40 to-transparent"
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: [0, 1, 0.5], scale: [0.5, 1.2, 1] }}
+                          transition={{ duration: 0.8 }}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  🔥 ignite
+                </motion.button>
+              )}
+
+              {/* Extinguish button (when following) */}
               {isFollowing && (
                 <motion.button
                   onClick={handleExtinguish}
@@ -319,7 +348,6 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        {/* Ash particles */}
                         {[...Array(8)].map((_, i) => (
                           <motion.span
                             key={i}
@@ -359,7 +387,6 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                     >
-                      {/* Warm glow effect */}
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"
                         initial={{ opacity: 0, scale: 0.8 }}
