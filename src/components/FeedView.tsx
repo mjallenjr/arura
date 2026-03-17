@@ -25,6 +25,7 @@ interface Signal {
   display_name: string;
   media_url: string | null;
   isDiscovery?: boolean;
+  isSuggested?: boolean;
   isAd?: boolean;
   ad?: Ad;
 }
