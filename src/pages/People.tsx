@@ -229,22 +229,36 @@ const People = () => {
   const search = useCallback(async () => {
     if (!query.trim() || !user) return;
 
-    const { data } = await supabase
-      .from("profiles")
-      .select("user_id, display_name, avatar_url, qr_code, interests")
-      .or(`display_name.ilike.%${query}%,phone.ilike.%${query}%`)
-      .neq("user_id", user.id)
-      .limit(20);
+    // Search by name/phone AND by interest in parallel
+    const q = query.trim();
+    const [nameRes, interestRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, qr_code, interests")
+        .or(`display_name.ilike.%${q}%,phone.ilike.%${q}%`)
+        .neq("user_id", user.id)
+        .limit(20),
+      supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, qr_code, interests")
+        .contains("interests", [q.toLowerCase()])
+        .neq("user_id", user.id)
+        .limit(20),
+    ]);
 
-    if (data) {
-      setResults(
-        data.map((p) => ({
-          ...p,
-          interests: (p as any).interests ?? [],
-          isFollowing: followingIds.has(p.user_id),
-        }))
-      );
+    // Merge and deduplicate
+    const seen = new Set<string>();
+    const merged: ProfileResult[] = [];
+    for (const p of [...(nameRes.data ?? []), ...(interestRes.data ?? [])]) {
+      if (seen.has(p.user_id)) continue;
+      seen.add(p.user_id);
+      merged.push({
+        ...p,
+        interests: (p as any).interests ?? [],
+        isFollowing: followingIds.has(p.user_id),
+      });
     }
+    setResults(merged);
   }, [query, user, followingIds]);
 
   useEffect(() => {
