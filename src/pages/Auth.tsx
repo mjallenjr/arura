@@ -138,10 +138,10 @@ const Auth = () => {
         )}
 
         <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+          onClick={() => { setForgotMode(false); setMode(mode === "signin" ? "signup" : "signin"); }}
           className="mt-6 w-full text-center text-xs text-muted-foreground"
         >
-          {mode === "signin" ? "Don't have an account? Join" : "Already here? Sign in"}
+          {forgotMode ? "Back to sign in" : mode === "signin" ? "Don't have an account? Join" : "Already here? Sign in"}
         </button>
       </motion.div>
     </div>
