@@ -80,22 +80,30 @@ const People = () => {
   const toggleFollow = useCallback(
     async (targetUserId: string) => {
       if (!user) return;
+      const isUnfollow = followingIds.has(targetUserId);
 
-      if (followingIds.has(targetUserId)) {
+      // Start animation
+      setAnimating({ id: targetUserId, type: isUnfollow ? "extinguish" : "ignite" });
+
+      if (isUnfollow) {
         await supabase
           .from("follows")
           .delete()
           .eq("follower_id", user.id)
           .eq("following_id", targetUserId);
 
-        setFollowingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(targetUserId);
-          return next;
-        });
-        setResults((prev) =>
-          prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: false } : r))
-        );
+        // Wait for extinguish animation before updating state
+        setTimeout(() => {
+          setFollowingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(targetUserId);
+            return next;
+          });
+          setResults((prev) =>
+            prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: false } : r))
+          );
+          setAnimating(null);
+        }, 900);
       } else {
         await supabase
           .from("follows")
@@ -106,6 +114,7 @@ const People = () => {
           prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: true } : r))
         );
         toast.success("Ignited 🔥");
+        setTimeout(() => setAnimating(null), 1200);
       }
     },
     [user, followingIds]
