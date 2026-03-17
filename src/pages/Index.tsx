@@ -141,6 +141,7 @@ const Index = () => {
     setPhotoBlob(null);
     setSongUrl("");
     setSongTitle("");
+    setStitchWord("");
     setState("camera");
   }, []);
 
