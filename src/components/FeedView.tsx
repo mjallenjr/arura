@@ -536,6 +536,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   }
 
   const isDiscoveryFeed = signals.length > 0 && signals[0].isDiscovery;
+  const isSuggestedFeed = signals.length > 0 && signals[0].isSuggested;
 
   if (ended) {
     return (
