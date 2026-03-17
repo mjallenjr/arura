@@ -315,6 +315,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       setCurrentIndex((i) => i + 1);
       setProgress(0);
       setShowStitchInput(false);
+      setShowIgnitePrompt(false);
       setStitchInput("");
       setSubmittedStitch(null);
       setStitchScale(1);
