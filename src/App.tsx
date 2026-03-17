@@ -63,6 +63,7 @@ const AppRoutes = () => {
         <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/legal" element={<Legal />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
