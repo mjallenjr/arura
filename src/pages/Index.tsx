@@ -391,6 +391,9 @@ const Index = () => {
                 songTitle={songTitle}
                 onSongUrlChange={setSongUrl}
                 onSongTitleChange={setSongTitle}
+                stitchWord={stitchWord}
+                onStitchWordChange={setStitchWord}
+              />
               />
             </div>
           </motion.div>
