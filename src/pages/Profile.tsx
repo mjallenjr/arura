@@ -42,9 +42,9 @@ const Profile = () => {
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [followersCount, setFollowersCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [signalsCount, setSignalsCount] = useState(0);
+  const [sparkedCount, setSparkedCount] = useState(0);
+  const [ignitedCount, setIgnitedCount] = useState(0);
+  const [fuelingCount, setFuelingCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
   const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
