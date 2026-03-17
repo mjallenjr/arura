@@ -248,14 +248,13 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
           transition={signalTransition}
           className="relative z-10 flex flex-col items-center gap-5 px-10 max-w-sm text-center"
         >
-          <motion.span
-            className="text-5xl"
+          <motion.div
             initial={{ scale: 0.5, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ ...signalTransition, delay: 0.1 }}
           >
-            {current.icon}
-          </motion.span>
+            {stepIcons[step]}
+          </motion.div>
 
           <div className="flex flex-col items-center gap-2">
             <h2 className="text-2xl font-medium tracking-[-0.04em] text-foreground">
