@@ -40,6 +40,8 @@ const Profile = () => {
   const [tab, setTab] = useState<ProfileTab>("drops");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [signalsCount, setSignalsCount] = useState(0);
@@ -48,12 +50,13 @@ const Profile = () => {
   const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+
   useEffect(() => {
     if (!user) return;
 
     const load = async () => {
       const [profileRes, followersRes, followingRes, signalsRes] = await Promise.all([
-        supabase.from("profiles").select("display_name, phone").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("display_name, phone, avatar_url").eq("user_id", user.id).single(),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", user.id),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", user.id),
         supabase.from("signals").select("id", { count: "exact", head: true }).eq("user_id", user.id),
@@ -62,6 +65,7 @@ const Profile = () => {
       if (profileRes.data) {
         setDisplayName(profileRes.data.display_name ?? "");
         setPhone(profileRes.data.phone ?? "");
+        setAvatarUrl(profileRes.data.avatar_url ?? null);
       }
       setFollowersCount(followersRes.count ?? 0);
       setFollowingCount(followingRes.count ?? 0);
@@ -233,6 +237,25 @@ const Profile = () => {
     setSaving(false);
   }, [user, displayName, phone]);
 
+  const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !e.target.files?.[0]) return;
+    setUploadingAvatar(true);
+    const file = e.target.files[0];
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (uploadErr) { toast.error("Upload failed"); setUploadingAvatar(false); return; }
+
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+    await supabase.from("profiles").update({ avatar_url: newUrl }).eq("user_id", user.id);
+    setAvatarUrl(newUrl);
+    setUploadingAvatar(false);
+    toast.success("Avatar updated");
+  }, [user]);
+
   const handleSignOut = useCallback(async () => {
     await signOut();
     navigate("/auth");
@@ -331,9 +354,25 @@ const Profile = () => {
           transition={signalTransition}
           className="flex flex-col items-center gap-4 pt-4 pb-6"
         >
-          <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center">
-            <span className="text-2xl font-medium text-secondary-foreground">{initial}</span>
-          </div>
+          <label className="relative cursor-pointer group">
+            <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 signal-ease">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-2xl font-medium text-secondary-foreground">{initial}</span>
+              )}
+            </div>
+            <div className="absolute bottom-0 right-0 h-6 w-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
+              {uploadingAvatar ? (
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }} className="h-3 w-3 border border-primary-foreground border-t-transparent rounded-full" />
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary-foreground">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" /><circle cx="12" cy="13" r="4" />
+                </svg>
+              )}
+            </div>
+            <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+          </label>
           <p className="text-lg font-medium text-foreground tracking-tight">{displayName || "Anonymous"}</p>
           <p className="text-xs text-muted-foreground">{user?.email}</p>
         </motion.div>
