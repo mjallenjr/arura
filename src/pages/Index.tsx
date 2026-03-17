@@ -30,6 +30,7 @@ const Index = () => {
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [songUrl, setSongUrl] = useState("");
   const [songTitle, setSongTitle] = useState("");
+  const [stitchWord, setStitchWord] = useState("");
   const [uploading, setUploading] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -130,6 +131,7 @@ const Index = () => {
     setPhotoBlob(null);
     setSongUrl("");
     setSongTitle("");
+    setStitchWord("");
     setState("home");
   }, []);
 
@@ -139,6 +141,7 @@ const Index = () => {
     setPhotoBlob(null);
     setSongUrl("");
     setSongTitle("");
+    setStitchWord("");
     setState("camera");
   }, []);
 
@@ -165,6 +168,7 @@ const Index = () => {
         storage_path: blob ? path : null,
         song_clip_url: songUrl || null,
         song_title: songTitle || null,
+        stitch_word: stitchWord || null,
       });
 
       if (insertError) throw insertError;
@@ -177,7 +181,7 @@ const Index = () => {
     } finally {
       setUploading(false);
     }
-  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, resetToHome]);
+  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, resetToHome]);
 
   const toggleCamera = useCallback(() => {
     setCameraFacing((f) => (f === "user" ? "environment" : "user"));
@@ -387,6 +391,8 @@ const Index = () => {
                 songTitle={songTitle}
                 onSongUrlChange={setSongUrl}
                 onSongTitleChange={setSongTitle}
+                stitchWord={stitchWord}
+                onStitchWordChange={setStitchWord}
               />
             </div>
           </motion.div>

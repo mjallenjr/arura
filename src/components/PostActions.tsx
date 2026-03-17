@@ -9,6 +9,8 @@ interface PostActionsProps {
   songTitle?: string;
   onSongUrlChange?: (url: string) => void;
   onSongTitleChange?: (title: string) => void;
+  stitchWord?: string;
+  onStitchWordChange?: (word: string) => void;
 }
 
 const signalTransition = {
@@ -25,7 +27,15 @@ const PostActions = ({
   songTitle,
   onSongUrlChange,
   onSongTitleChange,
+  stitchWord,
+  onStitchWordChange,
 }: PostActionsProps) => {
+  const handleStitchChange = (val: string) => {
+    // No spaces, max 12 chars
+    const cleaned = val.replace(/\s/g, "").slice(0, 12);
+    onStitchWordChange?.(cleaned);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -35,6 +45,22 @@ const PostActions = ({
     >
       <p className="display-signal">Your signal is ready.</p>
       <p className="text-sm text-muted-foreground">No preview. No edits. Just real.</p>
+
+      {/* Stitch word */}
+      <div className="w-full flex flex-col gap-2 mt-2">
+        <p className="text-xs text-muted-foreground text-center">Stitch a word (optional)</p>
+        <input
+          type="text"
+          placeholder="one word only"
+          value={stitchWord}
+          onChange={(e) => handleStitchChange(e.target.value)}
+          maxLength={12}
+          className="signal-surface rounded-xl px-4 py-2.5 text-center text-lg font-medium tracking-wide text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
+        />
+        {stitchWord && (
+          <p className="text-[10px] text-muted-foreground text-center">{stitchWord.length}/12</p>
+        )}
+      </div>
 
       {/* Song clip attachment (for photos) */}
       {isPhoto && (

@@ -17,6 +17,7 @@ interface Signal {
   storage_path: string | null;
   song_clip_url: string | null;
   song_title: string | null;
+  stitch_word: string | null;
   created_at: string;
   display_name: string;
   media_url: string | null;
@@ -25,14 +26,14 @@ interface Signal {
 
 // Discovery content — shown when no new signals from followed users
 const DISCOVERY_ITEMS: Signal[] = [
-  { id: "d-1", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "autumn river", media_url: "/discover/river-autumn.jpg", isDiscovery: true },
-  { id: "d-2", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "sunset pier", media_url: "/discover/sunset-pier.jpg", isDiscovery: true },
-  { id: "d-3", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "hidden waterfall", media_url: "/discover/waterfall.jpg", isDiscovery: true },
-  { id: "d-4", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "fly fishing", media_url: "/discover/fly-fishing.jpg", isDiscovery: true },
-  { id: "d-5", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "cotton candy skies", media_url: "/discover/clouds-lake.jpg", isDiscovery: true },
-  { id: "d-6", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "morning visitor", media_url: "/discover/deer-morning.jpg", isDiscovery: true },
-  { id: "d-7", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "boardwalk treats", media_url: "/discover/ice-cream.jpg", isDiscovery: true },
-  { id: "d-8", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "paradise found", media_url: "/discover/beach-sunrise.jpg", isDiscovery: true },
+  { id: "d-1", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "autumn river", media_url: "/discover/river-autumn.jpg", isDiscovery: true },
+  { id: "d-2", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "sunset pier", media_url: "/discover/sunset-pier.jpg", isDiscovery: true },
+  { id: "d-3", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "hidden waterfall", media_url: "/discover/waterfall.jpg", isDiscovery: true },
+  { id: "d-4", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "fly fishing", media_url: "/discover/fly-fishing.jpg", isDiscovery: true },
+  { id: "d-5", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "cotton candy skies", media_url: "/discover/clouds-lake.jpg", isDiscovery: true },
+  { id: "d-6", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "morning visitor", media_url: "/discover/deer-morning.jpg", isDiscovery: true },
+  { id: "d-7", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "boardwalk treats", media_url: "/discover/ice-cream.jpg", isDiscovery: true },
+  { id: "d-8", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "paradise found", media_url: "/discover/beach-sunrise.jpg", isDiscovery: true },
 ];
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -57,6 +58,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [progress, setProgress] = useState(0);
   const [feltEffects, setFeltEffects] = useState<Array<{ id: string; x: number; y: number }>>([]);
   const [ended, setEnded] = useState(false);
+  const [stitchInput, setStitchInput] = useState("");
+  const [showStitchInput, setShowStitchInput] = useState(false);
+  const [stitchCounts, setStitchCounts] = useState<Record<string, number>>({});
+  const [hasStitched, setHasStitched] = useState<Record<string, boolean>>({});
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
 
@@ -132,11 +137,53 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     if (currentIndex < signals.length - 1) {
       setCurrentIndex((i) => i + 1);
       setProgress(0);
+      setShowStitchInput(false);
+      setStitchInput("");
       startTimeRef.current = Date.now();
     } else {
       setEnded(true);
     }
   }, [currentIndex, signals.length]);
+
+  // Fetch stitch counts for signals owned by current user
+  useEffect(() => {
+    if (!user || signals.length === 0) return;
+    const mySignalIds = signals.filter((s) => s.user_id === user.id && !s.isDiscovery).map((s) => s.id);
+    if (mySignalIds.length === 0) return;
+
+    supabase
+      .from("stitches")
+      .select("signal_id")
+      .in("signal_id", mySignalIds)
+      .then(({ data }) => {
+        if (!data) return;
+        const counts: Record<string, number> = {};
+        data.forEach((d: any) => {
+          counts[d.signal_id] = (counts[d.signal_id] || 0) + 1;
+        });
+        setStitchCounts(counts);
+      });
+  }, [user, signals]);
+
+  const handleStitchSubmit = useCallback(async () => {
+    const signal = signals[currentIndex];
+    if (!user || !signal || signal.isDiscovery || !stitchInput.trim()) return;
+
+    const word = stitchInput.replace(/\s/g, "").slice(0, 12);
+    if (!word) return;
+
+    const { error } = await supabase.from("stitches").insert({
+      user_id: user.id,
+      signal_id: signal.id,
+      word,
+    });
+
+    if (!error) {
+      setHasStitched((prev) => ({ ...prev, [signal.id]: true }));
+    }
+    setShowStitchInput(false);
+    setStitchInput("");
+  }, [user, signals, currentIndex, stitchInput]);
 
   // Record view for the current signal
   useEffect(() => {
@@ -287,6 +334,24 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         </motion.div>
       </AnimatePresence>
 
+      {/* Creator's stitch word overlay */}
+      {signal.stitch_word && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <motion.p
+            initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
+            animate={{ opacity: 1, scale: 1, rotate: -2 }}
+            transition={{ ...signalTransition, delay: 0.2 }}
+            className="text-4xl font-bold tracking-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
+            style={{
+              textShadow: "0 0 20px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.6)",
+              fontStyle: "italic",
+            }}
+          >
+            {signal.stitch_word}
+          </motion.p>
+        </div>
+      )}
+
       {/* Name + song overlay */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
         <motion.p
@@ -301,7 +366,66 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         {signal.song_title && (
           <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>
         )}
+
+        {/* Stitch count for own signals */}
+        {user && signal.user_id === user.id && stitchCounts[signal.id] && (
+          <p className="mt-1 text-xs text-primary/80">
+            ✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}
+          </p>
+        )}
+
+        {/* Stitch reply button for other people's signals */}
+        {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            transition={{ delay: 0.5 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowStitchInput(true);
+            }}
+            className="mt-2 rounded-full signal-surface signal-blur px-3 py-1 text-[10px] font-medium text-muted-foreground"
+          >
+            ✦ stitch a word
+          </motion.button>
+        )}
+
+        {hasStitched[signal.id] && (
+          <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
+        )}
       </div>
+
+      {/* Stitch input overlay */}
+      {showStitchInput && (
+        <div
+          className="absolute bottom-24 left-0 right-0 z-20 flex justify-center px-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 signal-surface signal-blur rounded-2xl px-4 py-2"
+          >
+            <input
+              type="text"
+              placeholder="one word"
+              value={stitchInput}
+              onChange={(e) => setStitchInput(e.target.value.replace(/\s/g, "").slice(0, 12))}
+              maxLength={12}
+              autoFocus
+              className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-24"
+            />
+            <button
+              onClick={handleStitchSubmit}
+              disabled={!stitchInput.trim()}
+              className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground disabled:opacity-30"
+            >
+              stitch
+            </button>
+          </motion.div>
+        </div>
+      )}
 
       {/* Counter + discover badge */}
       <div className="absolute right-8 top-12 z-10 flex items-center gap-2">
