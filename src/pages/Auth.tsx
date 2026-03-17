@@ -15,6 +15,7 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
