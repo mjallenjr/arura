@@ -15,6 +15,7 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
@@ -61,6 +62,11 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
     }
 
     if (mode === "signup") {
+      if (!ageConfirmed) {
+        toast.error("Please confirm you are at least 13 years old");
+        setSubmitting(false);
+        return;
+      }
       const { error } = await signUp(email, password, displayName || email.split("@")[0]);
       if (error) {
         toast.error(error.message);
@@ -181,6 +187,21 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
                   minLength={6}
                   className="signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
                 />
+              )}
+
+              {mode === "signup" && !forgotMode && (
+                <label className="flex items-start gap-2.5 mt-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ageConfirmed}
+                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <span className="text-[11px] text-muted-foreground leading-snug">
+                    I confirm I am at least 13 years old and agree to the{" "}
+                    <a href="/legal" className="text-primary underline" target="_blank" rel="noopener">Terms & Privacy</a>
+                  </span>
+                </label>
               )}
 
               <motion.button
