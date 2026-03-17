@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import FeltEffect from "./FeltEffect";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -15,16 +17,22 @@ interface EmberData {
   bio_word: string | null;
   ignitedCount: number;
   fuelingCount: number;
-  topDrop: { media_url: string; type: string; stitch_word: string | null; felt_count: number } | null;
+  topDrop: { signal_id: string; media_url: string; type: string; stitch_word: string | null; felt_count: number } | null;
 }
 
 const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   const [data, setData] = useState<EmberData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sparked, setSparked] = useState(false);
+  const [showFelt, setShowFelt] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: d }) => setCurrentUser(d.user?.id ?? null));
+  }, []);
 
   useEffect(() => {
     const load = async () => {
-      // Fetch profile, follow counts, and top signal in parallel
       const [profileRes, ignitedRes, fuelingRes, signalsRes] = await Promise.all([
         supabase.from("profiles").select("display_name, avatar_url, bio_word").eq("user_id", userId).single(),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", userId),
@@ -35,7 +43,6 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
       let topDrop: EmberData["topDrop"] = null;
 
       if (signalsRes.data && signalsRes.data.length > 0) {
-        // Find signal with most felts
         const signalIds = signalsRes.data.map(s => s.id);
         const { data: feltCounts } = await supabase
           .from("felts")
@@ -45,7 +52,6 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
         const countMap = new Map<string, number>();
         feltCounts?.forEach(f => countMap.set(f.signal_id, (countMap.get(f.signal_id) ?? 0) + 1));
 
-        // Sort by felt count, pick top
         const ranked = signalsRes.data
           .map(s => ({ ...s, felt_count: countMap.get(s.id) ?? 0 }))
           .sort((a, b) => b.felt_count - a.felt_count);
@@ -54,6 +60,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
         if (top.storage_path) {
           const { data: urlData } = supabase.storage.from("signals").getPublicUrl(top.storage_path);
           topDrop = {
+            signal_id: top.id,
             media_url: urlData.publicUrl,
             type: top.type,
             stitch_word: top.stitch_word,
@@ -74,6 +81,44 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     };
     load();
   }, [userId]);
+
+  // Check if current user already sparked the top drop
+  useEffect(() => {
+    if (!data?.topDrop?.signal_id || !currentUser) return;
+    supabase
+      .from("felts")
+      .select("id")
+      .eq("signal_id", data.topDrop.signal_id)
+      .eq("user_id", currentUser)
+      .then(({ data: felts }) => {
+        if (felts && felts.length > 0) setSparked(true);
+      });
+  }, [data?.topDrop?.signal_id, currentUser]);
+
+  const handleSpark = async () => {
+    if (!currentUser || !data?.topDrop?.signal_id || sparked) return;
+    setSparked(true);
+    setShowFelt(true);
+    setTimeout(() => setShowFelt(false), 1200);
+
+    const { error } = await supabase.from("felts").insert({
+      signal_id: data.topDrop.signal_id,
+      user_id: currentUser,
+    });
+
+    if (error) {
+      setSparked(false);
+      return;
+    }
+
+    // Update local count
+    setData(prev => prev && prev.topDrop ? {
+      ...prev,
+      topDrop: { ...prev.topDrop, felt_count: prev.topDrop.felt_count + 1 },
+    } : prev);
+
+    toast({ title: "✦ sparked", description: `You sparked ${data.display_name}'s top drop` });
+  };
 
   const initial = data?.display_name?.charAt(0).toUpperCase() ?? "?";
 
@@ -167,7 +212,10 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
               transition={{ ...signalTransition, delay: 0.2 }}
             >
               <p className="label-signal mb-3">✦ top sparked drop</p>
-              <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-secondary">
+              <div
+                className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-secondary cursor-pointer"
+                onClick={handleSpark}
+              >
                 {data.topDrop.type === "photo" ? (
                   <img
                     src={data.topDrop.media_url}
@@ -199,11 +247,27 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                   </div>
                 )}
 
+                {/* Felt effect overlay */}
+                <AnimatePresence>
+                  {showFelt && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <FeltEffect x={0} y={0} />
+                    </div>
+                  )}
+                </AnimatePresence>
+
                 {/* Felt count badge */}
-                <div className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1.5">
+                <div className={`absolute bottom-3 right-3 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1.5 ${sparked ? "bg-primary/20" : "bg-background/80"}`}>
                   <span className="text-primary text-sm">✦</span>
                   <span className="text-xs font-medium text-foreground">{data.topDrop.felt_count}</span>
                 </div>
+
+                {/* Tap to spark hint */}
+                {!sparked && (
+                  <div className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1">
+                    <span className="text-[10px] text-muted-foreground">tap to spark</span>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
