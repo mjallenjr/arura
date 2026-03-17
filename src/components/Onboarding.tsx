@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const signalTransition = { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as const };
@@ -161,13 +161,14 @@ const GestureDemo = ({ type }: { type: "tap" | "double-tap" }) => {
   );
 };
 
-const Onboarding = ({ onComplete }: OnboardingProps) => {
+const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComplete }, ref) => {
   const [step, setStep] = useState(0);
   const current = steps[step];
   const isLast = step === steps.length - 1;
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -269,6 +270,8 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
       </div>
     </motion.div>
   );
-};
+});
+
+Onboarding.displayName = "Onboarding";
 
 export default Onboarding;

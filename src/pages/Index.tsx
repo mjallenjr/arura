@@ -1,15 +1,14 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SignalButton from "@/components/SignalButton";
 import PostActions from "@/components/PostActions";
 import FeedView from "@/components/FeedView";
-import CameraViewfinder from "@/components/CameraViewfinder";
 import Onboarding from "@/components/Onboarding";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 
 type AppState = "home" | "camera" | "confirm" | "feed";
@@ -22,12 +21,12 @@ const signalTransition = {
 
 const Index = () => {
   const { user } = useAuth();
+  const { isPro } = useSubscription();
   const [state, setState] = useState<AppState>("home");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState(5.0);
 
-  // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem("arura_onboarded");
   });
@@ -50,30 +49,23 @@ const Index = () => {
   const { start: startMediaRecorder, stop: stopMediaRecorder } = useRecorder();
   const { startPulse, stopPulse } = useHaptics();
 
-  // Helper: flip a video blob horizontally (for front camera recordings)
   const flipVideoBlob = useCallback(async (blob: Blob): Promise<Blob> => {
-    // For video, we can't easily re-encode in browser, so we accept the raw stream.
-    // The real fix is to mirror the CSS on playback. But for photos we flip via canvas.
     return blob;
   }, []);
 
   const capturePhoto = useCallback(() => {
     if (!videoRef.current) return;
-
     const video = videoRef.current;
     const canvas = canvasRef.current || document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
-    // Always flip for front camera so the photo matches what the user sees
     if (cameraFacing === "user") {
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
     }
     ctx.drawImage(video, 0, 0);
-
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -93,41 +85,30 @@ const Index = () => {
     }
     stopPulse();
     setIsRecording(false);
-
     try {
       const blob = await stopMediaRecorder();
       setRecordedBlob(blob);
-    } catch {
-      // recorder wasn't active
-    }
-
+    } catch {}
     setState("confirm");
   }, [stopMediaRecorder, stopPulse]);
 
   const startRecording = useCallback(() => {
     if (!streamRef.current) return;
-
     if (captureMode === "photo") {
       capturePhoto();
       return;
     }
-
     setIsRecording(true);
     setCountdown(5.0);
     startTimeRef.current = Date.now();
     setRecordedBlob(null);
-
     startMediaRecorder(streamRef.current);
     startPulse();
-
     intervalRef.current = window.setInterval(() => {
       const elapsed = (Date.now() - startTimeRef.current) / 1000;
       const remaining = Math.max(0, 5 - elapsed);
       setCountdown(remaining);
-
-      if (remaining <= 0) {
-        stopRecording();
-      }
+      if (remaining <= 0) stopRecording();
     }, 50);
   }, [stopRecording, startMediaRecorder, startPulse, streamRef, captureMode, capturePhoto]);
 
@@ -154,19 +135,19 @@ const Index = () => {
   const handlePost = useCallback(async () => {
     if (!user) return;
     setUploading(true);
-
     try {
       const blob = captureMode === "photo" ? photoBlob : recordedBlob;
       const ext = captureMode === "photo" ? "jpg" : "webm";
       const path = `${user.id}/${Date.now()}.${ext}`;
-
       if (blob) {
-        const { error: uploadError } = await supabase.storage
-          .from("signals")
-          .upload(path, blob);
-
+        const { error: uploadError } = await supabase.storage.from("signals").upload(path, blob);
         if (uploadError) throw uploadError;
       }
+
+      // Pro users get 24h signal duration
+      const expiresAt = isPro
+        ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
       const { error: insertError } = await supabase.from("signals").insert({
         user_id: user.id,
@@ -175,11 +156,10 @@ const Index = () => {
         song_clip_url: songUrl || null,
         song_title: songTitle || null,
         stitch_word: stitchWord || null,
+        expires_at: expiresAt,
       });
-
       if (insertError) throw insertError;
-
-      toast.success("Signal posted");
+      toast.success(isPro ? "Signal posted — live for 24h ✦" : "Signal posted");
       resetToHome();
     } catch (err) {
       console.error("Post failed:", err);
@@ -187,7 +167,7 @@ const Index = () => {
     } finally {
       setUploading(false);
     }
-  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, resetToHome]);
+  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, resetToHome, isPro]);
 
   const toggleCamera = useCallback(() => {
     setCameraFacing((f) => (f === "user" ? "environment" : "user"));
@@ -198,6 +178,14 @@ const Index = () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
+
+  // iPhone-style zoom level buttons
+  const isFrontCamera = cameraFacing === "user";
+  const zoomLevels = zoomCaps ? [
+    { label: ".5", value: Math.max(zoomCaps.min, 0.5) },
+    { label: "1×", value: 1 },
+    { label: "2", value: Math.min(zoomCaps.max, 2) },
+  ].filter(z => z.value >= zoomCaps.min && z.value <= zoomCaps.max) : [];
 
   return (
     <div className="relative h-svh w-full overflow-hidden bg-background">
@@ -214,18 +202,6 @@ const Index = () => {
           />
         )}
       </AnimatePresence>
-      {cameraActive && (
-        <CameraViewfinder
-          videoRef={videoRef}
-          hasPermission={hasPermission}
-          error={cameraError}
-          isRecording={isRecording}
-          zoom={zoom}
-          zoomCaps={zoomCaps}
-          onZoomChange={applyZoom}
-          facing={cameraFacing}
-        />
-      )}
 
       <AnimatePresence mode="wait">
         {/* ── HOME HUB ── */}
@@ -238,7 +214,6 @@ const Index = () => {
             transition={signalTransition}
             className="absolute inset-0 z-10 flex flex-col items-center justify-center"
           >
-            {/* Ambient background */}
             <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 via-background to-background" />
             <div
               className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -248,7 +223,6 @@ const Index = () => {
             />
 
             <div className="relative z-10 flex flex-col items-center gap-12 px-8">
-              {/* Brand */}
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -259,7 +233,6 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground tracking-wide">life, briefly witnessed</p>
               </motion.div>
 
-              {/* Two choices */}
               <div className="flex flex-col gap-4 w-full max-w-[260px]">
                 <motion.button
                   initial={{ opacity: 0, y: 10 }}
@@ -297,7 +270,7 @@ const Index = () => {
           </motion.div>
         )}
 
-        {/* ── CAMERA ── */}
+        {/* ── CAMERA (iPhone-style) ── */}
         {state === "camera" && (
           <motion.div
             key="camera"
@@ -305,85 +278,200 @@ const Index = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={signalTransition}
-            className="absolute inset-0 z-10 flex flex-col justify-between p-8"
+            className="absolute inset-0 z-10 flex flex-col"
           >
-            {/* Top bar */}
-            <div className="flex items-center justify-between">
-              <button onClick={resetToHome} className="label-signal">
-                ← back
-              </button>
+            {/* Full-screen camera viewfinder */}
+            <div className="absolute inset-0 overflow-hidden bg-black">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ transform: isFrontCamera ? "scaleX(-1)" : "none" }}
+              />
+              {hasPermission !== true && (
+                <div className="absolute inset-0 bg-gradient-to-b from-secondary via-background to-background" />
+              )}
+            </div>
+
+            {/* Top safe area bar */}
+            <div className="relative z-20 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-2">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={resetToHome}
+                className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </motion.button>
+
               <div className="flex items-center gap-2">
-                {/* Mode toggle */}
-                <div className="flex signal-surface rounded-full signal-blur">
-                  <button
-                    onClick={() => setCaptureMode("video")}
-                    className={`rounded-full px-3 py-1.5 text-[10px] font-medium signal-ease ${
-                      captureMode === "video" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    Video
-                  </button>
-                  <button
-                    onClick={() => setCaptureMode("photo")}
-                    className={`rounded-full px-3 py-1.5 text-[10px] font-medium signal-ease ${
-                      captureMode === "photo" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    Photo
-                  </button>
-                </div>
-                <button
-                  onClick={toggleCamera}
-                  className="signal-surface rounded-full p-2.5 signal-blur"
+                {/* Flash placeholder */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Center area - recording indicator */}
+            <div className="flex-1 relative z-20 flex items-center justify-center">
+              {isRecording && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center gap-2"
+                >
+                  <motion.div
+                    className="h-3 w-3 rounded-full bg-red-500"
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <p className="font-mono text-3xl font-light text-white drop-shadow-lg tabular-nums">
+                    {countdown.toFixed(1)}
+                  </p>
+                </motion.div>
+              )}
+
+              {hasPermission === false && (
+                <div className="flex flex-col items-center gap-3 px-8">
+                  <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
+                      <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                      <circle cx="12" cy="13" r="4" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-white/70 text-center">
+                    Camera access needed to drop signals
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom controls - iPhone camera style */}
+            <div className="relative z-20 pb-[env(safe-area-inset-bottom,20px)]">
+              {/* Zoom level pills */}
+              {zoomLevels.length > 1 && !isRecording && (
+                <div className="flex justify-center gap-2 mb-4">
+                  {zoomLevels.map((z) => (
+                    <motion.button
+                      key={z.label}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => applyZoom(z.value)}
+                      className={`h-8 w-8 rounded-full text-[11px] font-medium flex items-center justify-center transition-all ${
+                        Math.abs(zoom - z.value) < 0.1
+                          ? "bg-primary/80 text-primary-foreground"
+                          : "bg-black/40 backdrop-blur-md text-white/80"
+                      }`}
+                    >
+                      {z.label}
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+
+              {/* Shutter + mode toggle + flip */}
+              <div className="flex items-center justify-center gap-8 px-8 mb-4">
+                {/* Thumbnail / last capture placeholder */}
+                <div className="w-12 h-12" />
+
+                {/* Shutter button - true iOS style */}
+                <motion.button
+                  onPointerDown={() => {
+                    if (!streamRef.current) return;
+                    if (captureMode === "photo") {
+                      capturePhoto();
+                    } else {
+                      startRecording();
+                    }
+                  }}
+                  onPointerUp={() => {
+                    if (captureMode === "video" && isRecording) {
+                      stopRecording();
+                    }
+                  }}
+                  onPointerLeave={() => {
+                    if (captureMode === "video" && isRecording) {
+                      stopRecording();
+                    }
+                  }}
+                  whileTap={{ scale: 0.92 }}
+                  disabled={!streamRef.current}
+                  className="relative h-[72px] w-[72px] flex items-center justify-center"
+                  aria-label={captureMode === "photo" ? "Take photo" : isRecording ? "Stop" : "Hold to record"}
+                >
+                  {/* Outer ring */}
+                  <div className={`absolute inset-0 rounded-full border-[3px] transition-colors duration-200 ${
+                    isRecording ? "border-red-500" : "border-white"
+                  }`} />
+                  {/* Progress ring for recording */}
+                  {isRecording && (
+                    <svg className="absolute inset-0" width="72" height="72" viewBox="0 0 72 72">
+                      <circle
+                        cx="36" cy="36" r="33"
+                        fill="none"
+                        stroke="hsl(0, 80%, 55%)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 33}
+                        strokeDashoffset={2 * Math.PI * 33 * (1 - (5 - countdown) / 5)}
+                        transform="rotate(-90 36 36)"
+                        className="transition-all duration-100"
+                      />
+                    </svg>
+                  )}
+                  {/* Inner circle */}
+                  <motion.div
+                    animate={isRecording ? { scale: 0.5, borderRadius: "8px" } : { scale: 1, borderRadius: "50%" }}
+                    transition={{ duration: 0.2 }}
+                    className={`h-[58px] w-[58px] transition-colors duration-200 ${
+                      isRecording ? "bg-red-500" : captureMode === "photo" ? "bg-white" : "bg-red-500"
+                    }`}
+                    style={{ borderRadius: isRecording ? 8 : "50%" }}
+                  />
+                </motion.button>
+
+                {/* Flip camera */}
+                <motion.button
+                  whileTap={{ scale: 0.85, rotate: 180 }}
+                  onClick={toggleCamera}
+                  className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center"
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
                     <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
                     <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
                     <path d="m21 2-9 9" />
                     <path d="m21 11V2h-9" />
                   </svg>
+                </motion.button>
+              </div>
+
+              {/* Mode selector - swipe style like iPhone */}
+              <div className="flex justify-center gap-6 pb-2">
+                <button
+                  onClick={() => setCaptureMode("photo")}
+                  className={`text-xs font-semibold uppercase tracking-widest transition-all ${
+                    captureMode === "photo" ? "text-primary" : "text-white/50"
+                  }`}
+                >
+                  Photo
+                </button>
+                <button
+                  onClick={() => setCaptureMode("video")}
+                  className={`text-xs font-semibold uppercase tracking-widest transition-all ${
+                    captureMode === "video" ? "text-primary" : "text-white/50"
+                  }`}
+                >
+                  Video
                 </button>
               </div>
             </div>
-
-            {/* Center */}
-            <div className="flex flex-col items-center gap-6">
-              {isRecording && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="font-mono-signal text-2xl font-medium text-foreground drop-shadow-lg"
-                >
-                  {countdown.toFixed(2).padStart(5, "0")}
-                </motion.p>
-              )}
-
-              {!isRecording && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.4 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-sm text-muted-foreground"
-                >
-                  {hasPermission === false
-                    ? "Camera access needed"
-                    : captureMode === "photo"
-                    ? "Tap to capture"
-                    : "Hold to record"}
-                </motion.p>
-              )}
-
-              <SignalButton
-                isRecording={isRecording}
-                progress={(5 - countdown) / 5}
-                onStart={startRecording}
-                onStop={stopRecording}
-                disabled={!streamRef.current}
-                isPhotoMode={captureMode === "photo"}
-              />
-            </div>
-
-            <div />
           </motion.div>
         )}
 
@@ -399,7 +487,6 @@ const Index = () => {
           >
             <div className="absolute inset-0 bg-background/70 signal-blur" />
 
-            {/* Video/Photo preview */}
             {recordedBlob && captureMode === "video" && (
               <video
                 src={URL.createObjectURL(recordedBlob)}
