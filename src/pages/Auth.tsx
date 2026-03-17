@@ -139,10 +139,13 @@ const Auth = () => {
             transition={signalTransition}
             className="w-full max-w-sm"
           >
-            <h1 className="display-signal text-center mb-2">arura</h1>
-            <p className="text-sm text-muted-foreground text-center mb-8">
-              {forgotMode ? "Reset your password" : mode === "signin" ? "Welcome back" : "Join the moment"}
-            </p>
+            <div className="flex flex-col items-center gap-3 mb-8">
+              <span className="text-4xl">🔥</span>
+              <h1 className="display-signal text-center">arura</h1>
+              <p className="text-sm text-muted-foreground text-center">
+                {forgotMode ? "Reset your password" : mode === "signin" ? "Welcome back" : "Join the moment"}
+              </p>
+            </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {mode === "signup" && !forgotMode && (
