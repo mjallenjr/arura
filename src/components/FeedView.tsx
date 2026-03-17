@@ -196,6 +196,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     );
   }
 
+  const isDiscoveryFeed = signals.length > 0 && signals[0].isDiscovery;
+
   if (ended) {
     return (
       <motion.div
@@ -204,12 +206,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         transition={{ ...signalTransition, delay: 0.3 }}
         className="flex h-full flex-col items-center justify-center gap-8 p-8"
       >
-        <p className="display-signal text-center">
-          {signals.length === 0 ? "No new signals." : "You're all caught up."}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {signals.length === 0 ? "Follow people to see their moments." : "Go live something."}
-        </p>
+        <p className="display-signal text-center">You're all caught up.</p>
+        <p className="text-sm text-muted-foreground">Go live something.</p>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={onEnd}
