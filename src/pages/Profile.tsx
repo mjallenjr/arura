@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import EmberProfile from "@/components/EmberProfile";
+import InterestPicker from "@/components/InterestPicker";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -54,14 +55,15 @@ const Profile = () => {
   const [listEmbers, setListEmbers] = useState<{ user_id: string; display_name: string; avatar_url: string | null }[]>([]);
   const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState(false);
-
+  const [showInterestPicker, setShowInterestPicker] = useState(false);
+  const [myInterests, setMyInterests] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user) return;
 
     const load = async () => {
       const [profileRes, followersRes, followingRes, iFollowRes, followMeRes] = await Promise.all([
-        supabase.from("profiles").select("display_name, phone, avatar_url").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("display_name, phone, avatar_url, interests").eq("user_id", user.id).single(),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", user.id),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", user.id),
         // Users I ignited
@@ -74,6 +76,7 @@ const Profile = () => {
         setDisplayName(profileRes.data.display_name ?? "");
         setPhone(profileRes.data.phone ?? "");
         setAvatarUrl(profileRes.data.avatar_url ?? null);
+        setMyInterests(profileRes.data.interests ?? []);
       }
 
       setIgnitedCount(followingRes.count ?? 0);
@@ -621,6 +624,28 @@ const Profile = () => {
                 />
               </div>
 
+              {/* Interests */}
+              <div>
+                <label className="label-signal mb-2 block">Your Interests</label>
+                <button
+                  onClick={() => setShowInterestPicker(true)}
+                  className="w-full signal-surface rounded-xl px-4 py-3 text-left signal-ease hover:ring-1 hover:ring-primary/20"
+                >
+                  {myInterests.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {myInterests.slice(0, 5).map(i => (
+                        <span key={i} className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">{i}</span>
+                      ))}
+                      {myInterests.length > 5 && (
+                        <span className="text-[10px] text-muted-foreground">+{myInterests.length - 5} more</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Choose your interests...</span>
+                  )}
+                </button>
+              </div>
+
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSave}
@@ -713,6 +738,18 @@ const Profile = () => {
       <AnimatePresence>
         {selectedEmberId && (
           <EmberProfile userId={selectedEmberId} onClose={() => setSelectedEmberId(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* Interest picker overlay */}
+      <AnimatePresence>
+        {showInterestPicker && user && (
+          <InterestPicker
+            userId={user.id}
+            currentInterests={myInterests}
+            onSave={setMyInterests}
+            onClose={() => setShowInterestPicker(false)}
+          />
         )}
       </AnimatePresence>
     </div>
