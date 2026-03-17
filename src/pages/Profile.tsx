@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import EmberProfile from "@/components/EmberProfile";
+import InterestPicker from "@/components/InterestPicker";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
