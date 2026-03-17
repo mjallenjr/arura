@@ -802,7 +802,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         </div>
       )}
 
-      {/* Counter + discover badge */}
+      {/* Counter + discover badge + report button */}
       <div className="absolute right-8 top-12 z-10 flex items-center gap-2">
         {isDiscoveryFeed && (
           <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-medium text-primary">discover</span>
@@ -812,6 +812,34 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         )}
         <p className="label-signal">{currentIndex + 1}/{signals.length}</p>
       </div>
+
+      {/* Report/block button (only on non-own, non-ad, non-discovery signals) */}
+      {signal && !signal.isAd && !signal.isDiscovery && signal.user_id !== user?.id && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowReportMenu(true); }}
+          className="absolute left-4 top-12 z-20 h-8 w-8 rounded-full bg-background/40 backdrop-blur-sm flex items-center justify-center signal-ease hover:bg-background/60"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-foreground/60">
+            <circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />
+          </svg>
+        </button>
+      )}
+
+      {/* Report/Block menu */}
+      <AnimatePresence>
+        {showReportMenu && signal && !signal.isAd && !signal.isDiscovery && (
+          <ReportBlockMenu
+            targetUserId={signal.user_id}
+            targetUserName={signal.display_name}
+            signalId={signal.id}
+            onClose={() => setShowReportMenu(false)}
+            onBlocked={() => {
+              refreshBlocks();
+              advanceSignal();
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Felt effects */}
       {feltEffects.map((felt) => (
