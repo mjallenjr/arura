@@ -176,6 +176,62 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     }
   }, [user]);
 
+  // Fetch suggested embers' signals (friends-of-friends)
+  const fetchSuggestedSignals = useCallback(async (): Promise<Signal[]> => {
+    if (!user) return [];
+    try {
+      // Get who I follow
+      const { data: myFollows } = await supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", user.id);
+      const followingIds = new Set(myFollows?.map((f) => f.following_id) ?? []);
+      if (followingIds.size === 0) return [];
+
+      // Get friends-of-friends
+      const { data: fof } = await supabase
+        .from("follows")
+        .select("following_id")
+        .in("follower_id", [...followingIds])
+        .limit(100);
+      if (!fof) return [];
+
+      const candidateIds = [...new Set(fof.map((f) => f.following_id))]
+        .filter((id) => id !== user.id && !followingIds.has(id));
+      if (candidateIds.length === 0) return [];
+
+      const shuffledCandidates = shuffleArray(candidateIds).slice(0, 10);
+
+      // Fetch their active signals
+      const { data: rawSignals } = await supabase
+        .from("signals")
+        .select("*")
+        .in("user_id", shuffledCandidates)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(15);
+      if (!rawSignals || rawSignals.length === 0) return [];
+
+      const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", authorIds);
+      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+
+      return shuffleArray(rawSignals.map((s) => {
+        let media_url: string | null = null;
+        if (s.storage_path) {
+          const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
+          media_url = d.publicUrl;
+        }
+        return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
+      }));
+    } catch {
+      return [];
+    }
+  }, [user]);
+
   // Fetch signals
   useEffect(() => {
     if (!user) return;
