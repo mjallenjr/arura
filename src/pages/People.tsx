@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +33,71 @@ const People = () => {
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [animating, setAnimating] = useState<AnimatingId | null>(null);
   const [suggested, setSuggested] = useState<ProfileResult[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Pull-to-refresh state
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef(0);
+  const [pullDistance, setPullDistance] = useState(0);
+  const isPulling = useRef(false);
+  const PULL_THRESHOLD = 80;
+
+  const loadSuggestions = useCallback(async (currentFollowingIds?: Set<string>) => {
+    if (!user) return;
+    const myFollowingIds = currentFollowingIds ?? followingIds;
+
+    // Always suggest the founder "Ember" if not already following and not self
+    let founderProfile: ProfileResult | null = null;
+    if (user.id !== EMBER_FOUNDER_ID && !myFollowingIds.has(EMBER_FOUNDER_ID)) {
+      const { data: fp } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, qr_code")
+        .eq("user_id", EMBER_FOUNDER_ID)
+        .single();
+      if (fp) founderProfile = { ...fp, isFollowing: false };
+    }
+
+    let suggestionList: ProfileResult[] = [];
+    if (myFollowingIds.size > 0) {
+      const { data: fof } = await supabase
+        .from("follows")
+        .select("following_id")
+        .in("follower_id", [...myFollowingIds])
+        .limit(100);
+
+      if (fof) {
+        const candidateIds = [...new Set(fof.map((f) => f.following_id))]
+          .filter((id) => id !== user.id && id !== EMBER_FOUNDER_ID && !myFollowingIds.has(id));
+
+        // Shuffle candidates for variety on refresh
+        const shuffled = candidateIds.sort(() => Math.random() - 0.5);
+
+        if (shuffled.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, display_name, avatar_url, qr_code")
+            .in("user_id", shuffled.slice(0, 10));
+
+          if (profiles) {
+            suggestionList = profiles.sort(() => Math.random() - 0.5).map((p) => ({ ...p, isFollowing: false }));
+          }
+        }
+      }
+    } else {
+      const { data: randomEmbers } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url, qr_code")
+        .neq("user_id", user.id)
+        .neq("user_id", EMBER_FOUNDER_ID)
+        .limit(20);
+      if (randomEmbers) {
+        suggestionList = randomEmbers.sort(() => Math.random() - 0.5).slice(0, 10).map((p) => ({ ...p, isFollowing: false }));
+      }
+    }
+
+    if (founderProfile) suggestionList.unshift(founderProfile);
+    setSuggested(suggestionList);
+  }, [user, followingIds]);
 
   // Load my QR code, following list, and suggested embers
   useEffect(() => {
@@ -47,61 +112,43 @@ const People = () => {
       if (profileRes.data) setMyQr(profileRes.data.qr_code);
       const myFollowingIds = new Set(followsRes.data?.map((f) => f.following_id) ?? []);
       setFollowingIds(myFollowingIds);
-
-      // Always suggest the founder "Ember" if not already following and not self
-      let founderProfile: ProfileResult | null = null;
-      if (user.id !== EMBER_FOUNDER_ID && !myFollowingIds.has(EMBER_FOUNDER_ID)) {
-        const { data: fp } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, qr_code")
-          .eq("user_id", EMBER_FOUNDER_ID)
-          .single();
-        if (fp) founderProfile = { ...fp, isFollowing: false };
-      }
-
-      // Suggested: friends of friends
-      let suggestionList: ProfileResult[] = [];
-      if (myFollowingIds.size > 0) {
-        const { data: fof } = await supabase
-          .from("follows")
-          .select("following_id")
-          .in("follower_id", [...myFollowingIds])
-          .limit(100);
-
-        if (fof) {
-          const candidateIds = [...new Set(fof.map((f) => f.following_id))]
-            .filter((id) => id !== user.id && id !== EMBER_FOUNDER_ID && !myFollowingIds.has(id));
-
-          if (candidateIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from("profiles")
-              .select("user_id, display_name, avatar_url, qr_code")
-              .in("user_id", candidateIds.slice(0, 10));
-
-            if (profiles) {
-              suggestionList = profiles.map((p) => ({ ...p, isFollowing: false }));
-            }
-          }
-        }
-      } else {
-        // No connections yet — show random embers
-        const { data: randomEmbers } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url, qr_code")
-          .neq("user_id", user.id)
-          .neq("user_id", EMBER_FOUNDER_ID)
-          .limit(10);
-        if (randomEmbers) {
-          suggestionList = randomEmbers.map((p) => ({ ...p, isFollowing: false }));
-        }
-      }
-
-      // Founder always first
-      if (founderProfile) suggestionList.unshift(founderProfile);
-      setSuggested(suggestionList);
+      await loadSuggestions(myFollowingIds);
     };
     loadData();
   }, [user]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadSuggestions();
+    setRefreshing(false);
+  }, [loadSuggestions]);
+
+  // Pull-to-refresh touch handlers
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const el = scrollRef.current;
+    if (el && el.scrollTop <= 0) {
+      touchStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling.current || refreshing) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) {
+      setPullDistance(Math.min(delta * 0.5, 120));
+    }
+  }, [refreshing]);
+
+  const onTouchEnd = useCallback(() => {
+    if (!isPulling.current) return;
+    isPulling.current = false;
+    if (pullDistance >= PULL_THRESHOLD && !refreshing) {
+      handleRefresh().finally(() => setPullDistance(0));
+    } else {
+      setPullDistance(0);
+    }
+  }, [pullDistance, refreshing, handleRefresh]);
 
   const search = useCallback(async () => {
     if (!query.trim() || !user) return;
@@ -230,7 +277,33 @@ const People = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Pull-to-refresh indicator */}
+        <motion.div
+          className="flex items-center justify-center overflow-hidden"
+          animate={{ height: pullDistance > 0 || refreshing ? Math.max(pullDistance, refreshing ? 48 : 0) : 0 }}
+          transition={{ duration: pullDistance > 0 ? 0 : 0.3 }}
+        >
+          <motion.div
+            animate={refreshing ? { rotate: 360 } : { rotate: pullDistance * 3 }}
+            transition={refreshing ? { repeat: Infinity, duration: 0.8, ease: "linear" } : { duration: 0 }}
+            className="flex flex-col items-center gap-1"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary">
+              <path d="M1 4v6h6M23 20v-6h-6" />
+              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
+            </svg>
+            <span className="text-[10px] text-muted-foreground">
+              {refreshing ? "refreshing..." : pullDistance >= PULL_THRESHOLD ? "release to refresh" : "pull to refresh"}
+            </span>
+          </motion.div>
+        </motion.div>
         <AnimatePresence mode="wait">
           {tab === "search" && (
             <motion.div
