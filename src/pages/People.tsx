@@ -235,7 +235,7 @@ const People = () => {
       supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url, qr_code, interests")
-        .or(`display_name.ilike.%${q}%,phone.ilike.%${q}%`)
+        .ilike("display_name", `%${q}%`)
         .neq("user_id", user.id)
         .limit(20),
       supabase
