@@ -137,11 +137,53 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     if (currentIndex < signals.length - 1) {
       setCurrentIndex((i) => i + 1);
       setProgress(0);
+      setShowStitchInput(false);
+      setStitchInput("");
       startTimeRef.current = Date.now();
     } else {
       setEnded(true);
     }
   }, [currentIndex, signals.length]);
+
+  // Fetch stitch counts for signals owned by current user
+  useEffect(() => {
+    if (!user || signals.length === 0) return;
+    const mySignalIds = signals.filter((s) => s.user_id === user.id && !s.isDiscovery).map((s) => s.id);
+    if (mySignalIds.length === 0) return;
+
+    supabase
+      .from("stitches")
+      .select("signal_id")
+      .in("signal_id", mySignalIds)
+      .then(({ data }) => {
+        if (!data) return;
+        const counts: Record<string, number> = {};
+        data.forEach((d: any) => {
+          counts[d.signal_id] = (counts[d.signal_id] || 0) + 1;
+        });
+        setStitchCounts(counts);
+      });
+  }, [user, signals]);
+
+  const handleStitchSubmit = useCallback(async () => {
+    const signal = signals[currentIndex];
+    if (!user || !signal || signal.isDiscovery || !stitchInput.trim()) return;
+
+    const word = stitchInput.replace(/\s/g, "").slice(0, 12);
+    if (!word) return;
+
+    const { error } = await supabase.from("stitches").insert({
+      user_id: user.id,
+      signal_id: signal.id,
+      word,
+    });
+
+    if (!error) {
+      setHasStitched((prev) => ({ ...prev, [signal.id]: true }));
+    }
+    setShowStitchInput(false);
+    setStitchInput("");
+  }, [user, signals, currentIndex, stitchInput]);
 
   // Record view for the current signal
   useEffect(() => {
