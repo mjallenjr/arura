@@ -168,6 +168,7 @@ const Index = () => {
         storage_path: blob ? path : null,
         song_clip_url: songUrl || null,
         song_title: songTitle || null,
+        stitch_word: stitchWord || null,
       });
 
       if (insertError) throw insertError;
