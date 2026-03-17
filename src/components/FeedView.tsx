@@ -217,6 +217,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       setSubmittedStitch(null);
       setStitchScale(1);
       setStitchRotation(0);
+      elapsedBeforePauseRef.current = 0;
       startTimeRef.current = Date.now();
     } else {
       setEnded(true);
@@ -265,12 +266,29 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     supabase.from("signal_views").upsert({ user_id: user.id, signal_id: signal.id }, { onConflict: "user_id,signal_id" }).then(() => {});
   }, [currentIndex, loading, ended, signals, user]);
 
-  // Timer
+  // Timer — pauses when stitch input is open
+  const pausedRef = useRef(false);
+  const elapsedBeforePauseRef = useRef(0);
+
   useEffect(() => {
-    if (ended || loading || signals.length === 0) return;
+    if (showStitchInput) {
+      // Pause: save elapsed time so far
+      pausedRef.current = true;
+      elapsedBeforePauseRef.current += Date.now() - startTimeRef.current;
+      cancelAnimationFrame(animRef.current);
+      return;
+    }
+    // Resume or start fresh
+    pausedRef.current = false;
     startTimeRef.current = Date.now();
+  }, [showStitchInput]);
+
+  useEffect(() => {
+    if (ended || loading || signals.length === 0 || showStitchInput) return;
+    startTimeRef.current = Date.now();
+    if (!showStitchInput) elapsedBeforePauseRef.current = 0; // reset on new signal
     const tick = () => {
-      const elapsed = Date.now() - startTimeRef.current;
+      const elapsed = elapsedBeforePauseRef.current + (Date.now() - startTimeRef.current);
       const p = Math.min(1, elapsed / SIGNAL_DURATION);
       setProgress(p);
       if (p >= 1) advanceSignal();
@@ -278,7 +296,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     };
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [currentIndex, ended, loading, signals.length, advanceSignal]);
+  }, [currentIndex, ended, loading, signals.length, advanceSignal, showStitchInput]);
 
   // Double-tap handler
   const handleTap = useCallback(
