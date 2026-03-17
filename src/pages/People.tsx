@@ -277,7 +277,33 @@ const People = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Pull-to-refresh indicator */}
+        <motion.div
+          className="flex items-center justify-center overflow-hidden"
+          animate={{ height: pullDistance > 0 || refreshing ? Math.max(pullDistance, refreshing ? 48 : 0) : 0 }}
+          transition={{ duration: pullDistance > 0 ? 0 : 0.3 }}
+        >
+          <motion.div
+            animate={refreshing ? { rotate: 360 } : { rotate: pullDistance * 3 }}
+            transition={refreshing ? { repeat: Infinity, duration: 0.8, ease: "linear" } : { duration: 0 }}
+            className="flex flex-col items-center gap-1"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary">
+              <path d="M1 4v6h6M23 20v-6h-6" />
+              <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
+            </svg>
+            <span className="text-[10px] text-muted-foreground">
+              {refreshing ? "refreshing..." : pullDistance >= PULL_THRESHOLD ? "release to refresh" : "pull to refresh"}
+            </span>
+          </motion.div>
+        </motion.div>
         <AnimatePresence mode="wait">
           {tab === "search" && (
             <motion.div
