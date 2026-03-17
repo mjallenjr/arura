@@ -60,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/ember/:userId" element={<ProtectedRoute><EmberPublicProfile /></ProtectedRoute>} />
         <Route path="/admin/ads" element={<ProtectedRoute><AdminAds /></ProtectedRoute>} />
         <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
+        <Route path="/advertise" element={<Advertise />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
