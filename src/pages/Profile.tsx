@@ -7,7 +7,18 @@ import { toast } from "sonner";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
-type ProfileTab = "drops" | "settings";
+type ProfileTab = "drops" | "activity" | "settings";
+
+interface Notification {
+  id: string;
+  type: string;
+  from_user_id: string;
+  signal_id: string | null;
+  word: string | null;
+  read: boolean;
+  created_at: string;
+  from_name?: string;
+}
 
 interface MyDrop {
   id: string;
@@ -35,6 +46,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
   const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -138,6 +150,49 @@ const Profile = () => {
     };
 
     loadDrops();
+  }, [user]);
+
+  // Load notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const loadNotifications = async () => {
+      const { data: notifs } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (!notifs || notifs.length === 0) {
+        setNotifications([]);
+        return;
+      }
+
+      const fromIds = [...new Set(notifs.map((n) => n.from_user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", fromIds);
+
+      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+
+      setNotifications(
+        notifs.map((n) => ({ ...n, from_name: nameMap.get(n.from_user_id) ?? "someone" }))
+      );
+    };
+
+    loadNotifications();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel("notif-updates")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => {
+        loadNotifications();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const handleViewDrop = useCallback(async (drop: MyDrop) => {
@@ -304,17 +359,34 @@ const Profile = () => {
 
         {/* Tab switcher */}
         <div className="flex gap-1 mb-6">
-          {(["drops", "settings"] as ProfileTab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 rounded-full py-2 text-xs font-medium signal-ease ${
-                tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
-              }`}
-            >
-              {t === "drops" ? "My Drops" : "Settings"}
-            </button>
-          ))}
+          {(["drops", "activity", "settings"] as ProfileTab[]).map((t) => {
+            const unreadCount = t === "activity" ? notifications.filter((n) => !n.read).length : 0;
+            return (
+              <button
+                key={t}
+                onClick={() => {
+                  setTab(t);
+                  // Mark notifications as read when opening activity
+                  if (t === "activity" && unreadCount > 0 && user) {
+                    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+                    supabase.from("notifications").update({ read: true }).in("id", unreadIds).then(() => {
+                      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                    });
+                  }
+                }}
+                className={`relative flex-1 rounded-full py-2 text-xs font-medium signal-ease ${
+                  tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
+                }`}
+              >
+                {t === "drops" ? "My Drops" : t === "activity" ? "Activity" : "Settings"}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <AnimatePresence mode="wait">
@@ -381,6 +453,61 @@ const Profile = () => {
                   )}
                 </motion.button>
               ))}
+            </motion.div>
+          )}
+
+          {tab === "activity" && (
+            <motion.div
+              key="activity"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={signalTransition}
+              className="flex flex-col gap-3"
+            >
+              {notifications.length === 0 && (
+                <p className="text-center text-xs text-muted-foreground py-8">
+                  No activity yet
+                </p>
+              )}
+              {notifications.map((notif) => {
+                const timeAgo = (() => {
+                  const diff = Date.now() - new Date(notif.created_at).getTime();
+                  const mins = Math.floor(diff / 60000);
+                  if (mins < 1) return "just now";
+                  if (mins < 60) return `${mins}m ago`;
+                  const hours = Math.floor(mins / 60);
+                  if (hours < 24) return `${hours}h ago`;
+                  return `${Math.floor(hours / 24)}d ago`;
+                })();
+
+                return (
+                  <motion.div
+                    key={notif.id}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`signal-surface rounded-xl p-3 flex items-center gap-3 ${
+                      !notif.read ? "ring-1 ring-primary/20" : ""
+                    }`}
+                  >
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-primary text-sm">✦</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground">
+                        <span className="font-medium">{notif.from_name}</span>{" "}
+                        {notif.type === "stitch" ? "stitched" : "interacted with"} your drop
+                      </p>
+                      {notif.word && (
+                        <p className="text-primary text-sm font-bold italic mt-0.5">
+                          "{notif.word}"
+                        </p>
+                      )}
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{timeAgo}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           )}
 
