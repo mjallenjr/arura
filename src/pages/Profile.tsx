@@ -61,6 +61,8 @@ const Profile = () => {
   const [myInterests, setMyInterests] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { referralCode, referralCount, shareLink } = useReferral();
+  const { impressions: creatorImpressions, creatorShare } = useCreatorEarnings();
 
   useEffect(() => {
     if (!user) return;
