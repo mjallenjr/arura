@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import OfflineBanner from "@/components/OfflineBanner";
 import NavBar from "@/components/NavBar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -14,6 +16,7 @@ import Discover from "./pages/Discover";
 import AdminAds from "./pages/AdminAds";
 import AdminModeration from "./pages/AdminModeration";
 import Legal from "./pages/Legal";
+import EmberPublicProfile from "./pages/EmberPublicProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +56,7 @@ const AppRoutes = () => {
         <Route path="/people" element={<ProtectedRoute><People /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/ember/:userId" element={<ProtectedRoute><EmberPublicProfile /></ProtectedRoute>} />
         <Route path="/admin/ads" element={<ProtectedRoute><AdminAds /></ProtectedRoute>} />
         <Route path="/admin/moderation" element={<ProtectedRoute><AdminModeration /></ProtectedRoute>} />
         <Route path="/legal" element={<Legal />} />
@@ -64,15 +68,18 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <OfflineBanner />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

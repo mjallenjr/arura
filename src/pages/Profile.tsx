@@ -57,6 +57,8 @@ const Profile = () => {
   const [loadingList, setLoadingList] = useState(false);
   const [showInterestPicker, setShowInterestPicker] = useState(false);
   const [myInterests, setMyInterests] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -280,6 +282,24 @@ const Profile = () => {
     await signOut();
     navigate("/auth");
   }, [signOut, navigate]);
+
+  const handleDeleteAccount = useCallback(async () => {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error) throw res.error;
+      toast.success("Account deleted. Goodbye.");
+      await signOut();
+      navigate("/auth");
+    } catch {
+      toast.error("Failed to delete account");
+      setDeleting(false);
+    }
+  }, [user, signOut, navigate]);
 
   const handleShowList = useCallback(async (type: "ignited" | "fueling") => {
     if (!user) return;
@@ -667,7 +687,28 @@ const Profile = () => {
                 Terms & Privacy
               </motion.button>
 
-              <div className="flex justify-center mt-4">
+              {/* Share profile link */}
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  const url = `${window.location.origin}/ember/${user?.id}`;
+                  navigator.clipboard.writeText(url).then(() => {
+                    toast.success("Profile link copied!");
+                  }).catch(() => {
+                    toast("Your link: " + url);
+                  });
+                }}
+                className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-muted-foreground text-left signal-ease hover:ring-1 hover:ring-primary/20 flex items-center gap-3"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+                  <polyline points="16,6 12,2 8,6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </svg>
+                Share Profile Link
+              </motion.button>
+
+              <div className="flex justify-center mt-4 gap-3">
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSignOut}
@@ -675,6 +716,16 @@ const Profile = () => {
                 >
                   Sign Out
                 </motion.button>
+              </div>
+
+              {/* Delete account */}
+              <div className="flex justify-center mt-2">
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-[10px] text-muted-foreground/40 hover:text-destructive signal-ease"
+                >
+                  Delete my account
+                </button>
               </div>
             </motion.div>
           )}
@@ -762,6 +813,51 @@ const Profile = () => {
             onSave={setMyInterests}
             onClose={() => setShowInterestPicker(false)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Delete account confirmation */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !deleting && setShowDeleteConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-3xl bg-card p-6 flex flex-col items-center gap-4"
+            >
+              <span className="text-3xl">⚠️</span>
+              <p className="text-sm font-medium text-foreground text-center">Delete your account?</p>
+              <p className="text-xs text-muted-foreground text-center max-w-[250px]">
+                This permanently deletes all your data — signals, stitches, messages, follows, and your profile. This cannot be undone.
+              </p>
+              <div className="flex gap-3 mt-2">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="rounded-full bg-destructive px-6 py-3 text-sm font-medium text-destructive-foreground disabled:opacity-50"
+                >
+                  {deleting ? "Deleting..." : "Delete Forever"}
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="signal-surface rounded-full px-6 py-3 text-sm font-medium text-muted-foreground"
+                >
+                  Keep
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
