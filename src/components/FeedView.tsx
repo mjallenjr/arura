@@ -344,6 +344,25 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         setStitchRotation(0);
         elapsedBeforePauseRef.current = 0;
         startTimeRef.current = Date.now();
+      } else if (!suggestedLoaded) {
+        // Load suggested embers' signals before ending
+        setSuggestedLoaded(true);
+        fetchSuggestedSignals().then((suggested) => {
+          if (suggested.length > 0) {
+            setSignals(suggested);
+            setCurrentIndex(0);
+            setProgress(0);
+            setShowStitchInput(false);
+            setStitchInput("");
+            setSubmittedStitch(null);
+            setStitchScale(1);
+            setStitchRotation(0);
+            elapsedBeforePauseRef.current = 0;
+            startTimeRef.current = Date.now();
+          } else {
+            setEnded(true);
+          }
+        });
       } else {
         setEnded(true);
       }
