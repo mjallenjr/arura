@@ -740,6 +740,18 @@ const Profile = () => {
           <EmberProfile userId={selectedEmberId} onClose={() => setSelectedEmberId(null)} />
         )}
       </AnimatePresence>
+
+      {/* Interest picker overlay */}
+      <AnimatePresence>
+        {showInterestPicker && user && (
+          <InterestPicker
+            userId={user.id}
+            currentInterests={myInterests}
+            onSave={setMyInterests}
+            onClose={() => setShowInterestPicker(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
