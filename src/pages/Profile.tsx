@@ -49,9 +49,7 @@ const Profile = () => {
   const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
   const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
-  const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+
 
   useEffect(() => {
     if (!user) return;
