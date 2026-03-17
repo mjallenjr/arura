@@ -1,0 +1,9 @@
+{
+  "appId": "app.lovable.0eb0113c29f2488abbbfa0a896680c54",
+  "appName": "arura",
+  "webDir": "dist",
+  "server": {
+    "url": "https://0eb0113c-29f2-488a-bbbf-a0a896680c54.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}
