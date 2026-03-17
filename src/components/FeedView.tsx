@@ -358,6 +358,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       const xPct = (x / rect.width) * 100;
       const yPct = (y / rect.height) * 100;
 
+      const current = signals[currentIndex];
+      if (current?.isAd) return; // No interactions on ads
+
       if (timeSinceLastTap < 300) {
         // DOUBLE TAP
         clearTimeout(tapTimeoutRef.current);
