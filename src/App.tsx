@@ -12,6 +12,8 @@ import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import AdminAds from "./pages/AdminAds";
+import AdminModeration from "./pages/AdminModeration";
+import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
