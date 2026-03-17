@@ -19,6 +19,7 @@ import Advertise from "./pages/Advertise";
 import Legal from "./pages/Legal";
 import EmberPublicProfile from "./pages/EmberPublicProfile";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
