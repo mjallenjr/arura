@@ -233,7 +233,7 @@ const Index = () => {
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ ...signalTransition, delay: 0.05 }}
-                  width="40" height="40" viewBox="0 0 32 32" fill="none" className="text-primary"
+                  width="40" height="40" viewBox="0 0 32 32" fill="none" className="text-primary flame-glow"
                 >
                   <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
                   <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
