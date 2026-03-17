@@ -39,6 +39,13 @@ interface MyDrop {
   has_new_stitch: boolean;
 }
 
+interface SignalViewer {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  viewed_at: string;
+}
+
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -62,6 +69,8 @@ const Profile = () => {
   const [myInterests, setMyInterests] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [viewers, setViewers] = useState<SignalViewer[]>([]);
+  const [loadingViewers, setLoadingViewers] = useState(false);
   const { referralCode, referralCount, shareLink } = useReferral();
   const {
     impressions: creatorImpressions,
@@ -255,12 +264,46 @@ const Profile = () => {
     }
 
     setViewingDrop(drop);
+    setViewers([]);
 
     // Record that we viewed our own drop
     await supabase.from("signal_owner_views").upsert(
       { user_id: user.id, signal_id: drop.id },
       { onConflict: "signal_id,user_id" }
     );
+
+    // Load viewer insights for Pro users
+    if (isPro) {
+      setLoadingViewers(true);
+      const { data: viewData } = await supabase
+        .from("signal_views")
+        .select("user_id, created_at")
+        .eq("signal_id", drop.id)
+        .neq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (viewData && viewData.length > 0) {
+        const viewerIds = [...new Set(viewData.map(v => v.user_id))];
+        const { data: profiles } = await supabase
+          .from("public_profiles")
+          .select("user_id, display_name, avatar_url")
+          .in("user_id", viewerIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? []);
+        setViewers(
+          viewData
+            .filter((v, i, arr) => arr.findIndex(a => a.user_id === v.user_id) === i)
+            .map(v => ({
+              user_id: v.user_id,
+              display_name: (profileMap.get(v.user_id) as any)?.display_name ?? "someone",
+              avatar_url: (profileMap.get(v.user_id) as any)?.avatar_url ?? null,
+              viewed_at: v.created_at,
+            }))
+        );
+      }
+      setLoadingViewers(false);
+    }
 
     // Update local state
     setMyDrops((prev) =>
@@ -412,6 +455,50 @@ const Profile = () => {
               </div>
             ) : (
               <p className="text-xs text-muted-foreground text-center">No stitches yet</p>
+            )}
+
+            {/* Viewer Insights (Pro only) */}
+            {isPro && (
+              <div className="mt-4">
+                <p className="label-signal mb-2">👁 viewers</p>
+                {loadingViewers ? (
+                  <p className="text-[10px] text-muted-foreground">Loading...</p>
+                ) : viewers.length > 0 ? (
+                  <div className="flex flex-col gap-1.5">
+                    {viewers.map((v) => {
+                      const ago = (() => {
+                        const diff = Date.now() - new Date(v.viewed_at).getTime();
+                        const mins = Math.floor(diff / 60000);
+                        if (mins < 1) return "just now";
+                        if (mins < 60) return `${mins}m ago`;
+                        return `${Math.floor(mins / 60)}h ago`;
+                      })();
+                      return (
+                        <motion.div
+                          key={v.user_id}
+                          initial={{ opacity: 0, x: -6 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <div className="h-5 w-5 rounded-full bg-secondary overflow-hidden flex-shrink-0">
+                            {v.avatar_url ? (
+                              <img src={v.avatar_url} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="flex h-full w-full items-center justify-center text-[8px] font-medium text-secondary-foreground">
+                                {v.display_name.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-foreground/70">{v.display_name}</span>
+                          <span className="text-[8px] text-muted-foreground/50 ml-auto">{ago}</span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground/50">No views yet</p>
+                )}
+              </div>
             )}
           </div>
         </div>
