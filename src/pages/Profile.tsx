@@ -201,7 +201,7 @@ const Profile = () => {
 
       const fromIds = [...new Set(notifs.map((n) => n.from_user_id))];
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name")
         .in("user_id", fromIds);
 
