@@ -11,6 +11,7 @@ import People from "./pages/People";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
+import AdminAds from "./pages/AdminAds";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const AppRoutes = () => {
         <Route path="/people" element={<ProtectedRoute><People /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/admin/ads" element={<ProtectedRoute><AdminAds /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
