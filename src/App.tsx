@@ -18,7 +18,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex h-svh items-center justify-center bg-background">
-        <p className="label-signal animate-pulse">signal</p>
+        <p className="label-signal animate-pulse">arura</p>
       </div>
     );
   }
@@ -33,7 +33,7 @@ const AppRoutes = () => {
   if (loading) {
     return (
       <div className="flex h-svh items-center justify-center bg-background">
-        <p className="label-signal animate-pulse">signal</p>
+        <p className="label-signal animate-pulse">arura</p>
       </div>
     );
   }

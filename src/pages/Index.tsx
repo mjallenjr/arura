@@ -209,7 +209,7 @@ const Index = () => {
           >
             {/* Top bar */}
             <div className="flex items-center justify-between">
-              <p className="label-signal">signal</p>
+              <p className="label-signal">arura</p>
               <div className="flex items-center gap-2">
                 {/* Mode toggle */}
                 <div className="flex signal-surface rounded-full signal-blur">

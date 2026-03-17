@@ -45,7 +45,7 @@ const Auth = () => {
         transition={signalTransition}
         className="w-full max-w-sm"
       >
-        <h1 className="display-signal text-center mb-2">signal</h1>
+        <h1 className="display-signal text-center mb-2">arura</h1>
         <p className="text-sm text-muted-foreground text-center mb-8">
           {mode === "signin" ? "Welcome back" : "Join the moment"}
         </p>
