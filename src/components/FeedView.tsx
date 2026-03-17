@@ -420,8 +420,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       {submittedStitch && (
         <div className="absolute inset-0 z-10 pointer-events-none">
           <motion.p
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             className="absolute text-2xl font-bold text-primary drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
             style={{
               left: `${submittedStitch.x}%`,
