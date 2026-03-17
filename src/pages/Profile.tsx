@@ -667,7 +667,28 @@ const Profile = () => {
                 Terms & Privacy
               </motion.button>
 
-              <div className="flex justify-center mt-4">
+              {/* Share profile link */}
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  const url = `${window.location.origin}/ember/${user?.id}`;
+                  navigator.clipboard.writeText(url).then(() => {
+                    toast.success("Profile link copied!");
+                  }).catch(() => {
+                    toast("Your link: " + url);
+                  });
+                }}
+                className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-muted-foreground text-left signal-ease hover:ring-1 hover:ring-primary/20 flex items-center gap-3"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+                  <polyline points="16,6 12,2 8,6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </svg>
+                Share Profile Link
+              </motion.button>
+
+              <div className="flex justify-center mt-4 gap-3">
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={handleSignOut}
@@ -675,6 +696,16 @@ const Profile = () => {
                 >
                   Sign Out
                 </motion.button>
+              </div>
+
+              {/* Delete account */}
+              <div className="flex justify-center mt-2">
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-[10px] text-muted-foreground/40 hover:text-destructive signal-ease"
+                >
+                  Delete my account
+                </button>
               </div>
             </motion.div>
           )}
