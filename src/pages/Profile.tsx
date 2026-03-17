@@ -7,7 +7,18 @@ import { toast } from "sonner";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
-type ProfileTab = "drops" | "settings";
+type ProfileTab = "drops" | "activity" | "settings";
+
+interface Notification {
+  id: string;
+  type: string;
+  from_user_id: string;
+  signal_id: string | null;
+  word: string | null;
+  read: boolean;
+  created_at: string;
+  from_name?: string;
+}
 
 interface MyDrop {
   id: string;
