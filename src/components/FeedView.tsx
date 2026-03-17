@@ -20,6 +20,28 @@ interface Signal {
   created_at: string;
   display_name: string;
   media_url: string | null;
+  isDiscovery?: boolean;
+}
+
+// Discovery content — shown when no new signals from followed users
+const DISCOVERY_ITEMS: Signal[] = [
+  { id: "d-1", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "autumn river", media_url: "/discover/river-autumn.jpg", isDiscovery: true },
+  { id: "d-2", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "sunset pier", media_url: "/discover/sunset-pier.jpg", isDiscovery: true },
+  { id: "d-3", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "hidden waterfall", media_url: "/discover/waterfall.jpg", isDiscovery: true },
+  { id: "d-4", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "fly fishing", media_url: "/discover/fly-fishing.jpg", isDiscovery: true },
+  { id: "d-5", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "cotton candy skies", media_url: "/discover/clouds-lake.jpg", isDiscovery: true },
+  { id: "d-6", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "morning visitor", media_url: "/discover/deer-morning.jpg", isDiscovery: true },
+  { id: "d-7", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "boardwalk treats", media_url: "/discover/ice-cream.jpg", isDiscovery: true },
+  { id: "d-8", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "paradise found", media_url: "/discover/beach-sunrise.jpg", isDiscovery: true },
+];
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 const signalTransition = {
@@ -52,9 +74,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       const followedIds = follows?.map((f) => f.following_id) ?? [];
 
       if (followedIds.length === 0) {
-        setSignals([]);
+        // No follows yet — show discovery content
+        setSignals(shuffleArray(DISCOVERY_ITEMS).slice(0, 5));
         setLoading(false);
-        setEnded(true);
         return;
       }
 
@@ -68,9 +90,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         .limit(20);
 
       if (!rawSignals || rawSignals.length === 0) {
-        setSignals([]);
+        // No active signals — show discovery content
+        setSignals(shuffleArray(DISCOVERY_ITEMS).slice(0, 5));
         setLoading(false);
-        setEnded(true);
         return;
       }
 
@@ -148,11 +170,12 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         y = e.clientY - rect.top;
       }
 
-      // Record felt in DB
-      if (user && signals[currentIndex]) {
+      // Record felt in DB (skip for discovery content)
+      const current = signals[currentIndex];
+      if (user && current && !current.isDiscovery) {
         supabase.from("felts").insert({
           user_id: user.id,
-          signal_id: signals[currentIndex].id,
+          signal_id: current.id,
         }).then(() => {});
       }
 
@@ -173,6 +196,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     );
   }
 
+  const isDiscoveryFeed = signals.length > 0 && signals[0].isDiscovery;
+
   if (ended) {
     return (
       <motion.div
@@ -181,12 +206,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         transition={{ ...signalTransition, delay: 0.3 }}
         className="flex h-full flex-col items-center justify-center gap-8 p-8"
       >
-        <p className="display-signal text-center">
-          {signals.length === 0 ? "No new signals." : "You're all caught up."}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {signals.length === 0 ? "Follow people to see their moments." : "Go live something."}
-        </p>
+        <p className="display-signal text-center">You're all caught up.</p>
+        <p className="text-sm text-muted-foreground">Go live something.</p>
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={onEnd}
@@ -269,8 +290,13 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         )}
       </div>
 
-      {/* Counter */}
-      <div className="absolute right-8 top-12 z-10">
+      {/* Counter + discover badge */}
+      <div className="absolute right-8 top-12 z-10 flex items-center gap-2">
+        {isDiscoveryFeed && (
+          <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-medium text-primary">
+            discover
+          </span>
+        )}
         <p className="label-signal">
           {currentIndex + 1}/{signals.length}
         </p>
