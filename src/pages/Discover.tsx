@@ -186,7 +186,7 @@ const Discover = () => {
     setSelectedInterest(interest);
 
     const { data } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name, avatar_url, interests")
       .contains("interests", [interest])
       .neq("user_id", user.id)

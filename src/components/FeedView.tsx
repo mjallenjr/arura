@@ -263,7 +263,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       }
 
       const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
-      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name").in("user_id", authorIds);
+      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", authorIds);
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
 
       const enriched: Signal[] = rawSignals
