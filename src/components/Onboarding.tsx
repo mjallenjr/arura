@@ -236,7 +236,7 @@ const Onboarding = ({ onComplete }: OnboardingProps) => {
               transition={{ ...signalTransition, delay: 0.3 }}
               className="mt-2"
             >
-              <GestureDemo type={current.gesture} />
+              <GestureDemo type={current.gesture as "tap" | "double-tap"} />
             </motion.div>
           )}
         </motion.div>
