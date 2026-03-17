@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
 import AdminAds from "./pages/AdminAds";
 import AdminModeration from "./pages/AdminModeration";
+import Advertise from "./pages/Advertise";
 import Legal from "./pages/Legal";
 import EmberPublicProfile from "./pages/EmberPublicProfile";
 import NotFound from "./pages/NotFound";
