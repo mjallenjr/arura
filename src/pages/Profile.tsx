@@ -723,7 +723,57 @@ const Profile = () => {
                 Share Profile Link
               </motion.button>
 
-              {/* Creator Earnings */}
+              {/* arura Pro */}
+              {!subLoading && (
+                <div className={`rounded-xl p-4 border ${isPro ? "border-primary/30 bg-primary/5" : "signal-surface border-border/30"}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base">✦</span>
+                    <p className="text-sm font-semibold text-foreground">arura Pro</p>
+                    {isPro && (
+                      <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-medium text-primary">Active</span>
+                    )}
+                  </div>
+                  {isPro ? (
+                    <>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Renews {subscriptionEnd ? new Date(subscriptionEnd).toLocaleDateString() : "soon"}
+                      </p>
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={openPortal}
+                        className="w-full rounded-full bg-secondary px-4 py-2.5 text-xs font-medium text-secondary-foreground signal-ease hover:bg-secondary/80"
+                      >
+                        Manage Subscription
+                      </motion.button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-1.5 mb-3">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <span className="text-primary">✓</span> 24h signal duration (vs 2h)
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <span className="text-primary">✓</span> See who viewed your signals
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <span className="text-primary">✓</span> Priority in Discover
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <span className="text-primary">✓</span> Pro badge on your profile
+                        </p>
+                      </div>
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={startCheckout}
+                        className="w-full rounded-full bg-primary px-4 py-2.5 text-xs font-medium text-primary-foreground signal-glow signal-ease"
+                      >
+                        Upgrade — $7.99/mo
+                      </motion.button>
+                    </>
+                  )}
+                </div>
+              )}
+
               {creatorImpressions > 0 && (
                 <div className="signal-surface rounded-xl p-4">
                   <p className="label-signal mb-2">💰 Creator Earnings</p>
