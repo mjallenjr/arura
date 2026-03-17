@@ -67,6 +67,7 @@ const Profile = () => {
       if (profileRes.data) {
         setDisplayName(profileRes.data.display_name ?? "");
         setPhone(profileRes.data.phone ?? "");
+        setAvatarUrl(profileRes.data.avatar_url ?? null);
       }
       setFollowersCount(followersRes.count ?? 0);
       setFollowingCount(followingRes.count ?? 0);
