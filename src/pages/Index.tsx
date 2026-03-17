@@ -181,7 +181,7 @@ const Index = () => {
     } finally {
       setUploading(false);
     }
-  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, resetToHome]);
+  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, resetToHome]);
 
   const toggleCamera = useCallback(() => {
     setCameraFacing((f) => (f === "user" ? "environment" : "user"));
