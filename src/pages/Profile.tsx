@@ -63,7 +63,16 @@ const Profile = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const { referralCode, referralCount, shareLink } = useReferral();
-  const { impressions: creatorImpressions, creatorShare } = useCreatorEarnings();
+  const {
+    impressions: creatorImpressions,
+    creatorShare,
+    available: availablePayout,
+    paidOut,
+    stripeConnected,
+    payingOut,
+    connectStripe,
+    requestPayout,
+  } = useCreatorEarnings();
   const { isPro, subscriptionEnd, loading: subLoading, startCheckout, openPortal, checkSubscription } = useSubscription();
 
   // Check subscription after returning from checkout
@@ -777,17 +786,54 @@ const Profile = () => {
               {creatorImpressions > 0 && (
                 <div className="signal-surface rounded-xl p-4">
                   <p className="label-signal mb-2">💰 Creator Earnings</p>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
                     <div>
                       <p className="text-lg font-semibold text-foreground">{creatorImpressions}</p>
-                      <p className="text-[10px] text-muted-foreground">Ad impressions</p>
+                      <p className="text-[10px] text-muted-foreground">Impressions</p>
                     </div>
                     <div>
                       <p className="text-lg font-semibold text-primary">${creatorShare.toFixed(2)}</p>
-                      <p className="text-[10px] text-muted-foreground">Your share (30%)</p>
+                      <p className="text-[10px] text-muted-foreground">Total earned</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-foreground">${availablePayout.toFixed(2)}</p>
+                      <p className="text-[10px] text-muted-foreground">Available</p>
                     </div>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2">More signals = more earnings. Keep dropping!</p>
+                  {paidOut > 0 && (
+                    <p className="text-[10px] text-muted-foreground mb-3">
+                      ${paidOut.toFixed(2)} already paid out
+                    </p>
+                  )}
+                  {!stripeConnected ? (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={connectStripe}
+                      className="w-full rounded-full bg-primary px-4 py-2.5 text-xs font-medium text-primary-foreground signal-glow signal-ease"
+                    >
+                      Connect Stripe to get paid
+                    </motion.button>
+                  ) : availablePayout >= 5 ? (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={async () => {
+                        const result = await requestPayout();
+                        if (result.success) {
+                          toast.success(`$${result.amount?.toFixed(2)} payout sent!`);
+                        } else {
+                          toast.error(result.error ?? "Payout failed");
+                        }
+                      }}
+                      disabled={payingOut}
+                      className="w-full rounded-full bg-primary px-4 py-2.5 text-xs font-medium text-primary-foreground signal-glow signal-ease disabled:opacity-50"
+                    >
+                      {payingOut ? "Processing..." : `Cash out $${availablePayout.toFixed(2)}`}
+                    </motion.button>
+                  ) : (
+                    <p className="text-[10px] text-muted-foreground text-center">
+                      Min. payout is $5.00 — keep dropping signals!
+                    </p>
+                  )}
                 </div>
               )}
 
