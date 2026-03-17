@@ -459,7 +459,12 @@ const Profile = () => {
             </div>
             <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
           </label>
-          <p className="text-lg font-medium text-foreground tracking-tight">{displayName || "Anonymous"}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-lg font-medium text-foreground tracking-tight">{displayName || "Anonymous"}</p>
+            {isPro && (
+              <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary tracking-wide">PRO</span>
+            )}
+          </div>
           {/* Email hidden for privacy - only shown in settings */}
         </motion.div>
 
