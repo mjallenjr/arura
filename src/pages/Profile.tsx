@@ -63,7 +63,7 @@ const Profile = () => {
 
     const load = async () => {
       const [profileRes, followersRes, followingRes, iFollowRes, followMeRes] = await Promise.all([
-        supabase.from("profiles").select("display_name, phone, avatar_url").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("display_name, phone, avatar_url, interests").eq("user_id", user.id).single(),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", user.id),
         supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", user.id),
         // Users I ignited
