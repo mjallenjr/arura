@@ -312,12 +312,33 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const pausedRef = useRef(false);
   const elapsedBeforePauseRef = useRef(0);
 
+  // Fetch AI stitch suggestions when stitch input opens
   useEffect(() => {
     if (showStitchInput) {
       // Pause: save elapsed time so far
       pausedRef.current = true;
       elapsedBeforePauseRef.current += Date.now() - startTimeRef.current;
       cancelAnimationFrame(animRef.current);
+
+      // Fetch suggestions
+      const signal = signals[currentIndex];
+      if (signal && !signal.isDiscovery && !signal.isAd) {
+        setLoadingSuggestions(true);
+        setStitchSuggestions([]);
+        supabase.functions.invoke("stitch-suggest", {
+          body: {
+            creator_name: signal.display_name,
+            stitch_word: signal.stitch_word,
+            media_type: signal.type,
+            display_name: signal.display_name,
+          },
+        }).then(({ data, error }) => {
+          if (!error && data?.words) {
+            setStitchSuggestions(data.words);
+          }
+          setLoadingSuggestions(false);
+        }).catch(() => setLoadingSuggestions(false));
+      }
       return;
     }
     // Resume or start fresh
