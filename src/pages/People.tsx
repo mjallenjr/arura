@@ -102,7 +102,7 @@ const People = () => {
         setResults((prev) =>
           prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: true } : r))
         );
-        toast.success("Connected");
+        toast.success("Now trailing");
       }
     },
     [user, followingIds]
