@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAds, type Ad } from "@/hooks/useAds";
 import QRCode from "@/components/QRCode";
 import QRScanner from "@/components/QRScanner";
+import EmberProfile from "@/components/EmberProfile";
 
 type Tab = "search" | "qr" | "scan";
 
@@ -52,6 +53,7 @@ const People = () => {
   const [allSuggestions, setAllSuggestions] = useState<ProfileResult[]>([]);
   const SUGGESTIONS_PER_PAGE = 6;
   const refreshCountRef = useRef(0);
+  const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
   const [currentAd, setCurrentAd] = useState<Ad | null>(null);
 
   // Pull-to-refresh state
@@ -337,7 +339,7 @@ const People = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between signal-surface rounded-xl p-3 relative overflow-hidden"
       >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedEmberId(person.user_id)}>
           <div className={`h-10 w-10 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center overflow-hidden ${person.user_id === EMBER_FOUNDER_ID ? 'animate-ember-glow' : ''}`}>
             {person.avatar_url ? (
               <img src={person.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -659,6 +661,13 @@ const People = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Ember profile overlay */}
+      <AnimatePresence>
+        {selectedEmberId && (
+          <EmberProfile userId={selectedEmberId} onClose={() => setSelectedEmberId(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
