@@ -107,7 +107,7 @@ const People = () => {
 
     // Also fetch random embers not yet following
     const { data: randomEmbers } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name, avatar_url, qr_code")
       .neq("user_id", user.id)
       .neq("user_id", EMBER_FOUNDER_ID)
