@@ -359,17 +359,34 @@ const Profile = () => {
 
         {/* Tab switcher */}
         <div className="flex gap-1 mb-6">
-          {(["drops", "settings"] as ProfileTab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 rounded-full py-2 text-xs font-medium signal-ease ${
-                tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
-              }`}
-            >
-              {t === "drops" ? "My Drops" : "Settings"}
-            </button>
-          ))}
+          {(["drops", "activity", "settings"] as ProfileTab[]).map((t) => {
+            const unreadCount = t === "activity" ? notifications.filter((n) => !n.read).length : 0;
+            return (
+              <button
+                key={t}
+                onClick={() => {
+                  setTab(t);
+                  // Mark notifications as read when opening activity
+                  if (t === "activity" && unreadCount > 0 && user) {
+                    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+                    supabase.from("notifications").update({ read: true }).in("id", unreadIds).then(() => {
+                      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                    });
+                  }
+                }}
+                className={`relative flex-1 rounded-full py-2 text-xs font-medium signal-ease ${
+                  tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
+                }`}
+              >
+                {t === "drops" ? "My Drops" : t === "activity" ? "Activity" : "Settings"}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <AnimatePresence mode="wait">
