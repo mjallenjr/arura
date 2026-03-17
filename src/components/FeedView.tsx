@@ -26,14 +26,14 @@ interface Signal {
 
 // Discovery content — shown when no new signals from followed users
 const DISCOVERY_ITEMS: Signal[] = [
-  { id: "d-1", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "autumn river", media_url: "/discover/river-autumn.jpg", isDiscovery: true },
-  { id: "d-2", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "sunset pier", media_url: "/discover/sunset-pier.jpg", isDiscovery: true },
-  { id: "d-3", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "hidden waterfall", media_url: "/discover/waterfall.jpg", isDiscovery: true },
-  { id: "d-4", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "fly fishing", media_url: "/discover/fly-fishing.jpg", isDiscovery: true },
-  { id: "d-5", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "cotton candy skies", media_url: "/discover/clouds-lake.jpg", isDiscovery: true },
-  { id: "d-6", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "morning visitor", media_url: "/discover/deer-morning.jpg", isDiscovery: true },
-  { id: "d-7", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "boardwalk treats", media_url: "/discover/ice-cream.jpg", isDiscovery: true },
-  { id: "d-8", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, created_at: "", display_name: "paradise found", media_url: "/discover/beach-sunrise.jpg", isDiscovery: true },
+  { id: "d-1", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "autumn river", media_url: "/discover/river-autumn.jpg", isDiscovery: true },
+  { id: "d-2", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "sunset pier", media_url: "/discover/sunset-pier.jpg", isDiscovery: true },
+  { id: "d-3", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "hidden waterfall", media_url: "/discover/waterfall.jpg", isDiscovery: true },
+  { id: "d-4", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "fly fishing", media_url: "/discover/fly-fishing.jpg", isDiscovery: true },
+  { id: "d-5", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "cotton candy skies", media_url: "/discover/clouds-lake.jpg", isDiscovery: true },
+  { id: "d-6", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "morning visitor", media_url: "/discover/deer-morning.jpg", isDiscovery: true },
+  { id: "d-7", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "boardwalk treats", media_url: "/discover/ice-cream.jpg", isDiscovery: true },
+  { id: "d-8", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "paradise found", media_url: "/discover/beach-sunrise.jpg", isDiscovery: true },
 ];
 
 function shuffleArray<T>(arr: T[]): T[] {
