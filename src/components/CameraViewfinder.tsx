@@ -10,6 +10,7 @@ interface CameraViewfinderProps {
   zoom: number;
   zoomCaps: { min: number; max: number; step: number } | null;
   onZoomChange: (zoom: number) => void;
+  facing?: "user" | "environment";
 }
 
 const CameraViewfinder = ({
@@ -20,6 +21,7 @@ const CameraViewfinder = ({
   zoom,
   zoomCaps,
   onZoomChange,
+  facing = "user",
 }: CameraViewfinderProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -31,6 +33,9 @@ const CameraViewfinder = ({
     elementRef: containerRef,
   });
 
+  // Only mirror the front-facing camera preview
+  const isFrontCamera = facing === "user";
+
   return (
     <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-background">
       {/* Live video */}
@@ -40,7 +45,7 @@ const CameraViewfinder = ({
         playsInline
         muted
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ transform: "scaleX(-1)" }}
+        style={{ transform: isFrontCamera ? "scaleX(-1)" : "none" }}
       />
 
       {/* Fallback gradient when no camera */}
