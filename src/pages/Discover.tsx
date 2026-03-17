@@ -246,7 +246,15 @@ const Discover = () => {
               tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
             }`}
           >
-            {t === "trending" ? "🔥 Hot" : t === "interests" ? "✦ Vibes" : "👤 For You"}
+            {t === "trending" ? (
+              <span className="inline-flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 32 32" fill="none" className="text-primary">
+                  <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.4" />
+                  <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                </svg>
+                Hot
+              </span>
+            ) : t === "interests" ? "✦ Vibes" : "👤 For You"}
           </button>
         ))}
       </div>
