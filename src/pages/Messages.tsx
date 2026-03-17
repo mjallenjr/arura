@@ -83,7 +83,7 @@ const Messages = () => {
       // Get names
       const ids = [...convMap.keys()];
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name")
         .in("user_id", ids);
 
