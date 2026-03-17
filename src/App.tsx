@@ -51,6 +51,7 @@ const AppRoutes = () => {
         <Route path="/people" element={<ProtectedRoute><People /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/admin/ads" element={<ProtectedRoute><AdminAds /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
