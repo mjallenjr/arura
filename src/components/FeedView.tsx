@@ -74,9 +74,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       const followedIds = follows?.map((f) => f.following_id) ?? [];
 
       if (followedIds.length === 0) {
-        setSignals([]);
+        // No follows yet — show discovery content
+        setSignals(shuffleArray(DISCOVERY_ITEMS).slice(0, 5));
         setLoading(false);
-        setEnded(true);
         return;
       }
 
