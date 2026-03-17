@@ -4,13 +4,13 @@ import { motion } from "framer-motion";
 const tabs = [
   { path: "/", label: "arura", icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" },
   { path: "/people", label: "people", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
+  { path: "/profile", label: "me", icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
 ];
 
 const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Don't show on auth page
   if (location.pathname === "/auth") return null;
 
   return (

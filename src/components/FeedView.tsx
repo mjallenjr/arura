@@ -60,43 +60,43 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
 
-  // Fetch signals from people the user follows
+  // Fetch signals from people the user follows, ranked by Aura
   useEffect(() => {
     if (!user) return;
 
     const fetchSignals = async () => {
-      // Get followed user ids
-      const { data: follows } = await supabase
-        .from("follows")
-        .select("following_id")
-        .eq("follower_id", user.id);
+      // Get aura-ranked following list
+      const { data: auraData } = await supabase.rpc("get_aura_ranked_following", {
+        p_user_id: user.id,
+      });
 
-      const followedIds = follows?.map((f) => f.following_id) ?? [];
+      const rankedIds = auraData?.map((a: any) => a.following_id) ?? [];
 
-      if (followedIds.length === 0) {
-        // No follows yet — show discovery content
+      if (rankedIds.length === 0) {
         setSignals(shuffleArray(DISCOVERY_ITEMS).slice(0, 5));
         setLoading(false);
         return;
       }
+
+      // Build aura rank map for sorting
+      const auraRank = new Map(rankedIds.map((id: string, i: number) => [id, i]));
 
       // Fetch non-expired signals from followed users
       const { data: rawSignals } = await supabase
         .from("signals")
         .select("*")
-        .in("user_id", followedIds)
+        .in("user_id", rankedIds)
         .gt("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false })
         .limit(20);
 
       if (!rawSignals || rawSignals.length === 0) {
-        // No active signals — show discovery content
         setSignals(shuffleArray(DISCOVERY_ITEMS).slice(0, 5));
         setLoading(false);
         return;
       }
 
-      // Get display names for signal authors
+      // Get display names
       const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -105,19 +105,21 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
 
-      // Build media URLs
-      const enriched: Signal[] = rawSignals.map((s) => {
-        let media_url: string | null = null;
-        if (s.storage_path) {
-          const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
-          media_url = data.publicUrl;
-        }
-        return {
-          ...s,
-          display_name: nameMap.get(s.user_id) ?? "unknown",
-          media_url,
-        };
-      });
+      // Build and sort by aura rank (closest connections first)
+      const enriched: Signal[] = rawSignals
+        .map((s) => {
+          let media_url: string | null = null;
+          if (s.storage_path) {
+            const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
+            media_url = data.publicUrl;
+          }
+          return {
+            ...s,
+            display_name: nameMap.get(s.user_id) ?? "unknown",
+            media_url,
+          };
+        })
+        .sort((a, b) => (auraRank.get(a.user_id) ?? 999) - (auraRank.get(b.user_id) ?? 999));
 
       setSignals(enriched);
       setLoading(false);
