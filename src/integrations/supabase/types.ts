@@ -148,6 +148,36 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          processed_at: string | null
+          status: string
+          stripe_transfer_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          status?: string
+          stripe_transfer_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          status?: string
+          stripe_transfer_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           created_at: string
@@ -298,6 +328,7 @@ export type Database = {
           phone: string | null
           qr_code: string | null
           referral_code: string | null
+          stripe_connect_id: string | null
           updated_at: string
           user_id: string
         }
@@ -311,6 +342,7 @@ export type Database = {
           phone?: string | null
           qr_code?: string | null
           referral_code?: string | null
+          stripe_connect_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -324,6 +356,7 @@ export type Database = {
           phone?: string | null
           qr_code?: string | null
           referral_code?: string | null
+          stripe_connect_id?: string | null
           updated_at?: string
           user_id?: string
         }
