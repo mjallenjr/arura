@@ -815,6 +815,51 @@ const Profile = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Delete account confirmation */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !deleting && setShowDeleteConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-3xl bg-card p-6 flex flex-col items-center gap-4"
+            >
+              <span className="text-3xl">⚠️</span>
+              <p className="text-sm font-medium text-foreground text-center">Delete your account?</p>
+              <p className="text-xs text-muted-foreground text-center max-w-[250px]">
+                This permanently deletes all your data — signals, stitches, messages, follows, and your profile. This cannot be undone.
+              </p>
+              <div className="flex gap-3 mt-2">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="rounded-full bg-destructive px-6 py-3 text-sm font-medium text-destructive-foreground disabled:opacity-50"
+                >
+                  {deleting ? "Deleting..." : "Delete Forever"}
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="signal-surface rounded-full px-6 py-3 text-sm font-medium text-muted-foreground"
+                >
+                  Keep
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
