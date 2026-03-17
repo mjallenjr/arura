@@ -20,6 +20,7 @@ import Legal from "./pages/Legal";
 import EmberPublicProfile from "./pages/EmberPublicProfile";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import Install from "./pages/Install";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const AppRoutes = () => {
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/install" element={<Install />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
