@@ -51,6 +51,8 @@ const People = () => {
   const [suggestedPage, setSuggestedPage] = useState(0);
   const [allSuggestions, setAllSuggestions] = useState<ProfileResult[]>([]);
   const SUGGESTIONS_PER_PAGE = 6;
+  const refreshCountRef = useRef(0);
+  const [currentAd, setCurrentAd] = useState<Ad | null>(null);
 
   // Pull-to-refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
