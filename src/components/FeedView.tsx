@@ -25,6 +25,7 @@ interface Signal {
   display_name: string;
   media_url: string | null;
   isDiscovery?: boolean;
+  isSuggested?: boolean;
   isAd?: boolean;
   ad?: Ad;
 }
@@ -73,6 +74,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [hasStitched, setHasStitched] = useState<Record<string, boolean>>({});
   const [stitchSuggestions, setStitchSuggestions] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestedLoaded, setSuggestedLoaded] = useState(false);
+  const [showIgnitePrompt, setShowIgnitePrompt] = useState(false);
+  const [ignitedInFeed, setIgnitedInFeed] = useState<Record<string, boolean>>({});
 
   // Stitch position, scale, and rotation
   const [stitchPos, setStitchPos] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
@@ -172,6 +176,62 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     }
   }, [user]);
 
+  // Fetch suggested embers' signals (friends-of-friends)
+  const fetchSuggestedSignals = useCallback(async (): Promise<Signal[]> => {
+    if (!user) return [];
+    try {
+      // Get who I follow
+      const { data: myFollows } = await supabase
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", user.id);
+      const followingIds = new Set(myFollows?.map((f) => f.following_id) ?? []);
+      if (followingIds.size === 0) return [];
+
+      // Get friends-of-friends
+      const { data: fof } = await supabase
+        .from("follows")
+        .select("following_id")
+        .in("follower_id", [...followingIds])
+        .limit(100);
+      if (!fof) return [];
+
+      const candidateIds = [...new Set(fof.map((f) => f.following_id))]
+        .filter((id) => id !== user.id && !followingIds.has(id));
+      if (candidateIds.length === 0) return [];
+
+      const shuffledCandidates = shuffleArray(candidateIds).slice(0, 10);
+
+      // Fetch their active signals
+      const { data: rawSignals } = await supabase
+        .from("signals")
+        .select("*")
+        .in("user_id", shuffledCandidates)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(15);
+      if (!rawSignals || rawSignals.length === 0) return [];
+
+      const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", authorIds);
+      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+
+      return shuffleArray(rawSignals.map((s) => {
+        let media_url: string | null = null;
+        if (s.storage_path) {
+          const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
+          media_url = d.publicUrl;
+        }
+        return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
+      }));
+    } catch {
+      return [];
+    }
+  }, [user]);
+
   // Fetch signals
   useEffect(() => {
     if (!user) return;
@@ -255,6 +315,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       setCurrentIndex((i) => i + 1);
       setProgress(0);
       setShowStitchInput(false);
+      setShowIgnitePrompt(false);
       setStitchInput("");
       setSubmittedStitch(null);
       setStitchScale(1);
@@ -284,11 +345,30 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         setStitchRotation(0);
         elapsedBeforePauseRef.current = 0;
         startTimeRef.current = Date.now();
+      } else if (!suggestedLoaded) {
+        // Load suggested embers' signals before ending
+        setSuggestedLoaded(true);
+        fetchSuggestedSignals().then((suggested) => {
+          if (suggested.length > 0) {
+            setSignals(suggested);
+            setCurrentIndex(0);
+            setProgress(0);
+            setShowStitchInput(false);
+            setStitchInput("");
+            setSubmittedStitch(null);
+            setStitchScale(1);
+            setStitchRotation(0);
+            elapsedBeforePauseRef.current = 0;
+            startTimeRef.current = Date.now();
+          } else {
+            setEnded(true);
+          }
+        });
       } else {
         setEnded(true);
       }
     }
-  }, [currentIndex, signals, hasStitched]);
+  }, [currentIndex, signals, hasStitched, suggestedLoaded, fetchSuggestedSignals]);
 
   // Fetch stitch counts for own signals
   useEffect(() => {
@@ -424,6 +504,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           setStitchScale(1);
           setStitchRotation(0);
           setShowStitchInput(true);
+          // For suggested signals, also show the ignite prompt
+          if (current.isSuggested) {
+            setShowIgnitePrompt(true);
+          }
         }
         return;
       }
@@ -453,6 +537,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   }
 
   const isDiscoveryFeed = signals.length > 0 && signals[0].isDiscovery;
+  const isSuggestedFeed = signals.length > 0 && signals[0].isSuggested;
 
   if (ended) {
     return (
@@ -593,7 +678,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
             {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ delay: 1.5 }} className="mt-2 text-[10px] text-muted-foreground">
-                double tap to stitch ✦
+                double tap to stitch{signal.isSuggested ? " & ignite" : ""} ✦
               </motion.p>
             )}
 
@@ -665,8 +750,44 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
             <button onClick={handleStitchSubmit} disabled={!stitchInput.trim()} className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground disabled:opacity-30">
               stitch
             </button>
-            <button onClick={() => { setShowStitchInput(false); setStitchInput(""); setStitchSuggestions([]); }} className="text-muted-foreground/50 text-xs">✕</button>
+            <button onClick={() => { setShowStitchInput(false); setShowIgnitePrompt(false); setStitchInput(""); setStitchSuggestions([]); }} className="text-muted-foreground/50 text-xs">✕</button>
           </motion.div>
+
+          {/* Ignite button for suggested embers */}
+          <AnimatePresence>
+            {showIgnitePrompt && signal.isSuggested && !ignitedInFeed[signal.user_id] && (
+              <motion.button
+                initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={signalTransition}
+                onClick={async () => {
+                  if (!user) return;
+                  const { error } = await supabase.from("follows").insert({
+                    follower_id: user.id,
+                    following_id: signal.user_id,
+                  });
+                  if (!error) {
+                    setIgnitedInFeed((prev) => ({ ...prev, [signal.user_id]: true }));
+                    toast.success(`Ignited ${signal.display_name} 🔥`);
+                  }
+                }}
+                className="mt-2 rounded-full bg-primary px-5 py-2 text-xs font-medium text-primary-foreground uppercase tracking-wide"
+                whileTap={{ scale: 0.95 }}
+              >
+                🔥 ignite {signal.display_name}
+              </motion.button>
+            )}
+            {showIgnitePrompt && signal.isSuggested && ignitedInFeed[signal.user_id] && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-2 text-[10px] text-primary/70"
+              >
+                🔥 ignited
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
@@ -674,6 +795,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       <div className="absolute right-8 top-12 z-10 flex items-center gap-2">
         {isDiscoveryFeed && (
           <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-medium text-primary">discover</span>
+        )}
+        {isSuggestedFeed && (
+          <span className="rounded-full bg-accent/20 px-2.5 py-0.5 text-[10px] font-medium text-accent-foreground">suggested</span>
         )}
         <p className="label-signal">{currentIndex + 1}/{signals.length}</p>
       </div>
