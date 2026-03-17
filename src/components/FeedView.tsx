@@ -170,11 +170,12 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         y = e.clientY - rect.top;
       }
 
-      // Record felt in DB
-      if (user && signals[currentIndex]) {
+      // Record felt in DB (skip for discovery content)
+      const current = signals[currentIndex];
+      if (user && current && !current.isDiscovery) {
         supabase.from("felts").insert({
           user_id: user.id,
-          signal_id: signals[currentIndex].id,
+          signal_id: current.id,
         }).then(() => {});
       }
 
