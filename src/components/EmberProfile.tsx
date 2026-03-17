@@ -86,17 +86,50 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     load();
   }, [userId]);
 
-  // Check follow status
+  // Check follow status and refuel status
   useEffect(() => {
     if (!currentUser || currentUser === userId) return;
-    supabase
+    
+    // Check follow
+    const checkFollow = supabase
       .from("follows")
       .select("id")
       .eq("follower_id", currentUser)
-      .eq("following_id", userId)
-      .then(({ data: rows }) => {
-        setIsFollowing(rows !== null && rows.length > 0);
-      });
+      .eq("following_id", userId);
+
+    // Check latest refuel notification from me to them
+    const checkRefuel = supabase
+      .from("notifications")
+      .select("created_at")
+      .eq("user_id", userId)
+      .eq("from_user_id", currentUser)
+      .eq("type", "refuel")
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    // Check their latest signal
+    const checkLatestSignal = supabase
+      .from("signals")
+      .select("created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    Promise.all([checkFollow, checkRefuel, checkLatestSignal]).then(
+      ([followRes, refuelRes, signalRes]) => {
+        setIsFollowing(followRes.data !== null && followRes.data.length > 0);
+
+        // Refueled = there's a refuel notification that's newer than their latest signal
+        const lastRefuel = refuelRes.data?.[0]?.created_at;
+        const lastSignal = signalRes.data?.[0]?.created_at;
+        if (lastRefuel) {
+          if (!lastSignal || new Date(lastRefuel) > new Date(lastSignal)) {
+            setRefueled(true);
+          }
+          // If they posted a new signal after the refuel, allow re-refueling
+        }
+      }
+    );
   }, [currentUser, userId]);
 
   // Check if current user already sparked the top drop
