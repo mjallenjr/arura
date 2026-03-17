@@ -4,6 +4,7 @@ import SignalButton from "@/components/SignalButton";
 import PostActions from "@/components/PostActions";
 import FeedView from "@/components/FeedView";
 import CameraViewfinder from "@/components/CameraViewfinder";
+import Onboarding from "@/components/Onboarding";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
