@@ -20,6 +20,7 @@ import Legal from "./pages/Legal";
 import EmberPublicProfile from "./pages/EmberPublicProfile";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import Install from "./pages/Install";
 
 const queryClient = new QueryClient();
 
