@@ -661,6 +661,13 @@ const People = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Ember profile overlay */}
+      <AnimatePresence>
+        {selectedEmberId && (
+          <EmberProfile userId={selectedEmberId} onClose={() => setSelectedEmberId(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
