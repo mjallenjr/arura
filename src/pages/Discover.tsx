@@ -103,7 +103,7 @@ const Discover = () => {
     // Get author names
     const authorIds = [...new Set(discoverySignals.map((s) => s.user_id))];
     const { data: profiles } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("user_id, display_name")
       .in("user_id", authorIds.length > 0 ? authorIds : ["none"]);
     const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
