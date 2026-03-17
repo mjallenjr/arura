@@ -367,7 +367,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         setEnded(true);
       }
     }
-  }, [currentIndex, signals, hasStitched]);
+  }, [currentIndex, signals, hasStitched, suggestedLoaded, fetchSuggestedSignals]);
 
   // Fetch stitch counts for own signals
   useEffect(() => {
