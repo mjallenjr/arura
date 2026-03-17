@@ -231,6 +231,65 @@ const People = () => {
                 className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30 mb-4"
               />
 
+              {/* Suggested Embers */}
+              {query.length < 2 && suggested.length > 0 && (
+                <div className="mb-4">
+                  <p className="label-signal mb-3">embers you may know</p>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+                    {suggested.map((ember) => {
+                      const isIgniting = animating?.id === ember.user_id && animating.type === "ignite";
+                      return (
+                        <motion.div
+                          key={ember.user_id}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="flex flex-col items-center gap-2 min-w-[80px] signal-surface rounded-xl p-3 relative"
+                        >
+                          <div className="relative">
+                            <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                              {ember.avatar_url ? (
+                                <img src={ember.avatar_url} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="text-sm font-medium text-secondary-foreground">
+                                  {ember.display_name.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <AnimatePresence>
+                              {isIgniting && (
+                                <motion.div
+                                  className="absolute -inset-2 rounded-full pointer-events-none"
+                                  initial={{ opacity: 0, scale: 0.5 }}
+                                  animate={{ opacity: [0, 0.8, 0], scale: [0.5, 1.6, 2] }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 1.2, ease: "easeOut" }}
+                                  style={{
+                                    background: "radial-gradient(circle, hsla(30,100%,60%,0.5) 0%, transparent 70%)",
+                                    filter: "blur(4px)",
+                                  }}
+                                />
+                              )}
+                            </AnimatePresence>
+                          </div>
+                          <p className="text-[10px] font-medium text-foreground text-center truncate w-full">
+                            {ember.display_name}
+                          </p>
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => toggleFollow(ember.user_id)}
+                            disabled={!!animating}
+                            className="rounded-full bg-primary text-primary-foreground px-3 py-1 text-[10px] font-medium"
+                          >
+                            Ignite
+                          </motion.button>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Search results */}
               <div className="flex flex-col gap-2">
                 {results.map((person) => {
                   const isIgniting = animating?.id === person.user_id && animating.type === "ignite";
@@ -244,10 +303,14 @@ const People = () => {
                       className="flex items-center justify-between signal-surface rounded-xl p-3 relative overflow-hidden"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-                          <span className="text-xs font-medium text-secondary-foreground">
-                            {person.display_name.charAt(0).toUpperCase()}
-                          </span>
+                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                          {person.avatar_url ? (
+                            <img src={person.avatar_url} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-xs font-medium text-secondary-foreground">
+                              {person.display_name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <div className="relative">
                           <motion.p
