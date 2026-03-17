@@ -11,6 +11,7 @@ import People from "./pages/People";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Discover from "./pages/Discover";
+import AdminAds from "./pages/AdminAds";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
