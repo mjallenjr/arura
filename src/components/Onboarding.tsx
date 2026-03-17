@@ -161,7 +161,7 @@ const GestureDemo = ({ type }: { type: "tap" | "double-tap" }) => {
   );
 };
 
-const Onboarding = ({ onComplete }: OnboardingProps) => {
+const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComplete }, ref) => {
   const [step, setStep] = useState(0);
   const current = steps[step];
   const isLast = step === steps.length - 1;
