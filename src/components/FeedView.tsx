@@ -217,6 +217,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       setSubmittedStitch(null);
       setStitchScale(1);
       setStitchRotation(0);
+      elapsedBeforePauseRef.current = 0;
       startTimeRef.current = Date.now();
     } else {
       setEnded(true);
