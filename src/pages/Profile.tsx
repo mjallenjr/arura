@@ -643,6 +643,78 @@ const Profile = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Ignited / Fueling list overlay */}
+      <AnimatePresence>
+        {showingList && (
+          <motion.div
+            className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm flex flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={signalTransition}
+          >
+            <div className="flex items-center justify-between p-4">
+              <button onClick={() => setShowingList(null)} className="text-muted-foreground">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <p className="label-signal">{showingList === "ignited" ? "embers you ignited" : "embers fueling you"}</p>
+              <div className="w-5" />
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 pb-8">
+              {loadingList ? (
+                <div className="flex justify-center py-12">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+                    className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full"
+                  />
+                </div>
+              ) : listEmbers.length === 0 ? (
+                <p className="text-center text-xs text-muted-foreground py-12">
+                  {showingList === "ignited" ? "You haven't ignited anyone yet" : "No one is fueling you yet"}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {listEmbers.map((ember) => (
+                    <motion.button
+                      key={ember.user_id}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setSelectedEmberId(ember.user_id)}
+                      className="flex items-center gap-3 signal-surface rounded-xl p-3 text-left w-full signal-ease hover:ring-1 hover:ring-primary/20"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {ember.avatar_url ? (
+                          <img src={ember.avatar_url} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-xs font-medium text-secondary-foreground">
+                            {ember.display_name.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-foreground truncate">{ember.display_name}</p>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground ml-auto flex-shrink-0">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Ember profile detail overlay */}
+      <AnimatePresence>
+        {selectedEmberId && (
+          <EmberProfile userId={selectedEmberId} onClose={() => setSelectedEmberId(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
