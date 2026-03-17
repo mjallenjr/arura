@@ -393,6 +393,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const handleStitchSubmit = useCallback(async () => {
     const signal = signals[currentIndex];
     if (!user || !signal || signal.isDiscovery || !stitchInput.trim()) return;
+    if (!checkStitchLimit()) {
+      toast.error("Slow down — too many stitches");
+      return;
+    }
     const word = stitchInput.replace(/\s/g, "").slice(0, 12);
     if (!word) return;
 
