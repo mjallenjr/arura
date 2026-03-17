@@ -203,6 +203,17 @@ const Index = () => {
     <div className="relative h-svh w-full overflow-hidden bg-background">
       <canvas ref={canvasRef} className="hidden" />
 
+      {/* Onboarding overlay */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <Onboarding
+            onComplete={() => {
+              setShowOnboarding(false);
+              localStorage.setItem("arura_onboarded", "true");
+            }}
+          />
+        )}
+      </AnimatePresence>
       {cameraActive && (
         <CameraViewfinder
           videoRef={videoRef}
