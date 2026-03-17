@@ -398,6 +398,26 @@ const Index = () => {
             className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8"
           >
             <div className="absolute inset-0 bg-background/70 signal-blur" />
+
+            {/* Video/Photo preview */}
+            {recordedBlob && captureMode === "video" && (
+              <video
+                src={URL.createObjectURL(recordedBlob)}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover opacity-40"
+              />
+            )}
+            {photoBlob && captureMode === "photo" && (
+              <img
+                src={URL.createObjectURL(photoBlob)}
+                alt="Preview"
+                className="absolute inset-0 h-full w-full object-cover opacity-40"
+              />
+            )}
+
             <div className="relative z-10 w-full max-w-sm">
               <PostActions
                 onPost={handlePost}
