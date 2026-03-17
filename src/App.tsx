@@ -65,6 +65,7 @@ const AppRoutes = () => {
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/install" element={<Install />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
