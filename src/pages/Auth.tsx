@@ -140,7 +140,7 @@ const Auth = () => {
             className="w-full max-w-sm"
           >
             <div className="flex flex-col items-center gap-3 mb-8">
-              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" className="text-primary">
+              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" className="text-primary flame-glow">
                 <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
                 <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
                 <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2" />
