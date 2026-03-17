@@ -327,7 +327,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     if (!showStitchInput) elapsedBeforePauseRef.current = 0; // reset on new signal
     const tick = () => {
       const elapsed = elapsedBeforePauseRef.current + (Date.now() - startTimeRef.current);
-      const p = Math.min(1, elapsed / SIGNAL_DURATION);
+      const isAd = signals[currentIndex]?.isAd;
+      const p = Math.min(1, elapsed / (isAd ? AD_DURATION : SIGNAL_DURATION));
       setProgress(p);
       if (p >= 1) advanceSignal();
       else animRef.current = requestAnimationFrame(tick);

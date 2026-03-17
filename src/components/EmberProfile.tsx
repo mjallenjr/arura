@@ -106,7 +106,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
         </div>
       ) : data ? (
         <div className="flex-1 overflow-y-auto px-6 pb-12">
-          {/* Avatar + Name + Bio word */}
+          {/* Avatar + Name + Root */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
