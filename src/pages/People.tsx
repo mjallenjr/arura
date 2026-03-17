@@ -102,7 +102,7 @@ const People = () => {
         setResults((prev) =>
           prev.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: true } : r))
         );
-        toast.success("Connected");
+        toast.success("Now trailing");
       }
     },
     [user, followingIds]
@@ -124,7 +124,7 @@ const People = () => {
           .from("follows")
           .upsert({ follower_id: user.id, following_id: data.user_id });
         setFollowingIds((prev) => new Set(prev).add(data.user_id));
-        toast.success(`Connected with ${data.display_name}`);
+        toast.success(`Now trailing ${data.display_name}`);
         setTab("search");
       } else {
         toast.error("User not found");
@@ -203,11 +203,11 @@ const People = () => {
                       onClick={() => toggleFollow(person.user_id)}
                       className={`rounded-full px-4 py-1.5 text-xs font-medium signal-ease ${
                         person.isFollowing
-                          ? "signal-surface text-muted-foreground"
+                          ? "bg-destructive/10 text-destructive"
                           : "bg-primary text-primary-foreground"
                       }`}
                     >
-                      {person.isFollowing ? "Following" : "Follow"}
+                      {person.isFollowing ? "Slap" : "Trail"}
                     </motion.button>
                   </motion.div>
                 ))}

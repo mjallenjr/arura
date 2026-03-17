@@ -25,7 +25,6 @@ interface Signal {
   isDiscovery?: boolean;
 }
 
-// Static fallback discovery content
 const FALLBACK_DISCOVERY: Signal[] = [
   { id: "d-1", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "autumn river", media_url: "/discover/river-autumn.jpg", isDiscovery: true },
   { id: "d-2", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "sunset pier", media_url: "/discover/sunset-pier.jpg", isDiscovery: true },
@@ -43,10 +42,17 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-const signalTransition = {
-  duration: 0.4,
-  ease: [0.2, 0.8, 0.2, 1] as const,
-};
+const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
+
+// Helper: get distance between two touches
+function getTouchDistance(t1: Touch, t2: Touch) {
+  return Math.sqrt((t1.clientX - t2.clientX) ** 2 + (t1.clientY - t2.clientY) ** 2);
+}
+
+// Helper: get angle between two touches
+function getTouchAngle(t1: Touch, t2: Touch) {
+  return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * (180 / Math.PI);
+}
 
 const FeedView = ({ onEnd }: FeedViewProps) => {
   const { user } = useAuth();
@@ -60,110 +66,129 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [showStitchInput, setShowStitchInput] = useState(false);
   const [stitchCounts, setStitchCounts] = useState<Record<string, number>>({});
   const [hasStitched, setHasStitched] = useState<Record<string, boolean>>({});
+
+  // Stitch position, scale, and rotation
+  const [stitchPos, setStitchPos] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
+  const [stitchScale, setStitchScale] = useState(1);
+  const [stitchRotation, setStitchRotation] = useState(0);
+
+  // Submitted stitch state for display
+  const [submittedStitch, setSubmittedStitch] = useState<{
+    word: string;
+    x: number;
+    y: number;
+    scale: number;
+    rotation: number;
+  } | null>(null);
+
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
   const lastTapRef = useRef<number>(0);
   const tapTimeoutRef = useRef<number>(0);
+  const doubleTapPosRef = useRef<{ x: number; y: number }>({ x: 50, y: 50 });
+  const feedRef = useRef<HTMLDivElement>(null);
 
-  // Fetch contextual discovery content based on recent themes
+  // Pinch gesture refs
+  const pinchStartDistRef = useRef<number | null>(null);
+  const pinchStartAngleRef = useRef<number | null>(null);
+  const pinchStartScaleRef = useRef(1);
+  const pinchStartRotRef = useRef(0);
+
+  // Pinch-to-resize/rotate for stitch
+  useEffect(() => {
+    const el = feedRef.current;
+    if (!el || !showStitchInput) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        pinchStartDistRef.current = getTouchDistance(e.touches[0], e.touches[1]);
+        pinchStartAngleRef.current = getTouchAngle(e.touches[0], e.touches[1]);
+        pinchStartScaleRef.current = stitchScale;
+        pinchStartRotRef.current = stitchRotation;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchStartDistRef.current !== null && pinchStartAngleRef.current !== null) {
+        e.preventDefault();
+        const dist = getTouchDistance(e.touches[0], e.touches[1]);
+        const angle = getTouchAngle(e.touches[0], e.touches[1]);
+
+        const scaleFactor = dist / pinchStartDistRef.current;
+        const newScale = Math.min(3, Math.max(0.4, pinchStartScaleRef.current * scaleFactor));
+        setStitchScale(newScale);
+
+        const angleDiff = angle - pinchStartAngleRef.current;
+        setStitchRotation(pinchStartRotRef.current + angleDiff);
+      }
+    };
+
+    const onTouchEnd = () => {
+      pinchStartDistRef.current = null;
+      pinchStartAngleRef.current = null;
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [showStitchInput, stitchScale, stitchRotation]);
+
+  // Fetch contextual discovery content
   const fetchDiscovery = useCallback(async (): Promise<Signal[]> => {
     if (!user) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-
     try {
-      // Get recent stitch words from user's drops and their stitches
       const [ownWords, stitchWords] = await Promise.all([
-        supabase
-          .from("signals")
-          .select("stitch_word")
-          .eq("user_id", user.id)
-          .not("stitch_word", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(10),
-        supabase
-          .from("stitches")
-          .select("word")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(10),
+        supabase.from("signals").select("stitch_word").eq("user_id", user.id).not("stitch_word", "is", null).order("created_at", { ascending: false }).limit(10),
+        supabase.from("stitches").select("word").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
       ]);
-
       const themes = [
         ...(ownWords.data?.map((s) => s.stitch_word).filter(Boolean) ?? []),
         ...(stitchWords.data?.map((s) => s.word) ?? []),
       ];
+      if (themes.length === 0) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
 
-      if (themes.length === 0) {
-        return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-      }
-
-      // Call edge function for AI-powered discovery
-      const { data, error } = await supabase.functions.invoke("discover-content", {
-        body: { themes },
-      });
-
-      if (error || !data?.items?.length) {
-        return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-      }
+      const { data, error } = await supabase.functions.invoke("discover-content", { body: { themes } });
+      if (error || !data?.items?.length) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
 
       return data.items.map((item: any) => ({
-        id: item.id,
-        user_id: "",
-        type: "photo",
-        storage_path: null,
-        song_clip_url: null,
-        song_title: null,
-        stitch_word: null,
-        created_at: "",
-        display_name: item.display_name || item.query,
-        media_url: item.image_url,
-        isDiscovery: true,
+        id: item.id, user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: item.display_name || item.query, media_url: item.image_url, isDiscovery: true,
       }));
     } catch {
       return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
     }
   }, [user]);
 
-  // Fetch signals from people the user follows, ranked by Aura
+  // Fetch signals
   useEffect(() => {
     if (!user) return;
-
     const fetchSignals = async () => {
-      const { data: auraData } = await supabase.rpc("get_aura_ranked_following", {
-        p_user_id: user.id,
-      });
-
+      const { data: auraData } = await supabase.rpc("get_aura_ranked_following", { p_user_id: user.id });
       const rankedIds = auraData?.map((a: any) => a.following_id) ?? [];
 
       if (rankedIds.length === 0) {
-        const discovery = await fetchDiscovery();
-        setSignals(discovery);
+        setSignals(await fetchDiscovery());
         setLoading(false);
         return;
       }
 
       const auraRank = new Map(rankedIds.map((id: string, i: number) => [id, i]));
-
-      const { data: rawSignals } = await supabase
-        .from("signals")
-        .select("*")
-        .in("user_id", rankedIds)
-        .gt("expires_at", new Date().toISOString())
-        .order("created_at", { ascending: false })
-        .limit(20);
+      const { data: rawSignals } = await supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(20);
 
       if (!rawSignals || rawSignals.length === 0) {
-        const discovery = await fetchDiscovery();
-        setSignals(discovery);
+        setSignals(await fetchDiscovery());
         setLoading(false);
         return;
       }
 
       const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name")
-        .in("user_id", authorIds);
-
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name").in("user_id", authorIds);
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
 
       const enriched: Signal[] = rawSignals
@@ -173,18 +198,13 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
             const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
             media_url = data.publicUrl;
           }
-          return {
-            ...s,
-            display_name: nameMap.get(s.user_id) ?? "unknown",
-            media_url,
-          };
+          return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url };
         })
         .sort((a, b) => (auraRank.get(a.user_id) ?? 999) - (auraRank.get(b.user_id) ?? 999));
 
       setSignals(enriched);
       setLoading(false);
     };
-
     fetchSignals();
   }, [user, fetchDiscovery]);
 
@@ -194,98 +214,78 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       setProgress(0);
       setShowStitchInput(false);
       setStitchInput("");
+      setSubmittedStitch(null);
+      setStitchScale(1);
+      setStitchRotation(0);
       startTimeRef.current = Date.now();
     } else {
       setEnded(true);
     }
   }, [currentIndex, signals.length]);
 
-  // Fetch stitch counts for signals owned by current user
+  // Fetch stitch counts for own signals
   useEffect(() => {
     if (!user || signals.length === 0) return;
     const mySignalIds = signals.filter((s) => s.user_id === user.id && !s.isDiscovery).map((s) => s.id);
     if (mySignalIds.length === 0) return;
-
-    supabase
-      .from("stitches")
-      .select("signal_id")
-      .in("signal_id", mySignalIds)
-      .then(({ data }) => {
-        if (!data) return;
-        const counts: Record<string, number> = {};
-        data.forEach((d: any) => {
-          counts[d.signal_id] = (counts[d.signal_id] || 0) + 1;
-        });
-        setStitchCounts(counts);
-      });
+    supabase.from("stitches").select("signal_id").in("signal_id", mySignalIds).then(({ data }) => {
+      if (!data) return;
+      const counts: Record<string, number> = {};
+      data.forEach((d: any) => { counts[d.signal_id] = (counts[d.signal_id] || 0) + 1; });
+      setStitchCounts(counts);
+    });
   }, [user, signals]);
 
   const handleStitchSubmit = useCallback(async () => {
     const signal = signals[currentIndex];
     if (!user || !signal || signal.isDiscovery || !stitchInput.trim()) return;
-
     const word = stitchInput.replace(/\s/g, "").slice(0, 12);
     if (!word) return;
 
-    const { error } = await supabase.from("stitches").insert({
-      user_id: user.id,
-      signal_id: signal.id,
-      word,
-    });
+    const { error } = await supabase.from("stitches").insert({ user_id: user.id, signal_id: signal.id, word });
 
     if (!error) {
       setHasStitched((prev) => ({ ...prev, [signal.id]: true }));
+      setSubmittedStitch({ word, x: stitchPos.x, y: stitchPos.y, scale: stitchScale, rotation: stitchRotation });
 
-      // Send notification to the signal creator
       await supabase.from("notifications").insert({
-        user_id: signal.user_id,
-        from_user_id: user.id,
-        signal_id: signal.id,
-        type: "stitch",
-        word,
+        user_id: signal.user_id, from_user_id: user.id, signal_id: signal.id, type: "stitch", word,
       });
-
       toast.success("Stitched ✦");
     }
     setShowStitchInput(false);
     setStitchInput("");
-  }, [user, signals, currentIndex, stitchInput]);
+  }, [user, signals, currentIndex, stitchInput, stitchPos, stitchScale, stitchRotation]);
 
-  // Record view for the current signal
+  // Record view
   useEffect(() => {
     if (loading || ended || signals.length === 0) return;
     const signal = signals[currentIndex];
     if (!user || !signal || signal.isDiscovery) return;
-    supabase.from("signal_views").upsert(
-      { user_id: user.id, signal_id: signal.id },
-      { onConflict: "user_id,signal_id" }
-    ).then(() => {});
+    supabase.from("signal_views").upsert({ user_id: user.id, signal_id: signal.id }, { onConflict: "user_id,signal_id" }).then(() => {});
   }, [currentIndex, loading, ended, signals, user]);
 
+  // Timer
   useEffect(() => {
     if (ended || loading || signals.length === 0) return;
-
     startTimeRef.current = Date.now();
-
     const tick = () => {
       const elapsed = Date.now() - startTimeRef.current;
       const p = Math.min(1, elapsed / SIGNAL_DURATION);
       setProgress(p);
-
-      if (p >= 1) {
-        advanceSignal();
-      } else {
-        animRef.current = requestAnimationFrame(tick);
-      }
+      if (p >= 1) advanceSignal();
+      else animRef.current = requestAnimationFrame(tick);
     };
-
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
   }, [currentIndex, ended, loading, signals.length, advanceSignal]);
 
-  // Double-tap handler: first tap = felt, double-tap = open stitch
+  // Double-tap handler
   const handleTap = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
+      // Ignore taps when stitch input is showing (pinch gestures handle that)
+      if (showStitchInput) return;
+
       const now = Date.now();
       const timeSinceLastTap = now - lastTapRef.current;
 
@@ -299,13 +299,21 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         y = e.clientY - rect.top;
       }
 
+      // Convert to percentage for responsive positioning
+      const xPct = (x / rect.width) * 100;
+      const yPct = (y / rect.height) * 100;
+
       if (timeSinceLastTap < 300) {
-        // DOUBLE TAP → open stitch input
+        // DOUBLE TAP
         clearTimeout(tapTimeoutRef.current);
         lastTapRef.current = 0;
 
         const current = signals[currentIndex];
         if (user && current && !current.isDiscovery && current.user_id !== user.id && !hasStitched[current.id]) {
+          doubleTapPosRef.current = { x: xPct, y: yPct };
+          setStitchPos({ x: xPct, y: yPct });
+          setStitchScale(1);
+          setStitchRotation(0);
           setShowStitchInput(true);
         }
         return;
@@ -317,20 +325,14 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       tapTimeoutRef.current = window.setTimeout(() => {
         const current = signals[currentIndex];
         if (user && current && !current.isDiscovery) {
-          supabase.from("felts").insert({
-            user_id: user.id,
-            signal_id: current.id,
-          }).then(() => {});
+          supabase.from("felts").insert({ user_id: user.id, signal_id: current.id }).then(() => {});
         }
-
         const id = `${Date.now()}-${Math.random()}`;
         setFeltEffects((prev) => [...prev, { id, x, y }]);
-        setTimeout(() => {
-          setFeltEffects((prev) => prev.filter((f) => f.id !== id));
-        }, 700);
+        setTimeout(() => { setFeltEffects((prev) => prev.filter((f) => f.id !== id)); }, 700);
       }, 300);
     },
-    [user, signals, currentIndex, hasStitched]
+    [user, signals, currentIndex, hasStitched, showStitchInput]
   );
 
   if (loading) {
@@ -345,21 +347,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
   if (ended) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ ...signalTransition, delay: 0.3 }}
-        className="flex h-full flex-col items-center justify-center gap-8 p-8"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ ...signalTransition, delay: 0.3 }} className="flex h-full flex-col items-center justify-center gap-8 p-8">
         <p className="display-signal text-center">You're all caught up.</p>
         <p className="text-sm text-muted-foreground">Go live something.</p>
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={onEnd}
-          className="mt-4 signal-surface signal-blur rounded-full px-8 py-3 text-sm font-medium text-muted-foreground signal-ease"
-        >
-          Return
-        </motion.button>
+        <motion.button whileTap={{ scale: 0.97 }} onClick={onEnd} className="mt-4 signal-surface signal-blur rounded-full px-8 py-3 text-sm font-medium text-muted-foreground signal-ease">Return</motion.button>
       </motion.div>
     );
   }
@@ -367,51 +358,24 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const signal = signals[currentIndex];
 
   return (
-    <div className="relative h-full w-full bg-background" onClick={handleTap}>
+    <div ref={feedRef} className="relative h-full w-full bg-background touch-none" onClick={handleTap}>
       {/* Progress bar */}
       <div className="absolute left-0 right-0 top-0 z-20 flex gap-1 p-3">
         {signals.map((s, i) => (
           <div key={s.id} className="h-0.5 flex-1 overflow-hidden rounded-full bg-foreground/10">
-            <motion.div
-              className="h-full rounded-full bg-primary"
-              style={{
-                width:
-                  i < currentIndex
-                    ? "100%"
-                    : i === currentIndex
-                    ? `${progress * 100}%`
-                    : "0%",
-              }}
-            />
+            <motion.div className="h-full rounded-full bg-primary" style={{ width: i < currentIndex ? "100%" : i === currentIndex ? `${progress * 100}%` : "0%" }} />
           </div>
         ))}
       </div>
 
       {/* Signal content */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key={signal.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="absolute inset-0 flex items-center justify-center bg-background"
-        >
+        <motion.div key={signal.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="absolute inset-0 flex items-center justify-center bg-background">
           {signal.media_url && signal.type === "photo" && (
-            <img
-              src={signal.media_url}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+            <img src={signal.media_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
           )}
           {signal.media_url && signal.type === "video" && (
-            <video
-              src={signal.media_url}
-              autoPlay
-              muted
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+            <video src={signal.media_url} autoPlay muted playsInline className="absolute inset-0 h-full w-full object-cover" />
           )}
           {!signal.media_url && (
             <div className="absolute inset-0 bg-gradient-to-br from-[hsl(220,30%,8%)] via-[hsl(200,25%,12%)] to-[hsl(180,20%,6%)]" />
@@ -427,61 +391,78 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
             animate={{ opacity: 1, scale: 1, rotate: -2 }}
             transition={{ ...signalTransition, delay: 0.2 }}
             className="text-4xl font-bold tracking-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
-            style={{
-              textShadow: "0 0 20px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.6)",
-              fontStyle: "italic",
-            }}
+            style={{ textShadow: "0 0 20px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.6)", fontStyle: "italic" }}
           >
             {signal.stitch_word}
           </motion.p>
         </div>
       )}
 
+      {/* Submitted stitch word at chosen position */}
+      {submittedStitch && (
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          <motion.p
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute text-2xl font-bold text-primary drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
+            style={{
+              left: `${submittedStitch.x}%`,
+              top: `${submittedStitch.y}%`,
+              transform: `translate(-50%, -50%) scale(${submittedStitch.scale}) rotate(${submittedStitch.rotation}deg)`,
+              textShadow: "0 0 16px hsl(var(--primary) / 0.5), 0 2px 8px rgba(0,0,0,0.6)",
+              fontStyle: "italic",
+            }}
+          >
+            {submittedStitch.word}
+          </motion.p>
+        </div>
+      )}
+
+      {/* Live stitch preview at tap position while typing */}
+      {showStitchInput && stitchInput && (
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          <p
+            className="absolute text-2xl font-bold text-primary/70 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]"
+            style={{
+              left: `${stitchPos.x}%`,
+              top: `${stitchPos.y}%`,
+              transform: `translate(-50%, -50%) scale(${stitchScale}) rotate(${stitchRotation}deg)`,
+              textShadow: "0 0 16px hsl(var(--primary) / 0.3), 0 2px 8px rgba(0,0,0,0.4)",
+              fontStyle: "italic",
+              transition: "transform 0.1s ease-out",
+            }}
+          >
+            {stitchInput}
+          </p>
+        </div>
+      )}
+
       {/* Name + song overlay */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
-        <motion.p
-          key={signal.display_name}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 0.6, y: 0 }}
-          transition={signalTransition}
-          className="label-signal"
-        >
+        <motion.p key={signal.display_name} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 0.6, y: 0 }} transition={signalTransition} className="label-signal">
           {signal.display_name}
         </motion.p>
-        {signal.song_title && (
-          <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>
-        )}
+        {signal.song_title && <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>}
 
-        {/* Stitch count for own signals */}
         {user && signal.user_id === user.id && stitchCounts[signal.id] && (
-          <p className="mt-1 text-xs text-primary/80">
-            ✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}
-          </p>
+          <p className="mt-1 text-xs text-primary/80">✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}</p>
         )}
 
-        {/* Double-tap hint for other's signals */}
         {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.35 }}
-            transition={{ delay: 1.5 }}
-            className="mt-2 text-[10px] text-muted-foreground"
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.35 }} transition={{ delay: 1.5 }} className="mt-2 text-[10px] text-muted-foreground">
             double tap to stitch ✦
           </motion.p>
         )}
 
-        {hasStitched[signal.id] && (
+        {hasStitched[signal.id] && !submittedStitch && (
           <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
         )}
       </div>
 
-      {/* Stitch input overlay */}
+      {/* Stitch input overlay — positioned near bottom */}
       {showStitchInput && (
-        <div
-          className="absolute bottom-24 left-0 right-0 z-20 flex justify-center px-8"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="absolute bottom-24 left-0 right-0 z-20 flex flex-col items-center gap-2 px-8" onClick={(e) => e.stopPropagation()}>
+          <p className="text-[10px] text-muted-foreground/60">pinch to resize & rotate</p>
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -497,19 +478,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
               className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-24"
               onKeyDown={(e) => e.key === "Enter" && handleStitchSubmit()}
             />
-            <button
-              onClick={handleStitchSubmit}
-              disabled={!stitchInput.trim()}
-              className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground disabled:opacity-30"
-            >
+            <button onClick={handleStitchSubmit} disabled={!stitchInput.trim()} className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground disabled:opacity-30">
               stitch
             </button>
-            <button
-              onClick={() => { setShowStitchInput(false); setStitchInput(""); }}
-              className="text-muted-foreground/50 text-xs"
-            >
-              ✕
-            </button>
+            <button onClick={() => { setShowStitchInput(false); setStitchInput(""); }} className="text-muted-foreground/50 text-xs">✕</button>
           </motion.div>
         </div>
       )}
@@ -517,13 +489,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       {/* Counter + discover badge */}
       <div className="absolute right-8 top-12 z-10 flex items-center gap-2">
         {isDiscoveryFeed && (
-          <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-medium text-primary">
-            discover
-          </span>
+          <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-medium text-primary">discover</span>
         )}
-        <p className="label-signal">
-          {currentIndex + 1}/{signals.length}
-        </p>
+        <p className="label-signal">{currentIndex + 1}/{signals.length}</p>
       </div>
 
       {/* Felt effects */}
