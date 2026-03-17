@@ -334,6 +334,24 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         </motion.div>
       </AnimatePresence>
 
+      {/* Creator's stitch word overlay */}
+      {signal.stitch_word && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <motion.p
+            initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
+            animate={{ opacity: 1, scale: 1, rotate: -2 }}
+            transition={{ ...signalTransition, delay: 0.2 }}
+            className="text-4xl font-bold tracking-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
+            style={{
+              textShadow: "0 0 20px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.6)",
+              fontStyle: "italic",
+            }}
+          >
+            {signal.stitch_word}
+          </motion.p>
+        </div>
+      )}
+
       {/* Name + song overlay */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
         <motion.p
@@ -348,7 +366,66 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         {signal.song_title && (
           <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>
         )}
+
+        {/* Stitch count for own signals */}
+        {user && signal.user_id === user.id && stitchCounts[signal.id] && (
+          <p className="mt-1 text-xs text-primary/80">
+            ✦ {stitchCounts[signal.id]} stitch{stitchCounts[signal.id] > 1 ? "es" : ""}
+          </p>
+        )}
+
+        {/* Stitch reply button for other people's signals */}
+        {user && signal.user_id !== user.id && !signal.isDiscovery && !hasStitched[signal.id] && !showStitchInput && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            transition={{ delay: 0.5 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowStitchInput(true);
+            }}
+            className="mt-2 rounded-full signal-surface signal-blur px-3 py-1 text-[10px] font-medium text-muted-foreground"
+          >
+            ✦ stitch a word
+          </motion.button>
+        )}
+
+        {hasStitched[signal.id] && (
+          <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
+        )}
       </div>
+
+      {/* Stitch input overlay */}
+      {showStitchInput && (
+        <div
+          className="absolute bottom-24 left-0 right-0 z-20 flex justify-center px-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 signal-surface signal-blur rounded-2xl px-4 py-2"
+          >
+            <input
+              type="text"
+              placeholder="one word"
+              value={stitchInput}
+              onChange={(e) => setStitchInput(e.target.value.replace(/\s/g, "").slice(0, 12))}
+              maxLength={12}
+              autoFocus
+              className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-24"
+            />
+            <button
+              onClick={handleStitchSubmit}
+              disabled={!stitchInput.trim()}
+              className="rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground disabled:opacity-30"
+            >
+              stitch
+            </button>
+          </motion.div>
+        </div>
+      )}
 
       {/* Counter + discover badge */}
       <div className="absolute right-8 top-12 z-10 flex items-center gap-2">
