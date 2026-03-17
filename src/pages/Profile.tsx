@@ -456,6 +456,61 @@ const Profile = () => {
             </motion.div>
           )}
 
+          {tab === "activity" && (
+            <motion.div
+              key="activity"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={signalTransition}
+              className="flex flex-col gap-3"
+            >
+              {notifications.length === 0 && (
+                <p className="text-center text-xs text-muted-foreground py-8">
+                  No activity yet
+                </p>
+              )}
+              {notifications.map((notif) => {
+                const timeAgo = (() => {
+                  const diff = Date.now() - new Date(notif.created_at).getTime();
+                  const mins = Math.floor(diff / 60000);
+                  if (mins < 1) return "just now";
+                  if (mins < 60) return `${mins}m ago`;
+                  const hours = Math.floor(mins / 60);
+                  if (hours < 24) return `${hours}h ago`;
+                  return `${Math.floor(hours / 24)}d ago`;
+                })();
+
+                return (
+                  <motion.div
+                    key={notif.id}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`signal-surface rounded-xl p-3 flex items-center gap-3 ${
+                      !notif.read ? "ring-1 ring-primary/20" : ""
+                    }`}
+                  >
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-primary text-sm">✦</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground">
+                        <span className="font-medium">{notif.from_name}</span>{" "}
+                        {notif.type === "stitch" ? "stitched" : "interacted with"} your drop
+                      </p>
+                      {notif.word && (
+                        <p className="text-primary text-sm font-bold italic mt-0.5">
+                          "{notif.word}"
+                        </p>
+                      )}
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{timeAgo}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+
           {tab === "settings" && (
             <motion.div
               key="settings"
