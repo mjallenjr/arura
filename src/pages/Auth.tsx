@@ -64,7 +64,7 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Check your email to confirm.");
+        setShowVerify(true);
       }
     } else {
       const { error } = await signIn(email, password);
