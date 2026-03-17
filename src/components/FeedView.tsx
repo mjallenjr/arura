@@ -11,6 +11,7 @@ interface FeedViewProps {
 }
 
 const SIGNAL_DURATION = 5000;
+const AD_DURATION = 3700;
 
 interface Signal {
   id: string;
