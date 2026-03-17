@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FeltEffect from "@/components/FeltEffect";
+import ReportBlockMenu from "@/components/ReportBlockMenu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAds, type Ad } from "@/hooks/useAds";
+import { useBlocks } from "@/hooks/useBlocks";
+import { useRateLimit } from "@/hooks/useRateLimit";
 import { toast } from "sonner";
 
 interface FeedViewProps {
