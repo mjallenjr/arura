@@ -40,10 +40,15 @@ const Profile = () => {
   const [tab, setTab] = useState<ProfileTab>("drops");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [signalsCount, setSignalsCount] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
+  const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
   const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
