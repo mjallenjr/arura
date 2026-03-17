@@ -394,7 +394,6 @@ const Index = () => {
                 stitchWord={stitchWord}
                 onStitchWordChange={setStitchWord}
               />
-              />
             </div>
           </motion.div>
         )}
