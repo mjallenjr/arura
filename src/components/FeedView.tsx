@@ -795,6 +795,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         {isDiscoveryFeed && (
           <span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-[10px] font-medium text-primary">discover</span>
         )}
+        {isSuggestedFeed && (
+          <span className="rounded-full bg-accent/20 px-2.5 py-0.5 text-[10px] font-medium text-accent-foreground">suggested</span>
+        )}
         <p className="label-signal">{currentIndex + 1}/{signals.length}</p>
       </div>
 
