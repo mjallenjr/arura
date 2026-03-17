@@ -122,18 +122,23 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
             </div>
             <p className="text-lg font-medium text-foreground tracking-tight">{data.display_name}</p>
             {data.bio_word && (
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ ...signalTransition, delay: 0.15 }}
-                className="text-xl font-bold text-primary tracking-tight"
-                style={{
-                  fontStyle: "italic",
-                  textShadow: "0 0 20px hsl(var(--primary) / 0.3)",
-                }}
+                className="flex flex-col items-center gap-1"
               >
-                {data.bio_word}
-              </motion.p>
+                <span className="text-[9px] uppercase tracking-widest text-muted-foreground/50">root</span>
+                <p
+                  className="text-xl font-bold text-primary tracking-tight"
+                  style={{
+                    fontStyle: "italic",
+                    textShadow: "0 0 20px hsl(var(--primary) / 0.3)",
+                  }}
+                >
+                  {data.bio_word}
+                </p>
+              </motion.div>
             )}
           </motion.div>
 
