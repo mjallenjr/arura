@@ -39,6 +39,13 @@ interface MyDrop {
   has_new_stitch: boolean;
 }
 
+interface SignalViewer {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  viewed_at: string;
+}
+
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
