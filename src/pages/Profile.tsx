@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -7,15 +7,34 @@ import { toast } from "sonner";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
+type ProfileTab = "drops" | "settings";
+
+interface MyDrop {
+  id: string;
+  type: string;
+  storage_path: string | null;
+  stitch_word: string | null;
+  created_at: string;
+  expires_at: string;
+  media_url: string | null;
+  stitch_count: number;
+  stitches: { word: string; display_name: string }[];
+  has_been_viewed: boolean;
+  has_new_stitch: boolean;
+}
+
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [tab, setTab] = useState<ProfileTab>("drops");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [signalsCount, setSignalsCount] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [myDrops, setMyDrops] = useState<MyDrop[]>([]);
+  const [viewingDrop, setViewingDrop] = useState<MyDrop | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -39,6 +58,113 @@ const Profile = () => {
     load();
   }, [user]);
 
+  // Load my active drops
+  useEffect(() => {
+    if (!user) return;
+
+    const loadDrops = async () => {
+      const { data: signals } = await supabase
+        .from("signals")
+        .select("*")
+        .eq("user_id", user.id)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false });
+
+      if (!signals || signals.length === 0) {
+        setMyDrops([]);
+        return;
+      }
+
+      const signalIds = signals.map((s) => s.id);
+
+      // Get stitches, owner views
+      const [stitchRes, ownerViewRes] = await Promise.all([
+        supabase
+          .from("stitches")
+          .select("signal_id, word, user_id")
+          .in("signal_id", signalIds),
+        supabase
+          .from("signal_owner_views")
+          .select("signal_id")
+          .eq("user_id", user.id)
+          .in("signal_id", signalIds),
+      ]);
+
+      const stitchData = stitchRes.data ?? [];
+      const viewedSet = new Set((ownerViewRes.data ?? []).map((v) => v.signal_id));
+
+      // Get stitch author names
+      const stitchAuthorIds = [...new Set(stitchData.map((s) => s.user_id))];
+      let nameMap = new Map<string, string>();
+      if (stitchAuthorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, display_name")
+          .in("user_id", stitchAuthorIds);
+        nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+      }
+
+      const drops: MyDrop[] = signals.map((s) => {
+        const signalStitches = stitchData.filter((st) => st.signal_id === s.id);
+        let media_url: string | null = null;
+        if (s.storage_path) {
+          const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
+          media_url = data.publicUrl;
+        }
+
+        const hasBeenViewed = viewedSet.has(s.id);
+        // Has new stitch = viewed before but got stitches after (or any stitches if viewed)
+        const hasNewStitch = hasBeenViewed && signalStitches.length > 0;
+
+        return {
+          id: s.id,
+          type: s.type,
+          storage_path: s.storage_path,
+          stitch_word: s.stitch_word,
+          created_at: s.created_at,
+          expires_at: s.expires_at,
+          media_url,
+          stitch_count: signalStitches.length,
+          stitches: signalStitches.map((st) => ({
+            word: st.word,
+            display_name: nameMap.get(st.user_id) ?? "someone",
+          })),
+          has_been_viewed: hasBeenViewed,
+          has_new_stitch: hasNewStitch,
+        };
+      });
+
+      setMyDrops(drops);
+    };
+
+    loadDrops();
+  }, [user]);
+
+  const handleViewDrop = useCallback(async (drop: MyDrop) => {
+    if (!user) return;
+
+    // If already viewed and no new stitches, block re-view
+    if (drop.has_been_viewed && !drop.has_new_stitch) {
+      toast("You'll see this again when someone stitches it");
+      return;
+    }
+
+    setViewingDrop(drop);
+
+    // Record that we viewed our own drop
+    await supabase.from("signal_owner_views").upsert(
+      { user_id: user.id, signal_id: drop.id },
+      { onConflict: "signal_id,user_id" }
+    );
+
+    // Update local state
+    setMyDrops((prev) =>
+      prev.map((d) =>
+        d.id === drop.id ? { ...d, has_been_viewed: true, has_new_stitch: false } : d
+      )
+    );
+  }, [user]);
+
   const handleSave = useCallback(async () => {
     if (!user) return;
     setSaving(true);
@@ -47,11 +173,8 @@ const Profile = () => {
       .update({ display_name: displayName, phone: phone || null })
       .eq("user_id", user.id);
 
-    if (error) {
-      toast.error("Failed to save");
-    } else {
-      toast.success("Saved");
-    }
+    if (error) toast.error("Failed to save");
+    else toast.success("Saved");
     setSaving(false);
   }, [user, displayName, phone]);
 
@@ -61,6 +184,76 @@ const Profile = () => {
   }, [signOut, navigate]);
 
   const initial = displayName ? displayName.charAt(0).toUpperCase() : "?";
+
+  const timeLeft = (expiresAt: string) => {
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    if (diff <= 0) return "expired";
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m`;
+    return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+  };
+
+  // Drop viewer overlay
+  if (viewingDrop) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        <div className="flex items-center justify-between p-4">
+          <button onClick={() => setViewingDrop(null)} className="text-muted-foreground">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <p className="label-signal">your drop</p>
+          <div className="w-5" />
+        </div>
+
+        <div className="flex-1 relative">
+          {viewingDrop.media_url && viewingDrop.type === "photo" && (
+            <img src={viewingDrop.media_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          )}
+          {viewingDrop.media_url && viewingDrop.type === "video" && (
+            <video src={viewingDrop.media_url} autoPlay muted playsInline className="absolute inset-0 h-full w-full object-cover" />
+          )}
+
+          {viewingDrop.stitch_word && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <p
+                className="text-4xl font-bold tracking-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
+                style={{ textShadow: "0 0 20px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.6)", fontStyle: "italic" }}
+              >
+                {viewingDrop.stitch_word}
+              </p>
+            </div>
+          )}
+
+          {/* Stitches overlay */}
+          <div className="absolute bottom-0 left-0 right-0 z-10 p-6">
+            {viewingDrop.stitches.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <p className="label-signal">✦ stitches</p>
+                {viewingDrop.stitches.map((st, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ ...signalTransition, delay: i * 0.1 }}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="text-lg font-bold text-primary" style={{ fontStyle: "italic" }}>
+                      {st.word}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">— {st.display_name}</span>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center">No stitches yet</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-svh w-full flex-col bg-background">
@@ -81,7 +274,7 @@ const Profile = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={signalTransition}
-          className="flex flex-col items-center gap-4 pt-4 pb-8"
+          className="flex flex-col items-center gap-4 pt-4 pb-6"
         >
           <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center">
             <span className="text-2xl font-medium text-secondary-foreground">{initial}</span>
@@ -95,7 +288,7 @@ const Profile = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ ...signalTransition, delay: 0.1 }}
-          className="grid grid-cols-3 gap-3 mb-8"
+          className="grid grid-cols-3 gap-3 mb-6"
         >
           {[
             { label: "signals", value: signalsCount },
@@ -109,58 +302,138 @@ const Profile = () => {
           ))}
         </motion.div>
 
-        {/* Edit fields */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...signalTransition, delay: 0.2 }}
-          className="flex flex-col gap-4 mb-8"
-        >
-          <div>
-            <label className="label-signal mb-2 block">Display name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
-            />
-          </div>
-          <div>
-            <label className="label-signal mb-2 block">Phone</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Optional"
-              className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
-            />
-          </div>
+        {/* Tab switcher */}
+        <div className="flex gap-1 mb-6">
+          {(["drops", "settings"] as ProfileTab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 rounded-full py-2 text-xs font-medium signal-ease ${
+                tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
+              }`}
+            >
+              {t === "drops" ? "My Drops" : "Settings"}
+            </button>
+          ))}
+        </div>
 
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow signal-ease disabled:opacity-50 mt-2"
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </motion.button>
-        </motion.div>
+        <AnimatePresence mode="wait">
+          {tab === "drops" && (
+            <motion.div
+              key="drops"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={signalTransition}
+              className="flex flex-col gap-3"
+            >
+              {myDrops.length === 0 && (
+                <p className="text-center text-xs text-muted-foreground py-8">
+                  No active drops right now
+                </p>
+              )}
+              {myDrops.map((drop) => (
+                <motion.button
+                  key={drop.id}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleViewDrop(drop)}
+                  className="relative signal-surface rounded-xl p-4 flex items-center gap-4 text-left overflow-hidden"
+                >
+                  {/* Thumbnail */}
+                  <div className="h-14 w-14 rounded-lg bg-secondary overflow-hidden flex-shrink-0">
+                    {drop.media_url && drop.type === "photo" && (
+                      <img src={drop.media_url} alt="" className="h-full w-full object-cover" />
+                    )}
+                    {drop.media_url && drop.type === "video" && (
+                      <div className="h-full w-full flex items-center justify-center bg-secondary">
+                        <span className="text-xs text-muted-foreground">▶</span>
+                      </div>
+                    )}
+                  </div>
 
-        {/* Sign out */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ ...signalTransition, delay: 0.3 }}
-          className="flex justify-center"
-        >
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={handleSignOut}
-            className="signal-surface signal-blur rounded-full px-8 py-3 text-sm font-medium text-destructive signal-ease"
-          >
-            Sign Out
-          </motion.button>
-        </motion.div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {drop.type === "photo" ? "Photo" : "Video"}
+                      </span>
+                      {drop.stitch_word && (
+                        <span className="text-xs text-primary italic">"{drop.stitch_word}"</span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {timeLeft(drop.expires_at)} left
+                    </p>
+                    {drop.stitch_count > 0 && (
+                      <p className="text-[10px] text-primary/80 mt-0.5">
+                        ✦ {drop.stitch_count} stitch{drop.stitch_count > 1 ? "es" : ""}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* New stitch indicator */}
+                  {drop.has_new_stitch && (
+                    <div className="h-2.5 w-2.5 rounded-full bg-primary signal-glow flex-shrink-0" />
+                  )}
+
+                  {/* Locked indicator (viewed but no new stitches) */}
+                  {drop.has_been_viewed && !drop.has_new_stitch && (
+                    <span className="text-muted-foreground/40 text-xs flex-shrink-0">🔒</span>
+                  )}
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+
+          {tab === "settings" && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={signalTransition}
+              className="flex flex-col gap-4"
+            >
+              <div>
+                <label className="label-signal mb-2 block">Display name</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
+                />
+              </div>
+              <div>
+                <label className="label-signal mb-2 block">Phone</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Optional"
+                  className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
+                />
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow signal-ease disabled:opacity-50 mt-2"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </motion.button>
+
+              <div className="flex justify-center mt-4">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleSignOut}
+                  className="signal-surface signal-blur rounded-full px-8 py-3 text-sm font-medium text-destructive signal-ease"
+                >
+                  Sign Out
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
