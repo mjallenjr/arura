@@ -7,35 +7,38 @@ interface SignalButtonProps {
   onStart: () => void;
   onStop: () => void;
   disabled?: boolean;
+  isPhotoMode?: boolean;
 }
 
-const SignalButton = ({ isRecording, progress, onStart, onStop, disabled }: SignalButtonProps) => {
+const SignalButton = ({ isRecording, progress, onStart, onStop, disabled, isPhotoMode }: SignalButtonProps) => {
   const holdRef = useRef(false);
 
   const handlePointerDown = useCallback(() => {
     if (disabled) return;
+    if (isPhotoMode) {
+      onStart();
+      return;
+    }
     holdRef.current = true;
     onStart();
-  }, [onStart, disabled]);
+  }, [onStart, disabled, isPhotoMode]);
 
   const handlePointerUp = useCallback(() => {
+    if (isPhotoMode) return;
     if (holdRef.current) {
       holdRef.current = false;
       onStop();
     }
-  }, [onStop]);
+  }, [onStop, isPhotoMode]);
 
   const circumference = 2 * Math.PI * 36;
   const strokeDashoffset = circumference * (1 - progress);
 
   return (
     <div className="relative flex items-center justify-center">
-      {/* Progress ring */}
       <svg className="absolute" width="96" height="96" viewBox="0 0 80 80">
         <circle
-          cx="40"
-          cy="40"
-          r="36"
+          cx="40" cy="40" r="36"
           fill="none"
           stroke="hsl(var(--muted))"
           strokeWidth="2"
@@ -43,9 +46,7 @@ const SignalButton = ({ isRecording, progress, onStart, onStop, disabled }: Sign
         />
         {isRecording && (
           <circle
-            cx="40"
-            cy="40"
-            r="36"
+            cx="40" cy="40" r="36"
             fill="none"
             stroke="hsl(var(--primary))"
             strokeWidth="2.5"
@@ -66,20 +67,24 @@ const SignalButton = ({ isRecording, progress, onStart, onStop, disabled }: Sign
         className={`
           relative z-10 h-20 w-20 rounded-full border-2 
           transition-all duration-200 signal-ease
-          ${
-            isRecording
-              ? "border-primary signal-glow bg-primary/10"
-              : disabled
-              ? "border-foreground/10 bg-foreground/5 opacity-50"
-              : "border-foreground/20 bg-foreground/5"
+          ${isRecording
+            ? "border-primary signal-glow bg-primary/10"
+            : disabled
+            ? "border-foreground/10 bg-foreground/5 opacity-50"
+            : "border-foreground/20 bg-foreground/5"
           }
         `}
-        aria-label={isRecording ? "Stop recording" : "Hold to record"}
+        aria-label={isPhotoMode ? "Take photo" : isRecording ? "Stop recording" : "Hold to record"}
       >
         <motion.div
           className={`
             absolute inset-3 rounded-full transition-all duration-200 signal-ease
-            ${isRecording ? "bg-primary/30" : "bg-foreground/10"}
+            ${isPhotoMode
+              ? "bg-foreground/20"
+              : isRecording
+              ? "bg-primary/30"
+              : "bg-foreground/10"
+            }
           `}
           animate={isRecording ? { scale: [1, 1.1, 1] } : { scale: 1 }}
           transition={isRecording ? { duration: 1, repeat: Infinity } : {}}

@@ -1,16 +1,38 @@
-import { RefObject } from "react";
-import { motion } from "framer-motion";
+import { RefObject, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePinchZoom } from "@/hooks/usePinchZoom";
 
 interface CameraViewfinderProps {
   videoRef: RefObject<HTMLVideoElement>;
   hasPermission: boolean | null;
   error: string | null;
   isRecording: boolean;
+  zoom: number;
+  zoomCaps: { min: number; max: number; step: number } | null;
+  onZoomChange: (zoom: number) => void;
 }
 
-const CameraViewfinder = ({ videoRef, hasPermission, error, isRecording }: CameraViewfinderProps) => {
+const CameraViewfinder = ({
+  videoRef,
+  hasPermission,
+  error,
+  isRecording,
+  zoom,
+  zoomCaps,
+  onZoomChange,
+}: CameraViewfinderProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  usePinchZoom({
+    onZoomChange,
+    currentZoom: zoom,
+    minZoom: zoomCaps?.min ?? 1,
+    maxZoom: zoomCaps?.max ?? 10,
+    elementRef: containerRef,
+  });
+
   return (
-    <div className="absolute inset-0 overflow-hidden bg-background">
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-background">
       {/* Live video */}
       <video
         ref={videoRef}
@@ -18,7 +40,7 @@ const CameraViewfinder = ({ videoRef, hasPermission, error, isRecording }: Camer
         playsInline
         muted
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ transform: "scaleX(-1)" }} // Mirror front camera
+        style={{ transform: "scaleX(-1)" }}
       />
 
       {/* Fallback gradient when no camera */}
@@ -34,7 +56,23 @@ const CameraViewfinder = ({ videoRef, hasPermission, error, isRecording }: Camer
         }}
       />
 
-      {/* Recording indicator — subtle red dot */}
+      {/* Zoom indicator */}
+      <AnimatePresence>
+        {zoomCaps && zoom > zoomCaps.min + 0.05 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 signal-surface signal-blur rounded-full px-3 py-1"
+          >
+            <span className="font-mono-signal text-xs text-muted-foreground">
+              {zoom.toFixed(1)}×
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Recording indicator */}
       {isRecording && (
         <motion.div
           initial={{ opacity: 0 }}

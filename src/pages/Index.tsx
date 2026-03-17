@@ -7,8 +7,12 @@ import CameraViewfinder from "@/components/CameraViewfinder";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 type AppState = "camera" | "confirm" | "feed";
+type CaptureMode = "video" | "photo";
 
 const signalTransition = {
   duration: 0.4,
@@ -16,21 +20,56 @@ const signalTransition = {
 };
 
 const Index = () => {
+  const { user } = useAuth();
   const [state, setState] = useState<AppState>("camera");
+  const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState(5.0);
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("user");
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [songUrl, setSongUrl] = useState("");
+  const [songTitle, setSongTitle] = useState("");
+  const [uploading, setUploading] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const cameraActive = state === "camera" || state === "confirm";
-  const { videoRef, streamRef, hasPermission, error: cameraError } = useCamera({
+  const { videoRef, streamRef, hasPermission, error: cameraError, zoom, zoomCaps, applyZoom } = useCamera({
     facing: cameraFacing,
     active: cameraActive,
   });
   const { start: startMediaRecorder, stop: stopMediaRecorder } = useRecorder();
   const { startPulse, stopPulse } = useHaptics();
+
+  const capturePhoto = useCallback(() => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current || document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (cameraFacing === "user") {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          setPhotoBlob(blob);
+          setState("confirm");
+        }
+      },
+      "image/jpeg",
+      0.9
+    );
+  }, [videoRef, cameraFacing]);
 
   const stopRecording = useCallback(async () => {
     if (intervalRef.current) {
@@ -53,15 +92,17 @@ const Index = () => {
   const startRecording = useCallback(() => {
     if (!streamRef.current) return;
 
+    if (captureMode === "photo") {
+      capturePhoto();
+      return;
+    }
+
     setIsRecording(true);
     setCountdown(5.0);
     startTimeRef.current = Date.now();
     setRecordedBlob(null);
 
-    // Start media recorder
     startMediaRecorder(streamRef.current);
-
-    // Start haptic pulse
     startPulse();
 
     intervalRef.current = window.setInterval(() => {
@@ -73,24 +114,60 @@ const Index = () => {
         stopRecording();
       }
     }, 50);
-  }, [stopRecording, startMediaRecorder, startPulse, streamRef]);
+  }, [stopRecording, startMediaRecorder, startPulse, streamRef, captureMode, capturePhoto]);
 
   const handleDiscard = useCallback(() => {
     setCountdown(5.0);
     setRecordedBlob(null);
+    setPhotoBlob(null);
+    setSongUrl("");
+    setSongTitle("");
     setState("camera");
   }, []);
 
-  const handlePost = useCallback(() => {
-    // In production: upload recordedBlob to temp storage with 2hr TTL
-    // For now, we just move to feed
-    console.log("Signal posted:", recordedBlob ? `${(recordedBlob.size / 1024).toFixed(0)}KB` : "no data");
-    setState("feed");
-  }, [recordedBlob]);
+  const handlePost = useCallback(async () => {
+    if (!user) return;
+    setUploading(true);
+
+    try {
+      const blob = captureMode === "photo" ? photoBlob : recordedBlob;
+      const ext = captureMode === "photo" ? "jpg" : "webm";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+
+      if (blob) {
+        const { error: uploadError } = await supabase.storage
+          .from("signals")
+          .upload(path, blob);
+
+        if (uploadError) throw uploadError;
+      }
+
+      const { error: insertError } = await supabase.from("signals").insert({
+        user_id: user.id,
+        type: captureMode,
+        storage_path: blob ? path : null,
+        song_clip_url: songUrl || null,
+        song_title: songTitle || null,
+      });
+
+      if (insertError) throw insertError;
+
+      toast.success("Signal posted");
+      setState("feed");
+    } catch (err) {
+      console.error("Post failed:", err);
+      toast.error("Failed to post signal");
+    } finally {
+      setUploading(false);
+    }
+  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle]);
 
   const handleFeedEnd = useCallback(() => {
     setCountdown(5.0);
     setRecordedBlob(null);
+    setPhotoBlob(null);
+    setSongUrl("");
+    setSongTitle("");
     setState("camera");
   }, []);
 
@@ -106,13 +183,17 @@ const Index = () => {
 
   return (
     <div className="relative h-svh w-full overflow-hidden bg-background">
-      {/* Live camera feed - always behind when on camera/confirm */}
+      <canvas ref={canvasRef} className="hidden" />
+
       {cameraActive && (
         <CameraViewfinder
           videoRef={videoRef}
           hasPermission={hasPermission}
           error={cameraError}
           isRecording={isRecording}
+          zoom={zoom}
+          zoomCaps={zoomCaps}
+          onZoomChange={applyZoom}
         />
       )}
 
@@ -129,25 +210,38 @@ const Index = () => {
             {/* Top bar */}
             <div className="flex items-center justify-between">
               <p className="label-signal">signal</p>
-              <button
-                onClick={toggleCamera}
-                className="signal-surface rounded-full p-2.5 signal-blur"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  className="text-muted-foreground"
+              <div className="flex items-center gap-2">
+                {/* Mode toggle */}
+                <div className="flex signal-surface rounded-full signal-blur">
+                  <button
+                    onClick={() => setCaptureMode("video")}
+                    className={`rounded-full px-3 py-1.5 text-[10px] font-medium signal-ease ${
+                      captureMode === "video" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    Video
+                  </button>
+                  <button
+                    onClick={() => setCaptureMode("photo")}
+                    className={`rounded-full px-3 py-1.5 text-[10px] font-medium signal-ease ${
+                      captureMode === "photo" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    Photo
+                  </button>
+                </div>
+                <button
+                  onClick={toggleCamera}
+                  className="signal-surface rounded-full p-2.5 signal-blur"
                 >
-                  <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
-                  <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
-                  <path d="m21 2-9 9" />
-                  <path d="m21 11V2h-9" />
-                </svg>
-              </button>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
+                    <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
+                    <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
+                    <path d="m21 2-9 9" />
+                    <path d="m21 11V2h-9" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Center */}
@@ -169,7 +263,11 @@ const Index = () => {
                   transition={{ delay: 0.3 }}
                   className="text-sm text-muted-foreground"
                 >
-                  {hasPermission === false ? "Camera access needed" : "Capture a moment"}
+                  {hasPermission === false
+                    ? "Camera access needed"
+                    : captureMode === "photo"
+                    ? "Tap to capture"
+                    : "Hold to record"}
                 </motion.p>
               )}
 
@@ -179,10 +277,10 @@ const Index = () => {
                 onStart={startRecording}
                 onStop={stopRecording}
                 disabled={!streamRef.current}
+                isPhotoMode={captureMode === "photo"}
               />
             </div>
 
-            {/* Bottom spacer */}
             <div />
           </motion.div>
         )}
@@ -196,10 +294,18 @@ const Index = () => {
             transition={signalTransition}
             className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8"
           >
-            {/* Dark overlay over frozen camera */}
             <div className="absolute inset-0 bg-background/70 signal-blur" />
-            <div className="relative z-10">
-              <PostActions onPost={handlePost} onDiscard={handleDiscard} />
+            <div className="relative z-10 w-full max-w-sm">
+              <PostActions
+                onPost={handlePost}
+                onDiscard={handleDiscard}
+                uploading={uploading}
+                isPhoto={captureMode === "photo"}
+                songUrl={songUrl}
+                songTitle={songTitle}
+                onSongUrlChange={setSongUrl}
+                onSongTitleChange={setSongTitle}
+              />
             </div>
           </motion.div>
         )}
