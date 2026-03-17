@@ -58,6 +58,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [progress, setProgress] = useState(0);
   const [feltEffects, setFeltEffects] = useState<Array<{ id: string; x: number; y: number }>>([]);
   const [ended, setEnded] = useState(false);
+  const [stitchInput, setStitchInput] = useState("");
+  const [showStitchInput, setShowStitchInput] = useState(false);
+  const [stitchCounts, setStitchCounts] = useState<Record<string, number>>({});
+  const [hasStitched, setHasStitched] = useState<Record<string, boolean>>({});
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
 
