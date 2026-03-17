@@ -503,6 +503,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           setStitchScale(1);
           setStitchRotation(0);
           setShowStitchInput(true);
+          // For suggested signals, also show the ignite prompt
+          if (current.isSuggested) {
+            setShowIgnitePrompt(true);
+          }
         }
         return;
       }
