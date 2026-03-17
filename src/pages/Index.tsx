@@ -113,6 +113,9 @@ const Index = () => {
           hasPermission={hasPermission}
           error={cameraError}
           isRecording={isRecording}
+          zoom={zoom}
+          zoomCaps={zoomCaps}
+          onZoomChange={applyZoom}
         />
       )}
 
