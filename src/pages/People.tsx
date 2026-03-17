@@ -203,11 +203,11 @@ const People = () => {
                       onClick={() => toggleFollow(person.user_id)}
                       className={`rounded-full px-4 py-1.5 text-xs font-medium signal-ease ${
                         person.isFollowing
-                          ? "signal-surface text-muted-foreground"
+                          ? "bg-destructive/10 text-destructive"
                           : "bg-primary text-primary-foreground"
                       }`}
                     >
-                      {person.isFollowing ? "Following" : "Follow"}
+                      {person.isFollowing ? "Slap" : "Trail"}
                     </motion.button>
                   </motion.div>
                 ))}
