@@ -283,6 +283,24 @@ const Profile = () => {
     navigate("/auth");
   }, [signOut, navigate]);
 
+  const handleDeleteAccount = useCallback(async () => {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error) throw res.error;
+      toast.success("Account deleted. Goodbye.");
+      await signOut();
+      navigate("/auth");
+    } catch {
+      toast.error("Failed to delete account");
+      setDeleting(false);
+    }
+  }, [user, signOut, navigate]);
+
   const handleShowList = useCallback(async (type: "ignited" | "fueling") => {
     if (!user) return;
     setShowingList(type);
