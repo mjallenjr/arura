@@ -157,9 +157,19 @@ const People = () => {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
+    refreshCountRef.current += 1;
+
+    // Show ad every 4th refresh
+    if (refreshCountRef.current % 4 === 0 && user) {
+      const ad = await fetchTargetedAd(user.id, "embers");
+      setCurrentAd(ad);
+    } else {
+      setCurrentAd(null);
+    }
+
     await loadSuggestions();
     setRefreshing(false);
-  }, [loadSuggestions]);
+  }, [loadSuggestions, fetchTargetedAd, user]);
 
   // Pull-to-refresh touch handlers
   const onTouchStart = useCallback((e: React.TouchEvent) => {
