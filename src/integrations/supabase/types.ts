@@ -91,6 +91,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          from_user_id: string
+          id: string
+          read: boolean
+          signal_id: string | null
+          type: string
+          user_id: string
+          word: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_user_id: string
+          id?: string
+          read?: boolean
+          signal_id?: string | null
+          type?: string
+          user_id: string
+          word?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          read?: boolean
+          signal_id?: string | null
+          type?: string
+          user_id?: string
+          word?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
