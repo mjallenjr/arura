@@ -624,6 +624,28 @@ const Profile = () => {
                 />
               </div>
 
+              {/* Interests */}
+              <div>
+                <label className="label-signal mb-2 block">Your Interests</label>
+                <button
+                  onClick={() => setShowInterestPicker(true)}
+                  className="w-full signal-surface rounded-xl px-4 py-3 text-left signal-ease hover:ring-1 hover:ring-primary/20"
+                >
+                  {myInterests.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {myInterests.slice(0, 5).map(i => (
+                        <span key={i} className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">{i}</span>
+                      ))}
+                      {myInterests.length > 5 && (
+                        <span className="text-[10px] text-muted-foreground">+{myInterests.length - 5} more</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Choose your interests...</span>
+                  )}
+                </button>
+              </div>
+
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSave}
