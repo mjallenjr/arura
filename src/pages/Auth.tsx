@@ -89,7 +89,7 @@ const Auth = () => {
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {mode === "signup" && (
+          {mode === "signup" && !forgotMode && (
             <input
               type="text"
               placeholder="Display name"
@@ -106,15 +106,17 @@ const Auth = () => {
             required
             className="signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
-          />
+          {!forgotMode && (
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
+            />
+          )}
 
           <motion.button
             type="submit"
@@ -122,9 +124,18 @@ const Auth = () => {
             disabled={submitting}
             className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow signal-ease disabled:opacity-50 mt-2"
           >
-            {submitting ? "..." : mode === "signin" ? "Enter" : "Create"}
+            {submitting ? "..." : forgotMode ? "Send Reset Link" : mode === "signin" ? "Enter" : "Create"}
           </motion.button>
         </form>
+
+        {mode === "signin" && !forgotMode && (
+          <button
+            onClick={() => setForgotMode(true)}
+            className="mt-3 w-full text-center text-xs text-muted-foreground/70"
+          >
+            Forgot password?
+          </button>
+        )}
 
         <button
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
