@@ -140,10 +140,12 @@ const Auth = () => {
             className="w-full max-w-sm"
           >
             <div className="flex flex-col items-center gap-3 mb-8">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="text-primary">
-                <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" opacity="0.2" />
-                <path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                <path d="M12 18a3 3 0 003-3c0-2-1.5-3-2-5-.5 1-1.5 1.5-2 0-.5 2-2 3-2 5a3 3 0 003 3z" fill="currentColor" opacity="0.4" />
+              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" className="text-primary">
+                <path d="M7 4c-1.5-3-3-3.5-4-3 1.5 1 2.5 3 3 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                <path d="M25 4c1.5-3 3-3.5 4-3-1.5 1-2.5 3-3 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                <path d="M16 6c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2" />
+                <path d="M16 6c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                <path d="M16 22a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 22z" fill="currentColor" opacity="0.4" />
               </svg>
               <h1 className="display-signal text-center">arura</h1>
               <p className="text-sm text-muted-foreground text-center">
