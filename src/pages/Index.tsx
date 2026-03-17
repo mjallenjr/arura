@@ -235,11 +235,11 @@ const Index = () => {
                   transition={{ ...signalTransition, delay: 0.05 }}
                   width="40" height="40" viewBox="0 0 32 32" fill="none" className="text-primary"
                 >
-                  <path d="M7 4c-1.5-3-3-3.5-4-3 1.5 1 2.5 3 3 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                  <path d="M25 4c1.5-3 3-3.5 4-3-1.5 1-2.5 3-3 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                  <path d="M16 6c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2" />
-                  <path d="M16 6c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  <path d="M16 22a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 22z" fill="currentColor" opacity="0.4" />
+                  <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
+                  <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7" />
+                  <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2" />
+                  <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.4" />
                 </motion.svg>
                 <h1 className="text-3xl font-medium tracking-[-0.06em] text-foreground">arura</h1>
                 <p className="text-xs text-muted-foreground tracking-wide">life, briefly witnessed</p>
