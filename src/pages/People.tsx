@@ -321,7 +321,7 @@ const People = () => {
       if (!user) return;
 
       const { data } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name")
         .eq("qr_code", qrCode)
         .neq("user_id", user.id)
