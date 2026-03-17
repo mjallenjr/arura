@@ -53,6 +53,7 @@ const People = () => {
   const [allSuggestions, setAllSuggestions] = useState<ProfileResult[]>([]);
   const SUGGESTIONS_PER_PAGE = 6;
   const refreshCountRef = useRef(0);
+  const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
   const [currentAd, setCurrentAd] = useState<Ad | null>(null);
 
   // Pull-to-refresh state
