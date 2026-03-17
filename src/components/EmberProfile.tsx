@@ -30,6 +30,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   const [refueled, setRefueled] = useState(false);
   const [extinguishing, setExtinguishing] = useState(false);
   const [refueling, setRefueling] = useState(false);
+  const [igniting, setIgniting] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: d }) => setCurrentUser(d.user?.id ?? null));
@@ -86,17 +87,50 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     load();
   }, [userId]);
 
-  // Check follow status
+  // Check follow status and refuel status
   useEffect(() => {
     if (!currentUser || currentUser === userId) return;
-    supabase
+    
+    // Check follow
+    const checkFollow = supabase
       .from("follows")
       .select("id")
       .eq("follower_id", currentUser)
-      .eq("following_id", userId)
-      .then(({ data: rows }) => {
-        setIsFollowing(rows !== null && rows.length > 0);
-      });
+      .eq("following_id", userId);
+
+    // Check latest refuel notification from me to them
+    const checkRefuel = supabase
+      .from("notifications")
+      .select("created_at")
+      .eq("user_id", userId)
+      .eq("from_user_id", currentUser)
+      .eq("type", "refuel")
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    // Check their latest signal
+    const checkLatestSignal = supabase
+      .from("signals")
+      .select("created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    Promise.all([checkFollow, checkRefuel, checkLatestSignal]).then(
+      ([followRes, refuelRes, signalRes]) => {
+        setIsFollowing(followRes.data !== null && followRes.data.length > 0);
+
+        // Refueled = there's a refuel notification that's newer than their latest signal
+        const lastRefuel = refuelRes.data?.[0]?.created_at;
+        const lastSignal = signalRes.data?.[0]?.created_at;
+        if (lastRefuel) {
+          if (!lastSignal || new Date(lastRefuel) > new Date(lastSignal)) {
+            setRefueled(true);
+          }
+          // If they posted a new signal after the refuel, allow re-refueling
+        }
+      }
+    );
   }, [currentUser, userId]);
 
   // Check if current user already sparked the top drop
@@ -175,6 +209,24 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
     }, 600);
   }, [currentUser, userId, refueled, data?.display_name]);
 
+  const handleIgnite = useCallback(async () => {
+    if (!currentUser || isFollowing) return;
+    setIgniting(true);
+
+    const { error } = await supabase.from("follows").insert({
+      follower_id: currentUser,
+      following_id: userId,
+    });
+
+    setTimeout(() => {
+      setIgniting(false);
+      if (!error) {
+        setIsFollowing(true);
+        toast({ title: "🔥 ignited", description: `You ignited ${data?.display_name}` });
+      }
+    }, 800);
+  }, [currentUser, userId, isFollowing, data?.display_name]);
+
   const initial = data?.display_name?.charAt(0).toUpperCase() ?? "?";
   const isSelf = currentUser === userId;
 
@@ -243,7 +295,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
             )}
           </motion.div>
 
-          {/* Extinguish & Refuel Actions */}
+          {/* Ignite / Extinguish & Refuel Actions */}
           {!isSelf && currentUser && (
             <motion.div
               initial={{ opacity: 0, y: 6 }}
@@ -251,7 +303,36 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
               transition={{ ...signalTransition, delay: 0.08 }}
               className="flex gap-3 mb-6"
             >
-              {/* Extinguish button */}
+              {/* Ignite button (when not following) */}
+              {!isFollowing && (
+                <motion.button
+                  onClick={handleIgnite}
+                  disabled={igniting}
+                  className="flex-1 relative overflow-hidden rounded-xl py-3 px-4 bg-primary text-primary-foreground text-xs font-medium tracking-wide uppercase transition-colors hover:opacity-90 disabled:opacity-50"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <AnimatePresence>
+                    {igniting && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-radial from-primary/40 to-transparent"
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: [0, 1, 0.5], scale: [0.5, 1.2, 1] }}
+                          transition={{ duration: 0.8 }}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  🔥 ignite
+                </motion.button>
+              )}
+
+              {/* Extinguish button (when following) */}
               {isFollowing && (
                 <motion.button
                   onClick={handleExtinguish}
@@ -267,7 +348,6 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        {/* Ash particles */}
                         {[...Array(8)].map((_, i) => (
                           <motion.span
                             key={i}
@@ -307,7 +387,6 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                     >
-                      {/* Warm glow effect */}
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"
                         initial={{ opacity: 0, scale: 0.8 }}
