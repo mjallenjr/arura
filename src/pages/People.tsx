@@ -29,6 +29,7 @@ const People = () => {
   const [results, setResults] = useState<ProfileResult[]>([]);
   const [myQr, setMyQr] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const [animating, setAnimating] = useState<AnimatingId | null>(null);
 
   // Load my QR code and following list
   useEffect(() => {
