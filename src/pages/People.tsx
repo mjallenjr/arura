@@ -159,10 +159,11 @@ const People = () => {
     setRefreshing(true);
     refreshCountRef.current += 1;
 
-    // Show ad every 4th refresh
+    // Show ad every 4th refresh, auto-dismiss after 3.7s
     if (refreshCountRef.current % 4 === 0 && user) {
       const ad = await fetchTargetedAd(user.id, "embers");
       setCurrentAd(ad);
+      if (ad) setTimeout(() => setCurrentAd(null), 3700);
     } else {
       setCurrentAd(null);
     }
