@@ -404,18 +404,21 @@ const Profile = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ ...signalTransition, delay: 0.1 }}
-          className="grid grid-cols-3 gap-3 mb-6"
+          className="flex flex-col items-center gap-4 mb-6"
         >
-          {[
-            { label: "signals", value: signalsCount },
-            { label: "followers", value: followersCount },
-            { label: "following", value: followingCount },
-          ].map((stat) => (
-            <div key={stat.label} className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
-              <span className="text-xl font-medium text-foreground">{stat.value}</span>
-              <span className="label-signal">{stat.label}</span>
+          <p className="text-sm text-muted-foreground">
+            You've Sparked with <span className="text-foreground font-semibold">{sparkedCount}</span> Embers
+          </p>
+          <div className="grid grid-cols-2 gap-3 w-full">
+            <div className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
+              <span className="text-xl font-medium text-foreground">{ignitedCount}</span>
+              <span className="label-signal">Ignited</span>
             </div>
-          ))}
+            <div className="signal-surface rounded-xl p-4 flex flex-col items-center gap-1">
+              <span className="text-xl font-medium text-foreground">{fuelingCount}</span>
+              <span className="label-signal">Fueling You</span>
+            </div>
+          </div>
         </motion.div>
 
         {/* Tab switcher */}
