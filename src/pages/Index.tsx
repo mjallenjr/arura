@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
-type AppState = "camera" | "confirm" | "feed";
+type AppState = "home" | "camera" | "confirm" | "feed";
 type CaptureMode = "video" | "photo";
 
 const signalTransition = {
@@ -21,7 +21,7 @@ const signalTransition = {
 
 const Index = () => {
   const { user } = useAuth();
-  const [state, setState] = useState<AppState>("camera");
+  const [state, setState] = useState<AppState>("home");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState(5.0);
@@ -43,6 +43,13 @@ const Index = () => {
   const { start: startMediaRecorder, stop: stopMediaRecorder } = useRecorder();
   const { startPulse, stopPulse } = useHaptics();
 
+  // Helper: flip a video blob horizontally (for front camera recordings)
+  const flipVideoBlob = useCallback(async (blob: Blob): Promise<Blob> => {
+    // For video, we can't easily re-encode in browser, so we accept the raw stream.
+    // The real fix is to mirror the CSS on playback. But for photos we flip via canvas.
+    return blob;
+  }, []);
+
   const capturePhoto = useCallback(() => {
     if (!videoRef.current) return;
 
@@ -53,6 +60,7 @@ const Index = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Always flip for front camera so the photo matches what the user sees
     if (cameraFacing === "user") {
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
@@ -116,6 +124,15 @@ const Index = () => {
     }, 50);
   }, [stopRecording, startMediaRecorder, startPulse, streamRef, captureMode, capturePhoto]);
 
+  const resetToHome = useCallback(() => {
+    setCountdown(5.0);
+    setRecordedBlob(null);
+    setPhotoBlob(null);
+    setSongUrl("");
+    setSongTitle("");
+    setState("home");
+  }, []);
+
   const handleDiscard = useCallback(() => {
     setCountdown(5.0);
     setRecordedBlob(null);
@@ -153,23 +170,14 @@ const Index = () => {
       if (insertError) throw insertError;
 
       toast.success("Signal posted");
-      setState("feed");
+      resetToHome();
     } catch (err) {
       console.error("Post failed:", err);
       toast.error("Failed to post signal");
     } finally {
       setUploading(false);
     }
-  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle]);
-
-  const handleFeedEnd = useCallback(() => {
-    setCountdown(5.0);
-    setRecordedBlob(null);
-    setPhotoBlob(null);
-    setSongUrl("");
-    setSongTitle("");
-    setState("camera");
-  }, []);
+  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, resetToHome]);
 
   const toggleCamera = useCallback(() => {
     setCameraFacing((f) => (f === "user" ? "environment" : "user"));
@@ -194,10 +202,81 @@ const Index = () => {
           zoom={zoom}
           zoomCaps={zoomCaps}
           onZoomChange={applyZoom}
+          facing={cameraFacing}
         />
       )}
 
       <AnimatePresence mode="wait">
+        {/* ── HOME HUB ── */}
+        {state === "home" && (
+          <motion.div
+            key="home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={signalTransition}
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center"
+          >
+            {/* Ambient background */}
+            <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 via-background to-background" />
+            <div
+              className="absolute inset-0 opacity-[0.03] pointer-events-none"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+              }}
+            />
+
+            <div className="relative z-10 flex flex-col items-center gap-12 px-8">
+              {/* Brand */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...signalTransition, delay: 0.1 }}
+                className="flex flex-col items-center gap-2"
+              >
+                <h1 className="text-3xl font-medium tracking-[-0.06em] text-foreground">arura</h1>
+                <p className="text-xs text-muted-foreground tracking-wide">life, briefly witnessed</p>
+              </motion.div>
+
+              {/* Two choices */}
+              <div className="flex flex-col gap-4 w-full max-w-[260px]">
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...signalTransition, delay: 0.2 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setState("camera")}
+                  className="group relative overflow-hidden rounded-2xl bg-primary px-8 py-5 text-primary-foreground signal-glow signal-ease"
+                >
+                  <div className="relative z-10 flex flex-col items-center gap-1">
+                    <span className="text-lg font-medium tracking-[-0.02em]">Post</span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.1em] opacity-60">
+                      share a moment
+                    </span>
+                  </div>
+                </motion.button>
+
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...signalTransition, delay: 0.3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setState("feed")}
+                  className="group relative overflow-hidden rounded-2xl signal-surface signal-blur px-8 py-5 text-foreground signal-ease border border-border/30"
+                >
+                  <div className="relative z-10 flex flex-col items-center gap-1">
+                    <span className="text-lg font-medium tracking-[-0.02em]">Indulge</span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                      see what's new
+                    </span>
+                  </div>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── CAMERA ── */}
         {state === "camera" && (
           <motion.div
             key="camera"
@@ -209,7 +288,9 @@ const Index = () => {
           >
             {/* Top bar */}
             <div className="flex items-center justify-between">
-              <p className="label-signal">arura</p>
+              <button onClick={resetToHome} className="label-signal">
+                ← back
+              </button>
               <div className="flex items-center gap-2">
                 {/* Mode toggle */}
                 <div className="flex signal-surface rounded-full signal-blur">
@@ -285,6 +366,7 @@ const Index = () => {
           </motion.div>
         )}
 
+        {/* ── CONFIRM ── */}
         {state === "confirm" && (
           <motion.div
             key="confirm"
@@ -310,6 +392,7 @@ const Index = () => {
           </motion.div>
         )}
 
+        {/* ── FEED ── */}
         {state === "feed" && (
           <motion.div
             key="feed"
@@ -319,7 +402,7 @@ const Index = () => {
             transition={signalTransition}
             className="absolute inset-0"
           >
-            <FeedView onEnd={handleFeedEnd} />
+            <FeedView onEnd={resetToHome} />
           </motion.div>
         )}
       </AnimatePresence>
