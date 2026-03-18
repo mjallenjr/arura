@@ -22,7 +22,13 @@ interface InterestPickerProps {
 }
 
 const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestPickerProps) => {
-  const [selected, setSelected] = useState<string[]>(currentInterests);
+  const [selected, setSelected] = useState<string[]>(() => {
+    const merged = [...currentInterests];
+    for (const p of PERMANENT_INTERESTS) {
+      if (!merged.includes(p)) merged.push(p);
+    }
+    return merged;
+  });
   const [search, setSearch] = useState("");
   const [networkInterests, setNetworkInterests] = useState<string[]>([]);
   const [popularTerms, setPopularTerms] = useState<{ term: string; search_count: number }[]>([]);
