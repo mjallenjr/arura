@@ -56,6 +56,7 @@ const FeedControls = ({
   onReportClick,
   onRekindle,
   onShare,
+  onFan,
 }: FeedControlsProps) => {
   const signal = currentSignal;
 
