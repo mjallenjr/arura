@@ -36,6 +36,7 @@ interface FeedControlsProps {
   onRekindle: () => void;
   onShare: () => void;
   onFan: () => void;
+  onReply: () => void;
 }
 
 const FeedControls = ({
