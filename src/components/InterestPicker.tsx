@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
+const PERMANENT_INTERESTS = ["fly fishing"];
 
 const PRESET_INTERESTS = [
   "photography", "music", "hiking", "cooking", "gaming", "fitness",
@@ -21,7 +22,13 @@ interface InterestPickerProps {
 }
 
 const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestPickerProps) => {
-  const [selected, setSelected] = useState<string[]>(currentInterests);
+  const [selected, setSelected] = useState<string[]>(() => {
+    const merged = [...currentInterests];
+    for (const p of PERMANENT_INTERESTS) {
+      if (!merged.includes(p)) merged.push(p);
+    }
+    return merged;
+  });
   const [search, setSearch] = useState("");
   const [networkInterests, setNetworkInterests] = useState<string[]>([]);
   const [popularTerms, setPopularTerms] = useState<{ term: string; search_count: number }[]>([]);
@@ -71,6 +78,10 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
 
   const toggleInterest = useCallback((interest: string) => {
     const normalized = interest.toLowerCase().trim();
+    if (PERMANENT_INTERESTS.includes(normalized)) {
+      toast.info("Fly fishing is forever 🎣");
+      return;
+    }
     setSelected(prev =>
       prev.includes(normalized)
         ? prev.filter(i => i !== normalized)
@@ -253,12 +264,22 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.8, opacity: 0 }}
                   onClick={() => toggleInterest(interest)}
-                  className="rounded-full bg-primary/20 ring-1 ring-primary/40 px-3 py-1.5 text-xs font-medium text-primary flex items-center gap-1.5"
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 ${
+                    PERMANENT_INTERESTS.includes(interest)
+                      ? "bg-primary/30 ring-1 ring-primary/60 text-primary cursor-default"
+                      : "bg-primary/20 ring-1 ring-primary/40 text-primary"
+                  }`}
                 >
                   {interest}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+                  {PERMANENT_INTERESTS.includes(interest) ? (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" opacity={0.6}>
+                      <path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V7c0-2.76-2.24-5-5-5zm3 10H9V7c0-1.66 1.34-3 3-3s3 1.34 3 3v5z"/>
+                    </svg>
+                  ) : (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  )}
                 </motion.button>
               ))}
             </div>
