@@ -88,7 +88,7 @@ serve(async (req) => {
 
         if (!followers || followers.length === 0) continue;
 
-        const levelLabel = rs.heat_level === "star" ? "⭐ STAR" : `🔥 ${rs.heat_level?.toUpperCase()}`;
+        const levelLabel = rs.heat_level === "star" ? "STAR" : rs.heat_level?.toUpperCase();
         const word = rs.stitch_word ? ` "${rs.stitch_word}"` : "";
 
         for (const f of followers) {
