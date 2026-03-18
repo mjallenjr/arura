@@ -7,6 +7,7 @@ import FeedEndScreen from "@/components/feed/FeedEndScreen";
 import AdCard from "@/components/feed/AdCard";
 import StitchOverlay from "@/components/feed/StitchOverlay";
 import FeedControls from "@/components/feed/FeedControls";
+import LevelUpCelebration from "@/components/feed/LevelUpCelebration";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAds, type Ad } from "@/hooks/useAds";
@@ -14,6 +15,8 @@ import { useBlocks } from "@/hooks/useBlocks";
 import { useRateLimit } from "@/hooks/useRateLimit";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { toast } from "sonner";
+import { playFelt, playStitch, playLevelUp, playRekindle, playSwipe, hapticFelt, hapticStitch, hapticLevelUp, hapticRekindle, hapticSwipe } from "@/lib/sounds";
+import { HEAT_THRESHOLDS, HEAT_TIERS } from "@/components/feed/HeatBadge";
 
 interface FeedViewProps {
   onEnd: () => void;
