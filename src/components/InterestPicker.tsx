@@ -72,6 +72,10 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
 
   const toggleInterest = useCallback((interest: string) => {
     const normalized = interest.toLowerCase().trim();
+    if (PERMANENT_INTERESTS.includes(normalized)) {
+      toast.info("Fly fishing is forever 🎣");
+      return;
+    }
     setSelected(prev =>
       prev.includes(normalized)
         ? prev.filter(i => i !== normalized)
