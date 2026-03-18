@@ -974,7 +974,7 @@ const Profile = () => {
                     </motion.button>
                   ) : (
                     <p className="text-[10px] text-muted-foreground text-center">
-                      Min. payout is $5.00 — keep dropping signals!
+                      Min. payout is $5.00 — keep shooting flares!
                     </p>
                   )}
                 </div>

@@ -101,7 +101,7 @@ const InteractiveDropDemo = ({ onComplete }: Props) => {
       )}
 
       <p className="text-[10px] text-muted-foreground/50">
-        {recorded ? "nice! you dropped a signal" : "hold the shutter to record"}
+        {recorded ? "nice! you shot a flare" : "hold the shutter to record"}
       </p>
     </div>
   );
