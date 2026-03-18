@@ -35,6 +35,7 @@ interface StitchOverlayProps {
 
 const StitchOverlay = ({
   stitchWord,
+  stitchWordPos,
   submittedStitch,
   showStitchInput,
   stitchInput,
