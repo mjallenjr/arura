@@ -264,6 +264,12 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* New engagement sections */}
+      <InteractiveDemoSection />
+      <TeaserFeedSection />
+      <SocialProofSection />
+      <FAQSection />
+
       {/* ── FINAL CTA ── */}
       <section className="py-24 px-6 border-t border-border/50">
         <div className="max-w-lg mx-auto text-center">
