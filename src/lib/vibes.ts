@@ -124,13 +124,17 @@ export const ALL_VIBES: string[] = Object.values(VIBE_CATEGORIES).flat();
 /** Get unique vibes (deduplicated) */
 export const UNIQUE_VIBES: string[] = [...new Set(ALL_VIBES)];
 
-/** Search vibes by query */
+/** Search vibes by query — starts matching from 1 char, prioritizes starts-with */
 export function searchVibes(query: string, limit = 50): string[] {
   const q = query.toLowerCase().trim();
   if (!q) return [];
-  return UNIQUE_VIBES
-    .filter((v) => v.includes(q))
-    .slice(0, limit);
+  const startsWith: string[] = [];
+  const contains: string[] = [];
+  for (const v of UNIQUE_VIBES) {
+    if (v.startsWith(q)) startsWith.push(v);
+    else if (v.includes(q)) contains.push(v);
+  }
+  return [...startsWith, ...contains].slice(0, limit);
 }
 
 /** Get featured/popular vibes for initial display */
