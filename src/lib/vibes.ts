@@ -27,7 +27,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "history books", "biographies", "self-help", "mystery", "romance novels", "horror fiction",
     "literary fiction", "young adult", "children's books", "audiobooks", "book clubs",
   ],
-  "🏃 Fitness": [
+  "Fitness": [
     "fitness", "running", "weightlifting", "crossfit", "yoga", "pilates", "boxing", "mma",
     "martial arts", "jiu-jitsu", "muay thai", "kickboxing", "swimming", "cycling", "spinning",
     "hiking", "climbing", "bouldering", "calisthenics", "stretching", "bodybuilding",
