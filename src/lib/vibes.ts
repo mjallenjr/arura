@@ -21,7 +21,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "screenwriting", "directing", "acting", "filmmaking", "cinematography", "editing",
     "k-drama", "reality tv", "true crime", "sitcoms", "cartoons", "studio ghibli", "marvel",
   ],
-  "📚 Literature": [
+  "Literature": [
     "reading", "writing", "poetry", "fiction", "non-fiction", "sci-fi books", "fantasy books",
     "manga", "comics", "graphic novels", "journalism", "blogging", "essays", "philosophy",
     "history books", "biographies", "self-help", "mystery", "romance novels", "horror fiction",
