@@ -31,6 +31,14 @@ const Landing = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
+
+  // Fetch waitlist count
+  useEffect(() => {
+    supabase.rpc("get_waitlist_count" as any).then(({ data }) => {
+      if (typeof data === "number") setWaitlistCount(data);
+    });
+  }, [submitted]);
 
   // Override body overflow for scrollable landing page
   useEffect(() => {
