@@ -148,8 +148,26 @@ export function useFeedData() {
       const rawSignals = rawSignalsRes.data;
 
       if (!rawSignals || rawSignals.length === 0) {
+        // Still fetch fanned flares even with no followed content
+        let fannedSignals: Signal[] = [];
+        if (fannedIds.size > 0) {
+          const { data: fSignals } = await supabase.from("signals").select("*").in("id", [...fannedIds]).gt("expires_at", new Date().toISOString());
+          if (fSignals) {
+            const fAuthorIds = [...new Set(fSignals.map(s => s.user_id))];
+            const { data: fProfiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", fAuthorIds);
+            const fNameMap = new Map(fProfiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+            const senderIds = [...new Set([...fannedSenderMap.values()])];
+            const { data: sProfiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", senderIds);
+            const sNameMap = new Map(sProfiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+            fannedSignals = fSignals.map(s => {
+              let media_url: string | null = null;
+              if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+              return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: fNameMap.get(s.user_id) ?? "unknown", media_url, isFanned: true, fannedBy: sNameMap.get(fannedSenderMap.get(s.id) ?? "") ?? "someone" };
+            });
+          }
+        }
         const discovery = await fetchDiscovery();
-        const final = await interleaveAds([...discovery, ...diversitySignals], user.id);
+        const final = await interleaveAds([...fannedSignals, ...discovery, ...diversitySignals], user.id);
         setSignals(final);
         cacheFeed(final);
         setIsFromCache(false);
