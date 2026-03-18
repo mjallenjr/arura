@@ -638,9 +638,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         if (isSwiping.current) {
           const threshold = 80;
           if (swipeDeltaRef.current < -threshold) {
-            advanceSignal(); // swipe left → next
+            advanceSignal(); playSwipe(); hapticSwipe();
           } else if (swipeDeltaRef.current > threshold) {
-            goBackSignal(); // swipe right → previous
+            goBackSignal(); playSwipe(); hapticSwipe();
           }
         }
         swipeStartXRef.current = null;
