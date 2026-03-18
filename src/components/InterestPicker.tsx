@@ -130,6 +130,9 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
       .update({ interests: selected })
       .eq("user_id", userId);
 
+    // Sync camps after interest change
+    supabase.rpc("sync_camps_for_user", { p_user_id: userId }).catch(() => {});
+
     onSave(selected);
     setSaving(false);
     toast.success("Interests saved");
