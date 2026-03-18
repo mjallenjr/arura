@@ -39,6 +39,8 @@ const Index = () => {
     return !localStorage.getItem("arura_onboarded");
   });
   const [showVibesPicker, setShowVibesPicker] = useState(false);
+  const [showEmberSuggestions, setShowEmberSuggestions] = useState(false);
+  const [pickedInterests, setPickedInterests] = useState<string[]>([]);
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("environment");
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
