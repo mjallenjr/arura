@@ -48,8 +48,7 @@ const SignalView = () => {
       setSignal(data as SignalData);
 
       if (data.storage_path) {
-        const { data: urlData } = supabase.storage.from("signals").getPublicUrl(data.storage_path);
-        setMediaUrl(urlData.publicUrl);
+        setMediaUrl(resolveMediaUrl(data.storage_path));
       }
 
       // Get author name

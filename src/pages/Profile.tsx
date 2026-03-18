@@ -190,8 +190,7 @@ const Profile = () => {
         const signalStitches = stitchData.filter((st) => st.signal_id === s.id);
         let media_url: string | null = null;
         if (s.storage_path) {
-          const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
-          media_url = data.publicUrl;
+          media_url = resolveMediaUrl(s.storage_path);
         }
 
         const hasBeenViewed = viewedSet.has(s.id);

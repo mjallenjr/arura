@@ -87,10 +87,10 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
 
         const top = ranked[0];
         if (top.storage_path) {
-          const { data: urlData } = supabase.storage.from("signals").getPublicUrl(top.storage_path);
+          const mediaUrl = resolveMediaUrl(top.storage_path);
           topDrop = {
             signal_id: top.id,
-            media_url: urlData.publicUrl,
+            media_url: mediaUrl,
             type: top.type,
             stitch_word: top.stitch_word,
             felt_count: top.felt_count,

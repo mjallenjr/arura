@@ -68,8 +68,7 @@ const ProfileHeatHistory = () => {
 
       let hottest_media_url: string | null = null;
       if (hottestSignal.storage_path) {
-        const { data: d } = supabase.storage.from("signals").getPublicUrl(hottestSignal.storage_path);
-        hottest_media_url = d.publicUrl;
+        hottest_media_url = resolveMediaUrl(hottestSignal.storage_path);
       }
 
       setData({
