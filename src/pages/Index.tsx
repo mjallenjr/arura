@@ -1,10 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import PostActions from "@/components/PostActions";
 import StitchWordPreview from "@/components/StitchWordPreview";
 import FeedView from "@/components/FeedView";
 import Onboarding from "@/components/Onboarding";
 import VibesPicker from "@/components/onboarding/VibesPicker";
+import TrendingBar from "@/components/feed/TrendingBar";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
