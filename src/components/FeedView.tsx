@@ -722,8 +722,14 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         showReportMenu={showReportMenu}
         isFirstTouch={!!firstTouchSignals[signal.id]}
         isLevelUpCredit={!!levelUpCreditSignals[signal.id] && signal.heat_level !== 'match'}
+        hasRekindled={!!hasRekindled[signal.id]}
         onReportClick={() => setShowReportMenu(true)}
+        onRekindle={() => handleRekindle(signal.id, signal.user_id)}
+        onShare={() => handleShare(signal.id)}
       />
+
+      {/* Level-up celebration */}
+      <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
 
       <div style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
         <FeedPlayer signalId={signal.id} mediaUrl={signal.media_url} type={signal.type} />
