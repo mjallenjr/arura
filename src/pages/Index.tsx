@@ -200,6 +200,23 @@ const Index = () => {
             onComplete={() => {
               setShowOnboarding(false);
               localStorage.setItem("arura_onboarded", "true");
+              // Show vibes picker after onboarding if user has an account
+              if (user) {
+                const hasVibes = localStorage.getItem("arura_vibes_picked");
+                if (!hasVibes) setShowVibesPicker(true);
+              }
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showVibesPicker && user && (
+          <VibesPicker
+            userId={user.id}
+            onComplete={() => {
+              setShowVibesPicker(false);
+              localStorage.setItem("arura_vibes_picked", "true");
             }}
           />
         )}
