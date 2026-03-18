@@ -105,7 +105,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "side hustles", "e-commerce", "dropshipping", "content creation", "influencing",
     "public speaking", "networking", "leadership", "management", "consulting",
   ],
-  "🌍 Social Impact": [
+  "Social Impact": [
     "activism", "climate action", "social justice", "human rights", "equality",
     "volunteering", "community building", "education", "mentoring", "nonprofits",
     "politics", "journalism", "environmental justice", "refugees", "accessibility",
