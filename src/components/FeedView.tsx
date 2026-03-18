@@ -7,6 +7,7 @@ import FeedPlayer from "@/components/feed/FeedPlayer";
 import FeedEndScreen from "@/components/feed/FeedEndScreen";
 import AdCard from "@/components/feed/AdCard";
 import StitchOverlay from "@/components/feed/StitchOverlay";
+import QuickReply from "@/components/feed/QuickReply";
 import FeedControls from "@/components/feed/FeedControls";
 import LevelUpCelebration from "@/components/feed/LevelUpCelebration";
 import FanSheet from "@/components/feed/FanSheet";
