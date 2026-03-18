@@ -43,8 +43,11 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: `Webhook signature verification failed` }), { status: 400 });
     }
   } else {
-    logStep("WARNING: No STRIPE_WEBHOOK_SECRET set, skipping signature verification");
-    event = JSON.parse(body) as Stripe.Event;
+    logStep("ERROR", { message: "STRIPE_WEBHOOK_SECRET not set — rejecting request" });
+    return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   logStep("Event received", { type: event.type, id: event.id });
