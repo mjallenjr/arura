@@ -402,7 +402,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  🔥 ignite
+                  ✦ ignite
                 </motion.button>
               )}
 
