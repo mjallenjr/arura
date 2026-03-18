@@ -8,6 +8,7 @@ import { useAds, type Ad } from "@/hooks/useAds";
 import QRCode from "@/components/QRCode";
 import QRScanner from "@/components/QRScanner";
 import EmberProfile from "@/components/EmberProfile";
+import InviteEmbers from "@/components/InviteEmbers";
 
 type Tab = "search" | "qr" | "scan";
 
