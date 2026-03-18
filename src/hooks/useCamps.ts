@@ -85,7 +85,7 @@ export function useCamps() {
 
   const syncCamps = useCallback(async () => {
     if (!user) return;
-    await supabase.rpc("sync_camps_for_user", { p_user_id: user.id });
+    await Promise.resolve(supabase.rpc("sync_camps_for_user" as any, { p_user_id: user.id }));
     await fetchCamps();
   }, [user, fetchCamps]);
 
