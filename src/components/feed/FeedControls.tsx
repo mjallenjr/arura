@@ -29,7 +29,10 @@ interface FeedControlsProps {
   showReportMenu: boolean;
   isFirstTouch: boolean;
   isLevelUpCredit: boolean;
+  hasRekindled: boolean;
   onReportClick: () => void;
+  onRekindle: () => void;
+  onShare: () => void;
 }
 
 const FeedControls = ({
