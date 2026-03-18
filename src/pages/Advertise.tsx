@@ -72,7 +72,7 @@ const Advertise = () => {
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             We'll reach out within 24 hours with your campaign setup. Get ready to reach the most engaged audience on the internet.
           </p>
-          <a href="/" className="mt-6 inline-block text-xs text-primary hover:underline">← Back to arura</a>
+          <a href="/home" className="mt-6 inline-block text-xs text-primary hover:underline">← Back to arura</a>
         </motion.div>
       </div>
     );
