@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
+const PERMANENT_INTERESTS = ["fly fishing"];
 
 const PRESET_INTERESTS = [
   "photography", "music", "hiking", "cooking", "gaming", "fitness",
