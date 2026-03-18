@@ -46,7 +46,7 @@ const Install = () => {
         </div>
         <h1 className="text-2xl font-semibold mb-2">You're all set</h1>
         <p className="text-muted-foreground mb-8">arura is installed on your device.</p>
-        <Button onClick={() => navigate("/")} className="bg-primary text-primary-foreground">
+        <Button onClick={() => navigate("/home")} className="bg-primary text-primary-foreground">
           Open arura
         </Button>
       </div>

@@ -78,7 +78,7 @@ const Auth = React.forwardRef<HTMLDivElement>((_props, ref) => {
       if (error) {
         toast.error(error.message);
       } else {
-        navigate("/");
+        navigate("/home");
       }
     }
     setSubmitting(false);

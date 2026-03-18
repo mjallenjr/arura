@@ -7,7 +7,7 @@ const EmberPublicProfile = () => {
   const navigate = useNavigate();
 
   if (!userId) {
-    navigate("/");
+    navigate("/home");
     return null;
   }
 
