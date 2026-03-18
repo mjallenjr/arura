@@ -47,6 +47,7 @@ const Discover = () => {
   const [vibeQuery, setVibeQuery] = useState("");
   const [vibeSearchResults, setVibeSearchResults] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [vibeCounts, setVibeCounts] = useState<Record<string, number>>({});
 
   // Pull-to-refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -71,40 +72,39 @@ const Discover = () => {
     if (!user) return;
     setLoading(true);
 
-    // Get active signals (RLS now allows all active signals for discovery)
-    const { data: signals } = await supabase
-      .from("signals")
-      .select("*")
-      .gt("expires_at", new Date().toISOString())
-      .neq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
+    // Use engagement-ranked function for smarter trending
+    const { data: ranked } = await supabase.rpc("get_engagement_ranked_signals", { p_user_id: user.id });
 
-    if (!signals || signals.length === 0) {
+    if (!ranked || ranked.length === 0) {
       setTrendingDrops([]);
       setLoading(false);
       return;
     }
 
     // Get author names
-    const authorIds = [...new Set(signals.map((s) => s.user_id))];
+    const authorIds = [...new Set(ranked.map((s: any) => s.signal_user_id))];
     const { data: profiles } = await supabase
       .from("public_profiles")
       .select("user_id, display_name")
       .in("user_id", authorIds);
     const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
 
-    const trending: TrendingDrop[] = signals
-      .map((s) => {
+    const trending: TrendingDrop[] = ranked
+      .map((s: any) => {
         let media_url: string | null = null;
         if (s.storage_path) {
           const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
           media_url = data.publicUrl;
         }
         return {
-          ...s,
+          id: s.signal_id,
+          user_id: s.signal_user_id,
+          type: s.signal_type,
+          storage_path: s.storage_path,
+          stitch_word: s.stitch_word,
+          created_at: s.created_at,
           media_url,
-          display_name: nameMap.get(s.user_id) ?? "unknown",
+          display_name: nameMap.get(s.signal_user_id) ?? "unknown",
           stitch_count: 0,
           felt_count: 0,
         };
@@ -226,6 +226,14 @@ const Discover = () => {
   useEffect(() => {
     loadTrending();
     loadSuggestedEmbers();
+    // Load social proof for featured vibes
+    supabase.rpc("get_vibe_counts", { p_vibes: FEATURED_VIBES }).then(({ data }) => {
+      if (data) {
+        const counts: Record<string, number> = {};
+        (data as any[]).forEach((d: any) => { counts[d.vibe] = Number(d.ember_count); });
+        setVibeCounts(counts);
+      }
+    });
   }, [loadTrending, loadSuggestedEmbers]);
 
   const toggleFollow = useCallback(async (targetId: string) => {
@@ -334,9 +342,25 @@ const Discover = () => {
                   />
                 </div>
               ) : trendingDrops.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="text-sm text-muted-foreground">No trending drops right now</p>
-                  <p className="text-xs text-muted-foreground/50 mt-2">Check back soon — things heat up fast</p>
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <motion.svg
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: [0.8, 1.1, 1] }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    width="48" height="48" viewBox="0 0 32 32" fill="none" className="text-primary"
+                  >
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2" />
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  </motion.svg>
+                  <p className="text-sm font-medium text-foreground">No drops yet — be the first 🔥</p>
+                  <p className="text-xs text-muted-foreground text-center px-8">Things heat up fast. Drop a signal and watch it spread.</p>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate("/")}
+                    className="rounded-2xl bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow mt-2"
+                  >
+                    Drop something warm
+                  </motion.button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
@@ -435,9 +459,12 @@ const Discover = () => {
                         key={tag}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => searchByInterest(tag)}
-                        className="rounded-full px-3.5 py-2 text-xs font-medium signal-surface text-muted-foreground hover:text-foreground signal-ease"
+                        className="rounded-full px-3.5 py-2 text-xs font-medium signal-surface text-muted-foreground hover:text-foreground signal-ease flex items-center gap-1.5"
                       >
                         {tag}
+                        {vibeCounts[tag] > 0 && (
+                          <span className="text-[9px] text-primary/60">{vibeCounts[tag]}</span>
+                        )}
                       </motion.button>
                     ))}
                   </div>

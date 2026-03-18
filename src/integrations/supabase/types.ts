@@ -788,6 +788,21 @@ export type Database = {
           following_id: string
         }[]
       }
+      get_engagement_ranked_signals: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string
+          engagement_score: number
+          expires_at: string
+          signal_id: string
+          signal_type: string
+          signal_user_id: string
+          song_clip_url: string
+          song_title: string
+          stitch_word: string
+          storage_path: string
+        }[]
+      }
       get_profiles_by_ids: {
         Args: { p_user_ids: string[] }
         Returns: {
@@ -809,6 +824,13 @@ export type Database = {
           qr_code: string
           referral_code: string
           user_id: string
+        }[]
+      }
+      get_vibe_counts: {
+        Args: { p_vibes: string[] }
+        Returns: {
+          ember_count: number
+          vibe: string
         }[]
       }
       has_role: {

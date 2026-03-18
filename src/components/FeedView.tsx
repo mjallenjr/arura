@@ -202,33 +202,77 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   useEffect(() => {
     if (!user) return;
     const fetchSignals = async () => {
+      // 1. Get aura-ranked following for personal feed
       const { data: auraData } = await supabase.rpc("get_aura_ranked_following", { p_user_id: user.id });
       const rankedIds = auraData?.map((a: any) => a.following_id) ?? [];
+      
       if (rankedIds.length === 0) {
         const discovery = await fetchDiscovery();
         setSignals(await interleaveAds(discovery, user.id));
         setLoading(false);
         return;
       }
+      
       const auraRank = new Map(rankedIds.map((id: string, i: number) => [id, i]));
-      const { data: rawSignals } = await supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(20);
+      
+      // 2. Fetch signals from followed users
+      const { data: rawSignals } = await supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30);
+      
       if (!rawSignals || rawSignals.length === 0) {
         const discovery = await fetchDiscovery();
         setSignals(await interleaveAds(discovery, user.id));
         setLoading(false);
         return;
       }
+      
+      // 3. Get engagement data (felts + stitches) for each signal
+      const signalIds = rawSignals.map(s => s.id);
+      const [feltData, stitchData, viewData] = await Promise.all([
+        supabase.from("felts").select("signal_id").in("signal_id", signalIds),
+        supabase.from("stitches").select("signal_id").in("signal_id", signalIds),
+        supabase.from("signal_views").select("signal_id").in("signal_id", signalIds),
+      ]);
+      
+      const feltCounts = new Map<string, number>();
+      feltData.data?.forEach((f: any) => feltCounts.set(f.signal_id, (feltCounts.get(f.signal_id) ?? 0) + 1));
+      const stitchCountsMap = new Map<string, number>();
+      stitchData.data?.forEach((s: any) => stitchCountsMap.set(s.signal_id, (stitchCountsMap.get(s.signal_id) ?? 0) + 1));
+      const viewCounts = new Map<string, number>();
+      viewData.data?.forEach((v: any) => viewCounts.set(v.signal_id, (viewCounts.get(v.signal_id) ?? 0) + 1));
+      
+      // 4. Get profiles
       const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
       const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", authorIds);
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+      
+      // 5. Composite scoring: aura (connection) * 0.4 + engagement * 0.4 + recency * 0.2
+      const now = Date.now();
       const enriched: Signal[] = rawSignals
         .filter((s) => !isBlocked(s.user_id))
         .map((s) => {
           let media_url: string | null = null;
           if (s.storage_path) { const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = data.publicUrl; }
-          return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url };
+          
+          // Aura score (lower rank = better, normalize to 0-100)
+          const auraPos = auraRank.get(s.user_id) ?? rankedIds.length;
+          const auraScore = Math.max(0, 100 - (auraPos / Math.max(rankedIds.length, 1)) * 100);
+          
+          // Engagement score
+          const felts = feltCounts.get(s.id) ?? 0;
+          const stitches = stitchCountsMap.get(s.id) ?? 0;
+          const views = viewCounts.get(s.id) ?? 0;
+          const engagementScore = Math.min(100, felts * 15 + stitches * 25 + views * 2);
+          
+          // Recency score (0-100, full score if just posted, 0 after 2 hours)
+          const ageMs = now - new Date(s.created_at).getTime();
+          const recencyScore = Math.max(0, 100 - (ageMs / (2 * 60 * 60 * 1000)) * 100);
+          
+          const compositeScore = auraScore * 0.35 + engagementScore * 0.4 + recencyScore * 0.25;
+          
+          return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, _score: compositeScore };
         })
-        .sort((a, b) => (auraRank.get(a.user_id) ?? 999) - (auraRank.get(b.user_id) ?? 999));
+        .sort((a: any, b: any) => (b._score ?? 0) - (a._score ?? 0));
+      
       setSignals(await interleaveAds(enriched, user.id));
       setLoading(false);
     };

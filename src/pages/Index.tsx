@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PostActions from "@/components/PostActions";
 import FeedView from "@/components/FeedView";
 import Onboarding from "@/components/Onboarding";
+import VibesPicker from "@/components/onboarding/VibesPicker";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -30,6 +31,7 @@ const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem("arura_onboarded");
   });
+  const [showVibesPicker, setShowVibesPicker] = useState(false);
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("environment");
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
@@ -198,6 +200,23 @@ const Index = () => {
             onComplete={() => {
               setShowOnboarding(false);
               localStorage.setItem("arura_onboarded", "true");
+              // Show vibes picker after onboarding if user has an account
+              if (user) {
+                const hasVibes = localStorage.getItem("arura_vibes_picked");
+                if (!hasVibes) setShowVibesPicker(true);
+              }
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showVibesPicker && user && (
+          <VibesPicker
+            userId={user.id}
+            onComplete={() => {
+              setShowVibesPicker(false);
+              localStorage.setItem("arura_vibes_picked", "true");
             }}
           />
         )}

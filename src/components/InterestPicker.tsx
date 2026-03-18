@@ -2,17 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { VIBE_CATEGORIES, FEATURED_VIBES, searchVibes } from "@/lib/vibes";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 const PERMANENT_INTERESTS = ["fly fishing"];
-
-const PRESET_INTERESTS = [
-  "photography", "music", "hiking", "cooking", "gaming", "fitness",
-  "travel", "art", "fashion", "film", "reading", "yoga",
-  "surfing", "skateboarding", "dancing", "poetry", "astronomy",
-  "gardening", "tattoos", "vinyl", "coffee", "meditation",
-  "cycling", "climbing", "design",
-];
 
 interface InterestPickerProps {
   userId: string;
@@ -31,23 +24,19 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
   });
   const [search, setSearch] = useState("");
   const [networkInterests, setNetworkInterests] = useState<string[]>([]);
-  const [popularTerms, setPopularTerms] = useState<{ term: string; search_count: number }[]>([]);
   const [saving, setSaving] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  // Load network interests + popular searches
+  // Load network interests from mutual connections
   useEffect(() => {
     const load = async () => {
-      // Get interests from connected embers (mutual follows)
-      const [followingRes, followersRes, popularRes] = await Promise.all([
+      const [followingRes, followersRes] = await Promise.all([
         supabase.from("follows").select("following_id").eq("follower_id", userId),
         supabase.from("follows").select("follower_id").eq("following_id", userId),
-        supabase.from("interest_searches").select("term, search_count").order("search_count", { ascending: false }).limit(25),
       ]);
 
       const followingIds = new Set((followingRes.data ?? []).map(f => f.following_id));
       const followerIds = new Set((followersRes.data ?? []).map(f => f.follower_id));
-
-      // Mutual = sparked
       const mutualIds = [...followingIds].filter(id => followerIds.has(id));
 
       if (mutualIds.length > 0) {
@@ -63,15 +52,12 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
           });
         });
 
-        // Sort by frequency among network
         const sorted = [...interestCount.entries()]
           .sort((a, b) => b[1] - a[1])
           .map(([term]) => term);
 
         setNetworkInterests(sorted);
       }
-
-      setPopularTerms((popularRes.data ?? []) as { term: string; search_count: number }[]);
     };
     load();
   }, [userId]);
@@ -89,89 +75,37 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
     );
   }, []);
 
-  // Build recommendation list: network interests first, then popular, then presets
+  // Search results from full vibes library
+  const searchResults = useMemo(() => {
+    if (search.trim().length < 2) return [];
+    return searchVibes(search, 30);
+  }, [search]);
+
+  // Recommendations when not searching
   const recommendations = useMemo(() => {
     const seen = new Set<string>();
     const result: string[] = [];
-
-    // 1. Network interests (from connected embers)
-    for (const i of networkInterests) {
-      if (!seen.has(i)) { seen.add(i); result.push(i); }
-    }
-
-    // 2. Popular searched terms
-    for (const p of popularTerms) {
-      if (!seen.has(p.term)) { seen.add(p.term); result.push(p.term); }
-    }
-
-    // 3. Presets
-    for (const i of PRESET_INTERESTS) {
-      if (!seen.has(i)) { seen.add(i); result.push(i); }
-    }
-
+    for (const i of networkInterests) { if (!seen.has(i)) { seen.add(i); result.push(i); } }
+    for (const i of FEATURED_VIBES) { if (!seen.has(i)) { seen.add(i); result.push(i); } }
     return result.slice(0, 25);
-  }, [networkInterests, popularTerms]);
+  }, [networkInterests]);
 
-  // Filter by search
-  const filtered = useMemo(() => {
-    if (!search.trim()) return recommendations;
-    const q = search.toLowerCase().trim();
-    const matches = recommendations.filter(i => i.includes(q));
-    // If no match found, allow creating custom
-    return matches;
-  }, [search, recommendations]);
+  const displayItems = search.trim().length >= 2 ? searchResults : recommendations;
 
-  const canCreateCustom = search.trim().length > 1 && !recommendations.includes(search.toLowerCase().trim()) && !selected.includes(search.toLowerCase().trim());
+  const canCreateCustom = search.trim().length > 1 &&
+    !searchResults.includes(search.toLowerCase().trim()) &&
+    !selected.includes(search.toLowerCase().trim());
 
   const handleAddCustom = useCallback(async () => {
     const term = search.toLowerCase().trim();
     if (!term || selected.length >= 25) return;
     toggleInterest(term);
     setSearch("");
-
-    // Track the search term popularity
-    const { data: existing } = await supabase
-      .from("interest_searches")
-      .select("id, search_count")
-      .eq("term", term)
-      .maybeSingle();
-
-    if (existing) {
-      await supabase
-        .from("interest_searches")
-        .update({ search_count: (existing.search_count as number) + 1 })
-        .eq("id", existing.id);
-    } else {
-      await supabase
-        .from("interest_searches")
-        .insert({ term, search_count: 1 });
-    }
+    await supabase.rpc("increment_interest_search", { p_term: term });
   }, [search, selected, toggleInterest]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
-    // Also track any selected presets as searches for popularity
-    for (const interest of selected) {
-      if (!currentInterests.includes(interest)) {
-        const { data: existing } = await supabase
-          .from("interest_searches")
-          .select("id, search_count")
-          .eq("term", interest)
-          .maybeSingle();
-
-        if (existing) {
-          await supabase
-            .from("interest_searches")
-            .update({ search_count: (existing.search_count as number) + 1 })
-            .eq("id", existing.id);
-        } else {
-          await supabase
-            .from("interest_searches")
-            .insert({ term: interest, search_count: 1 });
-        }
-      }
-    }
-
     await supabase
       .from("profiles")
       .update({ interests: selected })
@@ -181,7 +115,7 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
     setSaving(false);
     toast.success("Interests saved");
     onClose();
-  }, [selected, userId, currentInterests, onSave, onClose]);
+  }, [selected, userId, onSave, onClose]);
 
   return (
     <motion.div
@@ -209,7 +143,6 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 pb-12">
-        {/* Selected count */}
         <p className="text-[10px] text-muted-foreground text-center mb-4">
           {selected.length}/25 selected
         </p>
@@ -220,7 +153,7 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search or create an interest..."
+            placeholder="500+ Hazy Vibes..."
             className="w-full signal-surface rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/30"
           />
           {search && (
@@ -235,7 +168,7 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
           )}
         </div>
 
-        {/* Create custom interest */}
+        {/* Create custom */}
         <AnimatePresence>
           {canCreateCustom && (
             <motion.button
@@ -286,19 +219,17 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
           </div>
         )}
 
-        {/* Recommendations */}
+        {/* Results / Recommendations */}
         <div>
-          {networkInterests.length > 0 && !search && (
+          {search.trim().length >= 2 ? (
+            <p className="label-signal mb-2">{searchResults.length} results</p>
+          ) : networkInterests.length > 0 ? (
             <p className="label-signal mb-2">✦ from your embers</p>
-          )}
-          {search && filtered.length > 0 && (
-            <p className="label-signal mb-2">results</p>
-          )}
-          {!search && networkInterests.length === 0 && (
-            <p className="label-signal mb-2">recommended</p>
+          ) : (
+            <p className="label-signal mb-2">Vibrant Vibes</p>
           )}
           <div className="flex flex-wrap gap-2">
-            {filtered
+            {displayItems
               .filter(i => !selected.includes(i))
               .map((interest, idx) => (
                 <motion.button
@@ -313,10 +244,58 @@ const InterestPicker = ({ userId, currentInterests, onSave, onClose }: InterestP
                 </motion.button>
               ))}
           </div>
-          {search && filtered.length === 0 && !canCreateCustom && (
+          {search.trim().length >= 2 && searchResults.length === 0 && !canCreateCustom && (
             <p className="text-xs text-muted-foreground text-center py-4">No matches</p>
           )}
         </div>
+
+        {/* Category browser (when not searching) */}
+        {search.trim().length < 2 && (
+          <div className="mt-6">
+            <p className="label-signal mb-2">Drift Flares</p>
+            <div className="flex flex-col gap-1.5">
+              {Object.entries(VIBE_CATEGORIES).map(([category, vibes]) => (
+                <div key={category}>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
+                    className="w-full flex items-center justify-between signal-surface rounded-xl px-4 py-3 text-left"
+                  >
+                    <span className="text-xs font-medium text-foreground">{category}</span>
+                    <span className="text-[10px] text-muted-foreground">{vibes.length} vibes</span>
+                  </motion.button>
+                  <AnimatePresence>
+                    {expandedCategory === category && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex flex-wrap gap-1.5 px-2 py-2">
+                          {vibes.map((tag) => (
+                            <motion.button
+                              key={tag}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => toggleInterest(tag)}
+                              className={`rounded-full px-3 py-1.5 text-[11px] font-medium signal-ease ${
+                                selected.includes(tag)
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-secondary text-secondary-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {tag}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );
