@@ -56,7 +56,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "forests", "oceans", "beaches", "deserts", "rivers", "waterfalls", "national parks",
     "sustainability", "conservation", "ecology", "permaculture", "beekeeping",
   ],
-  "💻 Tech": [
+  "Tech": [
     "tech", "programming", "web development", "mobile dev", "ai", "machine learning",
     "data science", "cybersecurity", "blockchain", "crypto", "nft", "vr", "ar",
     "gaming", "pc gaming", "console gaming", "mobile gaming", "retro gaming",
