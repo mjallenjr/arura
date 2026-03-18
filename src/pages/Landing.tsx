@@ -10,6 +10,7 @@ import InteractiveDemoSection from "@/components/landing/InteractiveDemoSection"
 import SocialProofSection from "@/components/landing/SocialProofSection";
 import FAQSection from "@/components/landing/FAQSection";
 import TeaserFeedSection from "@/components/landing/TeaserFeedSection";
+import HeatTierSection from "@/components/landing/HeatTierSection";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
