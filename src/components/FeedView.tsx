@@ -427,6 +427,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
             fanFlare(signal.id, recipientId, recipientName)
           }
           onClose={() => setShowFanSheet(false)}
+          checkSparked={checkSparked}
         />
       )}
     </div>
