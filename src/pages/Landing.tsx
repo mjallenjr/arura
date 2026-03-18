@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import mockupFeed from "@/assets/landing/mockup-feed.jpg";
 import mockupPeople from "@/assets/landing/mockup-people.jpg";
 import mockupCamera from "@/assets/landing/mockup-camera.jpg";
+
+const heroMockups = [mockupCamera, mockupFeed, mockupPeople];
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
@@ -22,6 +24,43 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
     >
       {children}
     </motion.div>
+  );
+};
+
+const PhoneMockup = () => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % heroMockups.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex justify-center mb-8">
+      <div className="relative w-[180px] sm:w-[220px] aspect-[9/19] rounded-[2rem] border-2 border-border/60 bg-card shadow-2xl shadow-primary/10 overflow-hidden">
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-background rounded-b-xl z-20" />
+        {/* Screen */}
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={index}
+            src={heroMockups[index]}
+            alt="arura app preview"
+            className="absolute inset-0 w-full h-full object-cover"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+          />
+        </AnimatePresence>
+        {/* Screen overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-background/20 pointer-events-none z-10" />
+        {/* Bottom bar */}
+        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1/3 h-1 rounded-full bg-foreground/20 z-20" />
+      </div>
+    </div>
   );
 };
 
@@ -99,22 +138,7 @@ const Landing = () => {
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <FadeIn>
-            <motion.div
-              className="flex justify-center mb-6"
-              animate={{ scale: [1, 1.06, 1], opacity: [0.85, 1, 0.85] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <svg width="64" height="64" viewBox="0 0 32 32" fill="none" className="text-primary drop-shadow-[0_0_20px_hsl(var(--primary)/0.5)]">
-                <defs><filter id="hfg"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-                <g filter="url(#hfg)">
-                  <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
-                  <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
-                  <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
-                  <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                  <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.45"/>
-                </g>
-              </svg>
-            </motion.div>
+            <PhoneMockup />
           </FadeIn>
 
           <FadeIn>
