@@ -164,6 +164,44 @@ const FeedControls = ({
           {hasStitched && (
             <p className="mt-2 text-[10px] text-primary/60">✦ stitched</p>
           )}
+
+          {/* Rekindle + Share buttons */}
+          {userId && signal.user_id !== userId && !signal.isAd && !signal.isDiscovery && (
+            <div className="flex items-center gap-3 mt-3">
+              {/* Rekindle — only show for signals with heat_level at match/spark (dying) */}
+              {(signal.heat_score === undefined || signal.heat_score < 15) && !hasRekindled && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.7 }}
+                  transition={{ delay: 2 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => { e.stopPropagation(); onRekindle(); }}
+                  className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-[10px] font-medium text-primary signal-ease hover:bg-primary/20"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary">
+                    <path d="M12 2C10.8 6.8 7.2 9.2 7.2 14a4.8 4.8 0 009.6 0c0-4.8-3.6-7.2-4.8-12z" />
+                  </svg>
+                  rekindle
+                </motion.button>
+              )}
+              {hasRekindled && (
+                <span className="text-[10px] text-primary/50">rekindled</span>
+              )}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                transition={{ delay: 2.5 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => { e.stopPropagation(); onShare(); }}
+                className="flex items-center gap-1 rounded-full bg-muted/40 px-3 py-1.5 text-[10px] font-medium text-muted-foreground signal-ease hover:bg-muted/60"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" />
+                </svg>
+                share
+              </motion.button>
+            </div>
+          )}
         </div>
       )}
     </>
