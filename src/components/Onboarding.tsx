@@ -48,7 +48,7 @@ interface Step {
   title: string;
   subtitle: string;
   body: string;
-  interactive?: "drop" | "tap" | "stitch";
+  interactive?: "drop" | "tap" | "stitch" | "heat";
 }
 
 const steps: Step[] = [
