@@ -7,6 +7,7 @@ import FeedEndScreen from "@/components/feed/FeedEndScreen";
 import AdCard from "@/components/feed/AdCard";
 import StitchOverlay from "@/components/feed/StitchOverlay";
 import FeedControls from "@/components/feed/FeedControls";
+import LevelUpCelebration from "@/components/feed/LevelUpCelebration";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAds, type Ad } from "@/hooks/useAds";
@@ -14,6 +15,8 @@ import { useBlocks } from "@/hooks/useBlocks";
 import { useRateLimit } from "@/hooks/useRateLimit";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { toast } from "sonner";
+import { playFelt, playStitch, playLevelUp, playRekindle, playSwipe, hapticFelt, hapticStitch, hapticLevelUp, hapticRekindle, hapticSwipe } from "@/lib/sounds";
+import { HEAT_THRESHOLDS, HEAT_TIERS } from "@/components/feed/HeatBadge";
 
 interface FeedViewProps {
   onEnd: () => void;
@@ -119,6 +122,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [isFromCache, setIsFromCache] = useState(false);
   const [firstTouchSignals, setFirstTouchSignals] = useState<Record<string, boolean>>({});
   const [levelUpCreditSignals, setLevelUpCreditSignals] = useState<Record<string, boolean>>({});
+  const [hasRekindled, setHasRekindled] = useState<Record<string, boolean>>({});
+  const [levelUpTrigger, setLevelUpTrigger] = useState(false);
+  const [levelUpName, setLevelUpName] = useState("");
+  const prevHeatLevels = useRef<Record<string, string>>({});
 
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
@@ -488,11 +495,62 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       setHasStitched((prev) => ({ ...prev, [signal.id]: true }));
       setSubmittedStitch({ word, x: stitchPos.x, y: stitchPos.y, scale: stitchScale, rotation: stitchRotation });
       await supabase.from("notifications").insert({ user_id: signal.user_id, from_user_id: user.id, signal_id: signal.id, type: "stitch", word });
+      playStitch();
+      hapticStitch();
       toast.success("Stitched ✦");
     }
     setShowStitchInput(false);
     setStitchInput("");
   }, [user, signals, currentIndex, stitchInput, stitchPos, stitchScale, stitchRotation]);
+
+  // ── Rekindle handler ──
+  const handleRekindle = useCallback(async (signalId: string, signalUserId: string) => {
+    if (!user || hasRekindled[signalId]) return;
+    const { error } = await supabase.from("rekindles").insert({ user_id: user.id, signal_id: signalId } as any);
+    if (!error) {
+      setHasRekindled((prev) => ({ ...prev, [signalId]: true }));
+      await supabase.from("notifications").insert({
+        user_id: signalUserId,
+        from_user_id: user.id,
+        signal_id: signalId,
+        type: "rekindle" as any,
+      } as any);
+      playRekindle();
+      hapticRekindle();
+      toast.success("Rekindled — keeping it lit");
+    }
+  }, [user, hasRekindled]);
+
+  // ── Share handler ──
+  const handleShare = useCallback(async (signalId: string) => {
+    const url = `${window.location.origin}/signal/${signalId}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "arura signal", url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    }
+  }, []);
+
+  // ── Level-up detection ──
+  useEffect(() => {
+    if (signals.length === 0) return;
+    signals.forEach((s) => {
+      const prev = prevHeatLevels.current[s.id];
+      if (prev && s.heat_level && prev !== s.heat_level) {
+        const prevIdx = HEAT_TIERS.indexOf(prev as any);
+        const newIdx = HEAT_TIERS.indexOf(s.heat_level as any);
+        if (newIdx > prevIdx && s.id === signals[currentIndex]?.id) {
+          setLevelUpName(s.heat_level);
+          setLevelUpTrigger(true);
+          playLevelUp();
+          hapticLevelUp();
+          setTimeout(() => setLevelUpTrigger(false), 100);
+        }
+      }
+      if (s.heat_level) prevHeatLevels.current[s.id] = s.heat_level;
+    });
+  }, [signals, currentIndex]);
 
   // ── Record view ──
   useEffect(() => {
@@ -575,6 +633,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         if (user && current && !current.isDiscovery) {
           supabase.from("felts").insert({ user_id: user.id, signal_id: current.id }).then(() => {});
         }
+        playFelt();
+        hapticFelt();
         const id = `${Date.now()}-${Math.random()}`;
         setFeltEffects((prev) => [...prev, { id, x, y }]);
         setTimeout(() => { setFeltEffects((prev) => prev.filter((f) => f.id !== id)); }, 700);
@@ -627,9 +687,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         if (isSwiping.current) {
           const threshold = 80;
           if (swipeDeltaRef.current < -threshold) {
-            advanceSignal(); // swipe left → next
+            advanceSignal(); playSwipe(); hapticSwipe();
           } else if (swipeDeltaRef.current > threshold) {
-            goBackSignal(); // swipe right → previous
+            goBackSignal(); playSwipe(); hapticSwipe();
           }
         }
         swipeStartXRef.current = null;
@@ -662,8 +722,14 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         showReportMenu={showReportMenu}
         isFirstTouch={!!firstTouchSignals[signal.id]}
         isLevelUpCredit={!!levelUpCreditSignals[signal.id] && signal.heat_level !== 'match'}
+        hasRekindled={!!hasRekindled[signal.id]}
         onReportClick={() => setShowReportMenu(true)}
+        onRekindle={() => handleRekindle(signal.id, signal.user_id)}
+        onShare={() => handleShare(signal.id)}
       />
+
+      {/* Level-up celebration */}
+      <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
 
       <div style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
         <FeedPlayer signalId={signal.id} mediaUrl={signal.media_url} type={signal.type} />

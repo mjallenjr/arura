@@ -13,6 +13,7 @@ import AdminModeration from "@/pages/AdminModeration";
 import Advertise from "@/pages/Advertise";
 import Legal from "@/pages/Legal";
 import EmberPublicProfile from "@/pages/EmberPublicProfile";
+import SignalView from "@/pages/SignalView";
 import NotFound from "@/pages/NotFound";
 import ResetPassword from "@/pages/ResetPassword";
 import Install from "@/pages/Install";
@@ -60,6 +61,7 @@ const AnimatedRoutes = () => {
         <Route path="/advertise" element={<PageTransition className="h-svh"><Advertise /></PageTransition>} />
         <Route path="/legal" element={<PageTransition className="h-svh"><Legal /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition className="h-svh"><ResetPassword /></PageTransition>} />
+        <Route path="/signal/:signalId" element={<PageTransition className="h-svh"><SignalView /></PageTransition>} />
         <Route path="/install" element={<PageTransition className="h-svh"><Install /></PageTransition>} />
         <Route path="*" element={<PageTransition className="h-svh"><NotFound /></PageTransition>} />
       </Routes>
