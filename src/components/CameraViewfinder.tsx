@@ -44,6 +44,7 @@ const CameraViewfinder = ({
         autoPlay
         playsInline
         muted
+        aria-label="Camera viewfinder"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ transform: isFrontCamera ? "scaleX(-1)" : "none" }}
       />

@@ -35,7 +35,7 @@ const NavBar = () => {
   if (location.pathname === "/auth" || location.pathname === "/" || immersive) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe" role="navigation" aria-label="Main navigation">
       <div className="flex items-center gap-1 signal-surface signal-blur rounded-full px-2 py-1.5 mb-4">
         {tabs.map((tab) => {
           const active = location.pathname === tab.path;
@@ -44,6 +44,8 @@ const NavBar = () => {
               key={tab.path}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleTap(tab.path)}
+              aria-label={tab.label}
+              aria-current={active ? "page" : undefined}
               className={`relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-medium signal-ease ${
                 active ? "text-primary" : "text-muted-foreground"
               }`}
@@ -55,7 +57,6 @@ const NavBar = () => {
                   transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                 />
               )}
-              {/* Glow pulse on active icon */}
               {active && (
                 <motion.div
                   className="absolute inset-0 rounded-full pointer-events-none"
@@ -77,6 +78,7 @@ const NavBar = () => {
                 stroke="currentColor"
                 strokeWidth="1.5"
                 className="relative z-10"
+                aria-hidden="true"
               >
                 <path d={tab.icon} />
               </svg>
@@ -84,12 +86,11 @@ const NavBar = () => {
             </motion.button>
           );
         })}
-        {/* Notification bell */}
         <div className="relative z-10 ml-1">
           <NotificationBell />
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 
