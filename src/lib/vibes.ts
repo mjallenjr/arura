@@ -76,7 +76,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "tattoos", "piercings", "hair styling", "makeup", "skincare", "nails",
     "fragrances", "menswear", "womenswear", "gender-neutral fashion", "cosplay",
   ],
-  "🧠 Mind & Spirit": [
+  "Mind & Spirit": [
     "meditation", "mindfulness", "yoga", "breathwork", "journaling", "therapy",
     "psychology", "neuroscience", "stoicism", "buddhism", "tarot", "astrology",
     "crystals", "manifestation", "gratitude", "self-improvement", "productivity",
