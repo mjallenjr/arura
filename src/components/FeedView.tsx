@@ -35,6 +35,7 @@ export interface Signal {
   created_at: string;
   display_name: string;
   media_url: string | null;
+  heat_level?: string;
   isDiscovery?: boolean;
   isSuggested?: boolean;
   isDiversity?: boolean;
