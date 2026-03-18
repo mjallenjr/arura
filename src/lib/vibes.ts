@@ -82,7 +82,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "crystals", "manifestation", "gratitude", "self-improvement", "productivity",
     "morning routines", "sleep optimization", "cold plunges", "sauna", "fasting",
   ],
-  "🎮 Gaming": [
+  "Gaming": [
     "gaming", "rpg", "fps", "mmorpg", "strategy games", "puzzle games", "indie games",
     "nintendo", "playstation", "xbox", "pc gaming", "steam", "valorant", "fortnite",
     "minecraft", "league of legends", "apex legends", "gta", "zelda", "pokemon",
