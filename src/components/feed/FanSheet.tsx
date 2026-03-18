@@ -183,7 +183,19 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
                   <span className="text-sm font-medium text-foreground flex-1 text-left flex items-center gap-1.5">
                     {ember.display_name}
                     {ember.isSparked && (
-                      <Zap className="w-3 h-3 text-primary fill-primary" />
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                        <path
+                          d="M12 2C10 6.5 7 9 7 13.5a5 5 0 0010 0C17 9 14 6.5 12 2z"
+                          fill="hsl(var(--primary))"
+                          opacity="0.85"
+                        />
+                        <path
+                          d="M10.5 18c0-1.8 1-2.5 1.5-4 .5 1.5 1.5 2.2 1.5 4"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="1"
+                          opacity="0.5"
+                        />
+                      </svg>
                     )}
                   </span>
                   <span className="text-[10px] font-medium">
