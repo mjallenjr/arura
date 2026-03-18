@@ -18,7 +18,8 @@ interface PageTransitionProps {
 }
 
 const PageTransition = ({ children, className = "" }: PageTransitionProps) => (
-  <motion.div
+  <motion.main
+    id="main-content"
     variants={pageVariants}
     initial="initial"
     animate="animate"
@@ -27,7 +28,7 @@ const PageTransition = ({ children, className = "" }: PageTransitionProps) => (
     className={className}
   >
     {children}
-  </motion.div>
+  </motion.main>
 );
 
 export default PageTransition;
