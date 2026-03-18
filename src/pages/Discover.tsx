@@ -281,7 +281,43 @@ const Discover = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-32">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4 pb-32"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Pull-to-refresh indicator */}
+        <AnimatePresence>
+          {pullDistance > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex justify-center py-2"
+            >
+              <motion.svg
+                width="20" height="20" viewBox="0 0 32 32" fill="none"
+                className="text-primary"
+                animate={{ rotate: pullDistance >= PULL_THRESHOLD ? 360 : 0, scale: pullDistance >= PULL_THRESHOLD ? 1.2 : 0.8 }}
+                transition={{ type: "spring", bounce: 0.3 }}
+              >
+                <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.4" />
+                <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+              </motion.svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {refreshing && (
+          <div className="flex justify-center py-2">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+              className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full"
+            />
+          </div>
+        )}
         <AnimatePresence mode="wait">
           {tab === "trending" && (
             <motion.div
