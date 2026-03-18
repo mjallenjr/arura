@@ -127,6 +127,11 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const pinchStartRotRef = useRef(0);
   const pausedRef = useRef(false);
   const elapsedBeforePauseRef = useRef(0);
+  const swipeStartXRef = useRef<number | null>(null);
+  const swipeStartYRef = useRef<number | null>(null);
+  const swipeDeltaRef = useRef(0);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const isSwiping = useRef(false);
 
   // ── Pinch-to-resize/rotate for stitch ──
   useEffect(() => {
