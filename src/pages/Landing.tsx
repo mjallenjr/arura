@@ -32,6 +32,19 @@ const Landing = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Override body overflow for scrollable landing page
+  useEffect(() => {
+    document.body.style.overflow = "auto";
+    document.body.style.height = "auto";
+    const root = document.getElementById("root");
+    if (root) { root.style.overflow = "auto"; root.style.height = "auto"; }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+      if (root) { root.style.overflow = ""; root.style.height = ""; }
+    };
+  }, []);
+
   const handleWaitlist = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || submitting) return;
