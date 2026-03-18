@@ -119,6 +119,32 @@ serve(async (req) => {
   );
 
   try {
+    // Only allow service_role callers (internal use from notify-engagement)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !data?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Only service_role can send push notifications to arbitrary users
+    if (data.claims.role !== "service_role") {
+      return new Response(JSON.stringify({ error: "Forbidden: service_role required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { user_id, title, body, url } = await req.json();
     if (!user_id) throw new Error("user_id is required");
 
