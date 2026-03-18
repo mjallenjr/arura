@@ -55,7 +55,6 @@ const TapDemo = () => {
     >
       <img src="/discover/sunset-pier.jpg" alt="Sunset signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-transparent" />
-    >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
         {heat === 0 ? (
           <BrandFlame size={32} opacity={0.35} />
