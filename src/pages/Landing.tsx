@@ -175,6 +175,16 @@ const Landing = () => {
               </form>
             )}
             {error && <p className="text-xs text-destructive mt-2">{error}</p>}
+            {waitlistCount !== null && waitlistCount > 0 && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-xs text-muted-foreground mt-4"
+              >
+                <span className="text-foreground font-semibold">{waitlistCount.toLocaleString()}</span> {waitlistCount === 1 ? "person has" : "people have"} joined the waitlist
+              </motion.p>
+            )}
           </FadeIn>
         </div>
       </section>
