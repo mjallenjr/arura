@@ -72,40 +72,39 @@ const Discover = () => {
     if (!user) return;
     setLoading(true);
 
-    // Get active signals (RLS now allows all active signals for discovery)
-    const { data: signals } = await supabase
-      .from("signals")
-      .select("*")
-      .gt("expires_at", new Date().toISOString())
-      .neq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
+    // Use engagement-ranked function for smarter trending
+    const { data: ranked } = await supabase.rpc("get_engagement_ranked_signals", { p_user_id: user.id });
 
-    if (!signals || signals.length === 0) {
+    if (!ranked || ranked.length === 0) {
       setTrendingDrops([]);
       setLoading(false);
       return;
     }
 
     // Get author names
-    const authorIds = [...new Set(signals.map((s) => s.user_id))];
+    const authorIds = [...new Set(ranked.map((s: any) => s.signal_user_id))];
     const { data: profiles } = await supabase
       .from("public_profiles")
       .select("user_id, display_name")
       .in("user_id", authorIds);
     const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
 
-    const trending: TrendingDrop[] = signals
-      .map((s) => {
+    const trending: TrendingDrop[] = ranked
+      .map((s: any) => {
         let media_url: string | null = null;
         if (s.storage_path) {
           const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
           media_url = data.publicUrl;
         }
         return {
-          ...s,
+          id: s.signal_id,
+          user_id: s.signal_user_id,
+          type: s.signal_type,
+          storage_path: s.storage_path,
+          stitch_word: s.stitch_word,
+          created_at: s.created_at,
           media_url,
-          display_name: nameMap.get(s.user_id) ?? "unknown",
+          display_name: nameMap.get(s.signal_user_id) ?? "unknown",
           stitch_count: 0,
           felt_count: 0,
         };
