@@ -597,31 +597,70 @@ export type Database = {
           },
         ]
       }
-      seed_exposures: {
+      seed_content: {
         Row: {
+          category: string | null
+          created_at: string
+          display_name: string
+          heat_score: number
+          id: string
+          image_url: string
+          stitch_word: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          display_name: string
+          heat_score?: number
+          id?: string
+          image_url: string
+          stitch_word?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          display_name?: string
+          heat_score?: number
+          id?: string
+          image_url?: string
+          stitch_word?: string | null
+        }
+        Relationships: []
+      }
+      seed_content_views: {
+        Row: {
+          felt: boolean
           first_seen_at: string
           id: string
-          signal_id: string
+          seed_content_id: string
+          stitch_word: string | null
+          stitched: boolean
           user_id: string
         }
         Insert: {
+          felt?: boolean
           first_seen_at?: string
           id?: string
-          signal_id: string
+          seed_content_id: string
+          stitch_word?: string | null
+          stitched?: boolean
           user_id: string
         }
         Update: {
+          felt?: boolean
           first_seen_at?: string
           id?: string
-          signal_id?: string
+          seed_content_id?: string
+          stitch_word?: string | null
+          stitched?: boolean
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "seed_exposures_signal_id_fkey"
-            columns: ["signal_id"]
+            foreignKeyName: "seed_content_views_seed_content_id_fkey"
+            columns: ["seed_content_id"]
             isOneToOne: false
-            referencedRelation: "signals"
+            referencedRelation: "seed_content"
             referencedColumns: ["id"]
           },
         ]
