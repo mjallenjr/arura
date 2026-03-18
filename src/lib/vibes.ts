@@ -99,7 +99,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "upcycling", "organization", "tiny homes", "architecture", "landscape design",
     "furniture design", "home automation", "candle making", "soap making",
   ],
-  "💼 Business": [
+  "Business": [
     "entrepreneurship", "startups", "marketing", "branding", "freelancing",
     "investing", "real estate", "personal finance", "stocks", "cryptocurrency",
     "side hustles", "e-commerce", "dropshipping", "content creation", "influencing",
