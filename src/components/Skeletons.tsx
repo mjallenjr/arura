@@ -65,11 +65,31 @@ export const EmptyState = ({ emoji, title, subtitle, action }: EmptyStateProps) 
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-    className="flex flex-col items-center gap-3 py-16 px-8 text-center"
+    className="flex flex-col items-center gap-4 py-20 px-8 text-center"
   >
-    <span className="text-3xl">{emoji}</span>
-    <p className="text-sm font-medium text-foreground">{title}</p>
-    {subtitle && <p className="text-xs text-muted-foreground max-w-[240px]">{subtitle}</p>}
+    {/* Breathing flame icon instead of plain emoji */}
+    <motion.div
+      animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      className="relative"
+    >
+      <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center">
+        <span className="text-3xl">{emoji}</span>
+      </div>
+      <motion.div
+        className="absolute inset-0 rounded-full"
+        animate={{ boxShadow: [
+          "0 0 0px 0px hsl(var(--signal-glow) / 0)",
+          "0 0 20px 4px hsl(var(--signal-glow) / 0.15)",
+          "0 0 0px 0px hsl(var(--signal-glow) / 0)",
+        ]}}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </motion.div>
+    <div className="flex flex-col gap-1.5">
+      <p className="text-sm font-medium text-foreground">{title}</p>
+      {subtitle && <p className="text-xs text-muted-foreground max-w-[240px]">{subtitle}</p>}
+    </div>
     {action && (
       <motion.button
         whileTap={{ scale: 0.97 }}
