@@ -41,7 +41,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "rock climbing", "scuba diving", "snorkeling", "kayaking", "sailing", "motorsport",
     "f1", "nascar", "esports", "disc golf", "pickleball", "padel",
   ],
-  "🍳 Food & Drink": [
+  "Food & Drink": [
     "cooking", "baking", "grilling", "meal prep", "vegan cooking", "sushi", "pasta",
     "korean food", "mexican food", "thai food", "indian food", "japanese food", "italian food",
     "french cuisine", "street food", "fine dining", "food photography", "fermentation",
