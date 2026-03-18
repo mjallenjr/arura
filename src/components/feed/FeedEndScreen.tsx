@@ -22,6 +22,15 @@ const FeedEndScreen = ({ onEnd }: FeedEndScreenProps) => (
     >
       Return
     </motion.button>
+
+    <motion.p
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 0.25 }}
+      transition={{ delay: 2, duration: 1.5 }}
+      className="absolute bottom-12 px-10 text-center text-[11px] italic tracking-wide text-muted-foreground"
+    >
+      Everything burns. What matters is what you do before it's gone.
+    </motion.p>
   </motion.div>
 );
 
