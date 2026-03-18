@@ -34,7 +34,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "trail running", "marathon", "triathlon", "parkour", "gymnastics", "dance fitness",
     "jump rope", "rowing", "kettlebells", "powerlifting", "functional training",
   ],
-  "⚽ Sports": [
+  "Sports": [
     "football", "soccer", "basketball", "baseball", "tennis", "golf", "volleyball", "rugby",
     "cricket", "hockey", "lacrosse", "badminton", "table tennis", "wrestling", "fencing",
     "archery", "skateboarding", "snowboarding", "skiing", "surfing", "wakeboarding",
