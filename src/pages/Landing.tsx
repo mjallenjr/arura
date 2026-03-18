@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import mockupFeed from "@/assets/landing/mockup-feed.jpg";
 import mockupPeople from "@/assets/landing/mockup-people.jpg";
 import mockupCamera from "@/assets/landing/mockup-camera.jpg";
+
+const heroMockups = [mockupCamera, mockupFeed, mockupPeople];
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
