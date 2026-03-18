@@ -149,7 +149,10 @@ const Messages = () => {
 
   const sendWord = useCallback(async () => {
     if (!user || !selectedUserId || !word.trim()) return;
-    const cleaned = word.replace(/\s/g, "").slice(0, 12);
+    const trimmed = word.trim();
+    const wordCount = trimmed.split(/\s+/).length;
+    if (wordCount > 10) { toast.error("10 words max"); return; }
+    const cleaned = trimmed.slice(0, 120);
     if (!cleaned) return;
 
     const { error } = await supabase.from("direct_messages").insert({
@@ -238,10 +241,10 @@ const Messages = () => {
           <div className="flex items-center gap-2 signal-surface rounded-2xl px-4 py-2">
             <input
               type="text"
-              placeholder="one word"
+              placeholder="say something (10 words max)"
               value={word}
-              onChange={(e) => setWord(e.target.value.replace(/\s/g, "").slice(0, 12))}
-              maxLength={12}
+              onChange={(e) => setWord(e.target.value.slice(0, 120))}
+              maxLength={120}
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
               onKeyDown={(e) => e.key === "Enter" && sendWord()}
             />

@@ -85,7 +85,7 @@ const Landing = () => {
   const features = [
     { icon: Clock, title: "Ephemeral by design", desc: "Signals live for 2 hours then vanish. No permanent record, no pressure." },
     { icon: Flame, title: "Heat system", desc: "Engagement fuels heat. Signals climb from match → spark → flame → star." },
-    { icon: MessageCircle, title: "One-word DMs", desc: "Messages are 12 characters max. Say everything in a single word." },
+    { icon: MessageCircle, title: "Brief DMs", desc: "Messages are 10 words max. Keep it short, keep it real." },
     { icon: Users, title: "Embers & Aura", desc: "Follow = Ignite. Mutual = Sparked. Your connections have real weight." },
     { icon: Zap, title: "Stitch a word", desc: "Double-tap any signal to overlay your word. Leave your mark on the moment." },
   ];
