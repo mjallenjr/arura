@@ -183,8 +183,12 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
                   <span className="text-sm font-medium text-foreground flex-1 text-left">
                     {ember.display_name}
                   </span>
-                  <span className="text-[10px] text-primary font-medium">
-                    {sending === ember.user_id ? "fanning..." : "fan"}
+                  <span className="text-[10px] font-medium">
+                    {sending === ember.user_id
+                      ? "fanning..."
+                      : ember.isSparked
+                        ? <span className="text-primary">fan</span>
+                        : <span className="text-muted-foreground">ad · fan</span>}
                   </span>
                 </motion.button>
               ))}
