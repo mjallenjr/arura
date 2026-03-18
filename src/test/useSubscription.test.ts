@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-const mockInvoke = vi.fn();
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    functions: { invoke: mockInvoke },
+    functions: {
+      invoke: vi.fn(),
+    },
     auth: {
       onAuthStateChange: vi.fn(() => ({
         data: { subscription: { unsubscribe: vi.fn() } },
@@ -24,6 +24,7 @@ vi.mock("@/hooks/useAuth", () => ({
 
 import { renderHook, waitFor } from "@testing-library/react";
 import { useSubscription } from "@/hooks/useSubscription";
+import { supabase } from "@/integrations/supabase/client";
 
 describe("useSubscription", () => {
   beforeEach(() => {
@@ -36,36 +37,42 @@ describe("useSubscription", () => {
   });
 
   it("returns subscribed false when check-subscription says so", async () => {
-    mockInvoke.mockResolvedValueOnce({
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
       data: { subscribed: false },
       error: null,
     });
 
     const { result } = renderHook(() => useSubscription());
+
+    vi.useRealTimers();
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.subscribed).toBe(false);
     expect(result.current.isPro).toBe(false);
   });
 
   it("returns subscribed true with end date", async () => {
-    mockInvoke.mockResolvedValueOnce({
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
       data: { subscribed: true, subscription_end: "2026-04-01T00:00:00Z" },
       error: null,
     });
 
     const { result } = renderHook(() => useSubscription());
+
+    vi.useRealTimers();
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.subscribed).toBe(true);
     expect(result.current.subscriptionEnd).toBe("2026-04-01T00:00:00Z");
   });
 
   it("handles errors gracefully", async () => {
-    mockInvoke.mockResolvedValueOnce({
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
       data: null,
       error: new Error("fail"),
     });
 
     const { result } = renderHook(() => useSubscription());
+
+    vi.useRealTimers();
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.subscribed).toBe(false);
   });
