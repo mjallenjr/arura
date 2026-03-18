@@ -415,6 +415,20 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           <FeltEffect key={f.id} x={f.x} y={f.y} />
         ))}
       </AnimatePresence>
+
+      {/* Fan sheet */}
+      {user && signal && (
+        <FanSheet
+          open={showFanSheet}
+          signalId={signal.id}
+          userId={user.id}
+          fanCount={fanCounts[signal.id] ?? 0}
+          onFan={(recipientId, recipientName) =>
+            fanFlare(signal.id, recipientId, recipientName)
+          }
+          onClose={() => setShowFanSheet(false)}
+        />
+      )}
     </div>
   );
 };
