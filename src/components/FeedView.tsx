@@ -50,6 +50,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [showFanSheet, setShowFanSheet] = useState(false);
+  const [showQuickReply, setShowQuickReply] = useState(false);
   const { fanFlare, fanCounts, getFanCount, checkSparkedBulk } = useFan();
 
   const {
