@@ -310,6 +310,18 @@ const Index = () => {
                   </div>
                 </motion.button>
               </div>
+
+              {/* Trending bar */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ ...signalTransition, delay: 0.4 }}
+                className="w-full max-w-[280px]"
+              >
+                <TrendingBar onSignalTap={(id) => {
+                  navigate(`/signal/${id}`);
+                }} />
+              </motion.div>
             </div>
           </motion.div>
         )}
