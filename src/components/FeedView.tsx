@@ -484,6 +484,15 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   }, [user, signals]);
 
   // ── Heat advisory realtime listener ──
+  const jumpToSignal = useCallback((signalId: string) => {
+    const idx = signals.findIndex((s) => s.id === signalId);
+    if (idx >= 0) {
+      setCurrentIndex(idx);
+      setProgress(0);
+      resetStitchState();
+    }
+  }, [signals, resetStitchState]);
+
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -495,17 +504,22 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         filter: `user_id=eq.${user.id}`,
       }, (payload: any) => {
         const row = payload.new;
-        if (row?.type === "heat_advisory") {
+        if (row?.type === "heat_advisory" && row?.signal_id) {
           const level = row.word?.toUpperCase() ?? "HOT";
+          const sigId = row.signal_id;
           toast("🔥 Heat Advisory", {
-            description: `A drop you follow just hit ${level} — go feel it before it peaks!`,
-            duration: 5000,
+            description: `A drop you follow just hit ${level} — tap to jump!`,
+            duration: 6000,
+            action: {
+              label: "Go",
+              onClick: () => jumpToSignal(sigId),
+            },
           });
         }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user, jumpToSignal]);
 
   // ── Stitch submit ──
   const handleStitchSubmit = useCallback(async () => {
