@@ -338,7 +338,7 @@ const Discover = () => {
                 </svg>
                 Hot
               </span>
-            ) : t === "interests" ? "✦ Vibes" : "👤 For You"}
+            ) : t === "interests" ? "✦ Vibes" : "For You"}
           </button>
         ))}
       </div>
