@@ -161,7 +161,7 @@ export function useFeedData() {
             const sNameMap = new Map(sProfiles?.map((p) => [p.user_id, p.display_name]) ?? []);
             fannedSignals = fSignals.map(s => {
               let media_url: string | null = null;
-              if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+              if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
               return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: fNameMap.get(s.user_id) ?? "unknown", media_url, isFanned: true, fannedBy: sNameMap.get(fannedSenderMap.get(s.id) ?? "") ?? "someone" };
             });
           }
