@@ -117,6 +117,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     word: string; x: number; y: number; scale: number; rotation: number;
   } | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
+  const [firstTouchSignals, setFirstTouchSignals] = useState<Record<string, boolean>>({});
+  const [levelUpCreditSignals, setLevelUpCreditSignals] = useState<Record<string, boolean>>({});
 
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
