@@ -231,5 +231,6 @@ export function useFeedData() {
     signals, setSignals, loading, isFromCache, isOnline,
     firstTouchSignals, levelUpCreditSignals,
     fetchSuggestedSignals, refreshBlocks,
+    feltSeed, stitchSeed,
   };
 }
