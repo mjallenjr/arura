@@ -57,7 +57,7 @@ serve(async (req) => {
         await supabase.functions.invoke("send-push", {
           body: {
             user_id: signal.user_id,
-            title: "Your signal is heating up 🔥",
+            title: "Your flare is heating up",
             body,
             url: "/",
           },
