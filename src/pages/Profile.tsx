@@ -603,7 +603,7 @@ const Profile = () => {
 
         {/* Tab switcher */}
         <div className="flex gap-1 mb-6">
-          {(["drops", "activity", "settings"] as ProfileTab[]).map((t) => {
+          {(["flares", "activity", "settings"] as ProfileTab[]).map((t) => {
             const unreadCount = t === "activity" ? notifications.filter((n) => !n.read).length : 0;
             return (
               <button
