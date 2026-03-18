@@ -91,12 +91,12 @@ const NotificationBell = () => {
 
   const getNotifText = (n: NotifItem) => {
     switch (n.type) {
-      case "stitch": return `stitched "${n.word}" on your drop`;
-      case "felt": return "felt your drop";
+      case "stitch": return `stitched "${n.word}" on your flare`;
+      case "felt": return "felt your flare";
       case "follow": return "ignited you";
       case "dm": return `sent you a word`;
-      case "heat_advisory": return `'s drop is rapidly rising — now 🔥 ${n.word?.toUpperCase()}`;
-      default: return "interacted with your drop";
+      case "heat_advisory": return `'s flare is rapidly rising — now 🔥 ${n.word?.toUpperCase()}`;
+      default: return "interacted with your flare";
     }
   };
 
