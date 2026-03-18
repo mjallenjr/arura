@@ -76,6 +76,12 @@ const steps: Step[] = [
     interactive: "stitch",
   },
   {
+    title: "Keep It Lit",
+    subtitle: "heat rises with engagement",
+    body: "Every felt, stitch, and view adds heat. Watch signals climb from match → spark → flame → star. You can even rekindle a dying drop.",
+    interactive: "heat",
+  },
+  {
     title: "Embers",
     subtitle: "your people, your fire",
     body: "Follow someone? You've Ignited them. Mutual follows? You've Sparked. The more you interact, the higher your Aura.",
