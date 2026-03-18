@@ -626,6 +626,11 @@ const People = () => {
                 </motion.div>
               )}
 
+              {/* Invite banner */}
+              {query.length < 2 && !selectedInterest && (
+                <InviteEmbers variant="banner" />
+              )}
+
               {/* Suggested Embers - vertical list */}
               {query.length < 2 && !selectedInterest && suggested.length > 0 && (
                 <div className="mb-4">
@@ -645,6 +650,11 @@ const People = () => {
                     </motion.button>
                   )}
                 </div>
+              )}
+
+              {/* Full invite section at bottom */}
+              {query.length < 2 && !selectedInterest && (
+                <InviteEmbers variant="full" />
               )}
             </motion.div>
           )}
