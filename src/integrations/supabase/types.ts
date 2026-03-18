@@ -597,6 +597,74 @@ export type Database = {
           },
         ]
       }
+      seed_content: {
+        Row: {
+          category: string | null
+          created_at: string
+          display_name: string
+          heat_score: number
+          id: string
+          image_url: string
+          stitch_word: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          display_name: string
+          heat_score?: number
+          id?: string
+          image_url: string
+          stitch_word?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          display_name?: string
+          heat_score?: number
+          id?: string
+          image_url?: string
+          stitch_word?: string | null
+        }
+        Relationships: []
+      }
+      seed_content_views: {
+        Row: {
+          felt: boolean
+          first_seen_at: string
+          id: string
+          seed_content_id: string
+          stitch_word: string | null
+          stitched: boolean
+          user_id: string
+        }
+        Insert: {
+          felt?: boolean
+          first_seen_at?: string
+          id?: string
+          seed_content_id: string
+          stitch_word?: string | null
+          stitched?: boolean
+          user_id: string
+        }
+        Update: {
+          felt?: boolean
+          first_seen_at?: string
+          id?: string
+          seed_content_id?: string
+          stitch_word?: string | null
+          stitched?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_content_views_seed_content_id_fkey"
+            columns: ["seed_content_id"]
+            isOneToOne: false
+            referencedRelation: "seed_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       signal_owner_views: {
         Row: {
           created_at: string
@@ -662,6 +730,7 @@ export type Database = {
           heat_level: string
           id: string
           last_engagement_at: string | null
+          media_url: string | null
           song_clip_url: string | null
           song_title: string | null
           stitch_word: string | null
@@ -676,6 +745,7 @@ export type Database = {
           heat_level?: string
           id?: string
           last_engagement_at?: string | null
+          media_url?: string | null
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null
@@ -690,6 +760,7 @@ export type Database = {
           heat_level?: string
           id?: string
           last_engagement_at?: string | null
+          media_url?: string | null
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null

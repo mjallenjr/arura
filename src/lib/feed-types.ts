@@ -23,6 +23,7 @@ export interface Signal {
   isSuggested?: boolean;
   isDiversity?: boolean;
   isAd?: boolean;
+  isSeed?: boolean;
   ad?: Ad;
   _score?: number;
 }
