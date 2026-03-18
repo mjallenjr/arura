@@ -44,6 +44,9 @@ const Discover = () => {
   const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const { vibrate } = useHaptics();
+  const [vibeQuery, setVibeQuery] = useState("");
+  const [vibeSearchResults, setVibeSearchResults] = useState<string[]>([]);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   // Pull-to-refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
