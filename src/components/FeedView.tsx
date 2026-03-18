@@ -638,6 +638,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
       <StitchOverlay
         stitchWord={signal.stitch_word}
+        stitchWordPos={signal.stitch_word_pos}
         submittedStitch={submittedStitch}
         showStitchInput={showStitchInput}
         stitchInput={stitchInput}
