@@ -14,6 +14,7 @@ import Advertise from "@/pages/Advertise";
 import Legal from "@/pages/Legal";
 import EmberPublicProfile from "@/pages/EmberPublicProfile";
 import SignalView from "@/pages/SignalView";
+import CreatorAnalytics from "@/pages/CreatorAnalytics";
 import NotFound from "@/pages/NotFound";
 import ResetPassword from "@/pages/ResetPassword";
 import Install from "@/pages/Install";
