@@ -105,22 +105,25 @@ const NotificationBell = () => {
       <span className="sr-only" aria-live="polite" aria-atomic="true">
         {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}` : "No unread notifications"}
       </span>
-      <motion.button
-        whileTap={{ scale: 0.9 }}
-        onClick={() => {
-          setShowDropdown(!showDropdown);
-          if (!showDropdown) markAllRead();
-        }}
-        className="relative p-2"
-        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
-      >
-        {/* Smoke wisp icon */}
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
-          <path d="M12 20c0 0-1-1.5 0-3s-1-3 0-4.5 -1-3 0-4.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M8 18c0 0-.8-1.2 0-2.5s-.8-2.5 0-3.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
-          <path d="M16 17c0 0-.7-1 0-2.2s-.7-2.2 0-3" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
-        </svg>
-        {unreadCount > 0 && (
+      {unreadCount > 0 && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => {
+            setShowDropdown(!showDropdown);
+            if (!showDropdown) markAllRead();
+          }}
+          className="relative p-2"
+          aria-label={`Notifications, ${unreadCount} unread`}
+        >
+          {/* Smoke wisp icon */}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
+            <path d="M12 20c0 0-1-1.5 0-3s-1-3 0-4.5 -1-3 0-4.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M8 18c0 0-.8-1.2 0-2.5s-.8-2.5 0-3.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+            <path d="M16 17c0 0-.7-1 0-2.2s-.7-2.2 0-3" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+          </svg>
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -128,8 +131,8 @@ const NotificationBell = () => {
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </motion.span>
-        )}
-      </motion.button>
+        </motion.button>
+      )}
 
       <AnimatePresence>
         {showDropdown && (
