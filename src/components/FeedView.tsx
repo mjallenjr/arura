@@ -356,8 +356,15 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
       <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
 
-      <div style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
+      <div className="relative" style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
         <FeedPlayer signalId={signal.id} mediaUrl={signal.media_url} type={signal.type} />
+        {/* Smoldering edge effect for fanned flares */}
+        {signal.isFanned && (
+          <div className="absolute inset-0 pointer-events-none z-[5]" style={{
+            boxShadow: 'inset 0 0 40px 8px hsl(var(--primary) / 0.3), inset 0 0 80px 20px hsl(var(--primary) / 0.15)',
+            animation: 'smolder 3s ease-in-out infinite alternate',
+          }} />
+        )}
       </div>
 
       <StitchOverlay
