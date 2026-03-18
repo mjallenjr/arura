@@ -292,6 +292,38 @@ export type Database = {
         }
         Relationships: []
       }
+      fans: {
+        Row: {
+          created_at: string
+          id: string
+          recipient_id: string
+          sender_id: string
+          signal_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipient_id: string
+          sender_id: string
+          signal_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+          signal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fans_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       felts: {
         Row: {
           created_at: string
