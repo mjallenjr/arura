@@ -229,6 +229,8 @@ const Landing = () => {
         </div>
       </section>
 
+      <HeatTierSection />
+
       {/* ── WHY NOT THEM ── */}
       <section className="py-24 px-6 border-t border-border/50 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
