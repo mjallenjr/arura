@@ -274,6 +274,13 @@ export function useFeedData() {
     fetchSignals();
   }, [user, fetchDiscovery, fetchTargetedAd, isOnline]);
 
+  // Sync camps on feed load
+  useEffect(() => {
+    if (user) {
+      Promise.resolve(supabase.rpc("sync_camps_for_user" as any, { p_user_id: user.id })).catch(() => {});
+    }
+  }, [user]);
+
   return {
     signals, setSignals, loading, isFromCache, isOnline,
     firstTouchSignals, levelUpCreditSignals,
