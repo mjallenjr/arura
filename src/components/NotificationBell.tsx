@@ -95,6 +95,7 @@ const NotificationBell = () => {
       case "felt": return "felt your drop";
       case "follow": return "ignited you";
       case "dm": return `sent you a word`;
+      case "heat_advisory": return `'s drop is rapidly rising — now 🔥 ${n.word?.toUpperCase()}`;
       default: return "interacted with your drop";
     }
   };
@@ -165,8 +166,12 @@ const NotificationBell = () => {
                         !n.read ? "bg-primary/5" : ""
                       }`}
                     >
-                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-primary text-[10px]">✦</span>
+                      <div className={`h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        n.type === "heat_advisory" ? "bg-destructive/15" : "bg-primary/10"
+                      }`}>
+                        <span className={`text-[10px] ${n.type === "heat_advisory" ? "text-destructive" : "text-primary"}`}>
+                          {n.type === "heat_advisory" ? "🔥" : "✦"}
+                        </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-foreground leading-snug">

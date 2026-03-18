@@ -483,6 +483,30 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     });
   }, [user, signals]);
 
+  // ── Heat advisory realtime listener ──
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("heat-advisory")
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "notifications",
+        filter: `user_id=eq.${user.id}`,
+      }, (payload: any) => {
+        const row = payload.new;
+        if (row?.type === "heat_advisory") {
+          const level = row.word?.toUpperCase() ?? "HOT";
+          toast("🔥 Heat Advisory", {
+            description: `A drop you follow just hit ${level} — go feel it before it peaks!`,
+            duration: 5000,
+          });
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
   // ── Stitch submit ──
   const handleStitchSubmit = useCallback(async () => {
     const signal = signals[currentIndex];
