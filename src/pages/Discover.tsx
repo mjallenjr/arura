@@ -430,7 +430,7 @@ const Discover = () => {
                       onClick={() => setSelectedEmberId(drop.user_id)}
                     >
                       {drop.media_url ? (
-                        <img src={drop.media_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        <img src={drop.media_url} alt={`Signal by ${drop.display_name}`} className="absolute inset-0 h-full w-full object-cover" />
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-secondary via-muted to-secondary" />
                       )}

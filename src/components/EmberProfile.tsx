@@ -339,7 +339,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
           >
             <div className="h-24 w-24 rounded-full bg-secondary flex items-center justify-center overflow-hidden ring-2 ring-primary/20">
               {data.avatar_url ? (
-                <img src={data.avatar_url} alt="" className="h-full w-full object-cover" />
+                <img src={data.avatar_url} alt={`${data.display_name}'s avatar`} className="h-full w-full object-cover" />
               ) : (
                 <span className="text-3xl font-medium text-secondary-foreground">{initial}</span>
               )}
@@ -528,7 +528,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                 {data.topDrop.type === "photo" ? (
                   <img
                     src={data.topDrop.media_url}
-                    alt=""
+                    alt={`Top signal by ${data.display_name}`}
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (

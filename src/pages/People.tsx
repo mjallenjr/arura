@@ -356,7 +356,7 @@ const People = () => {
         <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedEmberId(person.user_id)}>
           <div className={`h-10 w-10 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center overflow-hidden ${person.user_id === EMBER_FOUNDER_ID ? 'animate-ember-glow' : ''}`}>
             {person.avatar_url ? (
-              <img src={person.avatar_url} alt="" className="h-full w-full object-cover" />
+              <img src={person.avatar_url} alt={`${person.display_name}'s avatar`} className="h-full w-full object-cover" />
             ) : (
               <span className="text-xs font-medium text-secondary-foreground">
                 {person.display_name.charAt(0).toUpperCase()}
@@ -589,7 +589,7 @@ const People = () => {
                   transition={signalTransition}
                   className="mb-4 rounded-2xl overflow-hidden relative"
                 >
-                  <img src={currentAd.media_url} alt="" className="w-full h-44 object-cover" />
+                  <img src={currentAd.media_url} alt={`Sponsored: ${currentAd.company_name}`} className="w-full h-44 object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-widest">sponsored</span>

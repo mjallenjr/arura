@@ -427,7 +427,7 @@ const Profile = () => {
 
         <div className="flex-1 relative">
           {viewingDrop.media_url && viewingDrop.type === "photo" && (
-            <img src={viewingDrop.media_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <img src={viewingDrop.media_url} alt={`Signal: ${viewingDrop.stitch_word || 'photo'}`} className="absolute inset-0 h-full w-full object-cover" />
           )}
           {viewingDrop.media_url && viewingDrop.type === "video" && (
             <video src={viewingDrop.media_url} autoPlay muted playsInline className="absolute inset-0 h-full w-full object-cover" />
@@ -493,7 +493,7 @@ const Profile = () => {
                         >
                           <div className="h-5 w-5 rounded-full bg-secondary overflow-hidden flex-shrink-0">
                             {v.avatar_url ? (
-                              <img src={v.avatar_url} alt="" className="h-full w-full object-cover" />
+                              <img src={v.avatar_url} alt={`${v.display_name}'s avatar`} className="h-full w-full object-cover" />
                             ) : (
                               <span className="flex h-full w-full items-center justify-center text-[8px] font-medium text-secondary-foreground">
                                 {v.display_name.charAt(0).toUpperCase()}
@@ -541,7 +541,7 @@ const Profile = () => {
           <label className="relative cursor-pointer group">
             <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 signal-ease">
               {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                <img src={avatarUrl} alt="Your profile avatar" className="h-full w-full object-cover" />
               ) : (
                 <span className="text-2xl font-medium text-secondary-foreground">{initial}</span>
               )}
@@ -661,7 +661,7 @@ const Profile = () => {
                   {/* Thumbnail */}
                   <div className="h-14 w-14 rounded-lg bg-secondary overflow-hidden flex-shrink-0">
                     {drop.media_url && drop.type === "photo" && (
-                      <img src={drop.media_url} alt="" className="h-full w-full object-cover" />
+                      <img src={drop.media_url} alt={`Signal: ${drop.stitch_word || 'photo'}`} className="h-full w-full object-cover" />
                     )}
                     {drop.media_url && drop.type === "video" && (
                       <div className="h-full w-full flex items-center justify-center bg-secondary">
@@ -1098,7 +1098,7 @@ const Profile = () => {
                     >
                       <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
                         {ember.avatar_url ? (
-                          <img src={ember.avatar_url} alt="" className="h-full w-full object-cover" />
+                          <img src={ember.avatar_url} alt={`${ember.display_name}'s avatar`} className="h-full w-full object-cover" />
                         ) : (
                           <span className="text-xs font-medium text-secondary-foreground">
                             {ember.display_name.charAt(0).toUpperCase()}
