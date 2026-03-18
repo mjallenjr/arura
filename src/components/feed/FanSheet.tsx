@@ -70,11 +70,19 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
         const { data: profiles } = await supabase.rpc("get_profiles_by_ids", {
           p_user_ids: ids,
         });
-        setResults((profiles as EmberResult[]) ?? []);
+        const embers = (profiles as EmberResult[]) ?? [];
+        const withSparked = await Promise.all(
+          embers.map(async (p) => ({
+            ...p,
+            isSparked: await checkSparked(p.user_id),
+          }))
+        );
+        withSparked.sort((a, b) => (b.isSparked ? 1 : 0) - (a.isSparked ? 1 : 0));
+        setResults(withSparked);
       }
       setLoading(false);
     })();
-  }, [open, userId, query]);
+  }, [open, userId, query, checkSparked]);
 
   const handleFan = useCallback(
     async (ember: EmberResult) => {
