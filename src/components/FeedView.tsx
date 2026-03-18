@@ -37,6 +37,7 @@ export interface Signal {
   display_name: string;
   media_url: string | null;
   heat_level?: string;
+  heat_score?: number;
   isDiscovery?: boolean;
   isSuggested?: boolean;
   isDiversity?: boolean;
@@ -116,6 +117,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     word: string; x: number; y: number; scale: number; rotation: number;
   } | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
+  const [firstTouchSignals, setFirstTouchSignals] = useState<Record<string, boolean>>({});
+  const [levelUpCreditSignals, setLevelUpCreditSignals] = useState<Record<string, boolean>>({});
 
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
@@ -320,10 +323,14 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       
       // 3. Get engagement data
       const signalIds = rawSignals.map(s => s.id);
-      const [feltData, stitchData, viewData] = await Promise.all([
+      const [feltData, stitchData, viewData, firstFeltData, firstStitchData] = await Promise.all([
         supabase.from("felts").select("signal_id").in("signal_id", signalIds),
         supabase.from("stitches").select("signal_id").in("signal_id", signalIds),
         supabase.from("signal_views").select("signal_id").in("signal_id", signalIds),
+        // Check if current user was first to felt each signal
+        user ? supabase.from("felts").select("signal_id, created_at").in("signal_id", signalIds).eq("user_id", user.id).order("created_at", { ascending: true }).limit(signalIds.length) : Promise.resolve({ data: [] }),
+        // Check if current user was first to stitch each signal
+        user ? supabase.from("stitches").select("signal_id, created_at").in("signal_id", signalIds).eq("user_id", user.id).order("created_at", { ascending: true }).limit(signalIds.length) : Promise.resolve({ data: [] }),
       ]);
       
       const feltCounts = new Map<string, number>();
@@ -332,6 +339,29 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       stitchData.data?.forEach((s: any) => stitchCountsMap.set(s.signal_id, (stitchCountsMap.get(s.signal_id) ?? 0) + 1));
       const viewCounts = new Map<string, number>();
       viewData.data?.forEach((v: any) => viewCounts.set(v.signal_id, (viewCounts.get(v.signal_id) ?? 0) + 1));
+
+      // Determine first touch: user was the only felt (count=1) and they felted it
+      const firstTouchMap: Record<string, boolean> = {};
+      const userFeltSignals = new Set((firstFeltData as any)?.data?.map((f: any) => f.signal_id) ?? []);
+      const userStitchedSignals = new Set((firstStitchData as any)?.data?.map((s: any) => s.signal_id) ?? []);
+      signalIds.forEach(id => {
+        const totalFelts = feltCounts.get(id) ?? 0;
+        const totalStitches = stitchCountsMap.get(id) ?? 0;
+        // First touch = user interacted AND total is exactly 1
+        if ((totalFelts === 1 && userFeltSignals.has(id)) || (totalStitches === 1 && userStitchedSignals.has(id))) {
+          firstTouchMap[id] = true;
+        }
+      });
+      setFirstTouchSignals(firstTouchMap);
+
+      // Level-up credit: user interacted and the signal is above 'match'
+      const levelUpMap: Record<string, boolean> = {};
+      signalIds.forEach(id => {
+        if ((userFeltSignals.has(id) || userStitchedSignals.has(id)) && !firstTouchMap[id]) {
+          levelUpMap[id] = true;
+        }
+      });
+      setLevelUpCreditSignals(levelUpMap);
       
       // 4. Get profiles
       const allAuthorIds = [...new Set([...rawSignals.map((s) => s.user_id), ...diversitySignals.map(s => s.user_id)])];
@@ -359,7 +389,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           
           const compositeScore = auraScore * 0.35 + engagementScore * 0.4 + recencyScore * 0.25;
           
-          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, _score: compositeScore };
+          const heatScore = felts * 3 + stitches * 8 + views;
+          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, heat_score: heatScore, _score: compositeScore };
         })
         .sort((a: any, b: any) => (b._score ?? 0) - (a._score ?? 0));
       
@@ -629,6 +660,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         hasStitched={!!hasStitched[signal.id]}
         showStitchInput={showStitchInput}
         showReportMenu={showReportMenu}
+        isFirstTouch={!!firstTouchSignals[signal.id]}
+        isLevelUpCredit={!!levelUpCreditSignals[signal.id] && signal.heat_level !== 'match'}
         onReportClick={() => setShowReportMenu(true)}
       />
 

@@ -11,6 +11,7 @@ interface Signal {
   display_name: string;
   song_title: string | null;
   heat_level?: string;
+  heat_score?: number;
   user_id: string;
 }
 
@@ -26,6 +27,8 @@ interface FeedControlsProps {
   hasStitched: boolean;
   showStitchInput: boolean;
   showReportMenu: boolean;
+  isFirstTouch: boolean;
+  isLevelUpCredit: boolean;
   onReportClick: () => void;
 }
 
@@ -41,6 +44,8 @@ const FeedControls = ({
   hasStitched,
   showStitchInput,
   showReportMenu,
+  isFirstTouch,
+  isLevelUpCredit,
   onReportClick,
 }: FeedControlsProps) => {
   const signal = currentSignal;
@@ -117,7 +122,12 @@ const FeedControls = ({
             {signal.display_name}
           </motion.p>
           {signal.heat_level && signal.heat_level !== "match" && (
-            <HeatBadge level={signal.heat_level} />
+            <HeatBadge
+              level={signal.heat_level}
+              heatScore={signal.heat_score}
+              isFirstTouch={isFirstTouch}
+              isLevelUpCredit={isLevelUpCredit}
+            />
           )}
         </div>
           {signal.song_title && (
