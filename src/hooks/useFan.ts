@@ -51,7 +51,7 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
             }
           } else {
             // Fetch and "show" an ad impression
-            const ad = await fetchTargetedAd(user.id, "fan_gate");
+            const ad = await fetchTargetedAd(user.id, "feed");
             if (!ad) {
               toast("No ads available — try again later", { duration: 3000 });
               setFanning(false);
