@@ -493,7 +493,7 @@ const Profile = () => {
                         >
                           <div className="h-5 w-5 rounded-full bg-secondary overflow-hidden flex-shrink-0">
                             {v.avatar_url ? (
-                              <img src={v.avatar_url} alt="" className="h-full w-full object-cover" />
+                              <img src={v.avatar_url} alt={`${v.display_name}'s avatar`} className="h-full w-full object-cover" />
                             ) : (
                               <span className="flex h-full w-full items-center justify-center text-[8px] font-medium text-secondary-foreground">
                                 {v.display_name.charAt(0).toUpperCase()}
