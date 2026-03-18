@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { resolveMediaUrl } from "@/lib/feed-types";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
