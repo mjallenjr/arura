@@ -44,6 +44,8 @@ const FeedControls = ({
   hasStitched,
   showStitchInput,
   showReportMenu,
+  isFirstTouch,
+  isLevelUpCredit,
   onReportClick,
 }: FeedControlsProps) => {
   const signal = currentSignal;
