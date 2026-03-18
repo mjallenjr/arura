@@ -70,6 +70,7 @@ const AppRoutes = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
+      <CookieConsent />
     </>
   );
 };

@@ -2,3 +2,6 @@ project_id = "pwnuizvzpfaxblxbeffp"
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
