@@ -495,6 +495,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       setHasStitched((prev) => ({ ...prev, [signal.id]: true }));
       setSubmittedStitch({ word, x: stitchPos.x, y: stitchPos.y, scale: stitchScale, rotation: stitchRotation });
       await supabase.from("notifications").insert({ user_id: signal.user_id, from_user_id: user.id, signal_id: signal.id, type: "stitch", word });
+      playStitch();
+      hapticStitch();
       toast.success("Stitched ✦");
     }
     setShowStitchInput(false);
