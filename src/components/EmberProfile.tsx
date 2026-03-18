@@ -275,7 +275,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
       setRefueling(false);
       if (!error) {
         setRefueled(true);
-        toast({ title: "🔥 refueled", description: `${data?.display_name} will know a roaming ember wants more` });
+        toast({ title: "✦ refueled", description: `${data?.display_name} will know a roaming ember wants more` });
       }
     }, 600);
   }, [currentUser, userId, refueled, data?.display_name]);
@@ -293,7 +293,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
       setIgniting(false);
       if (!error) {
         setIsFollowing(true);
-        toast({ title: "🔥 ignited", description: `You ignited ${data?.display_name}` });
+        toast({ title: "✦ ignited", description: `You ignited ${data?.display_name}` });
       }
     }, 800);
   }, [currentUser, userId, isFollowing, data?.display_name]);
@@ -402,7 +402,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  🔥 ignite
+                  ✦ ignite
                 </motion.button>
               )}
 
@@ -470,7 +470,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                {refueled ? "🔥 refueled" : "refuel"}
+                {refueled ? "✦ refueled" : "refuel"}
               </motion.button>
             </motion.div>
           )}

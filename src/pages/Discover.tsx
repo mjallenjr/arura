@@ -24,9 +24,10 @@ const HEAT_COLORS: Record<HeatLevel, string> = {
   star: "hsl(50, 100%, 60%)",
 };
 
+// Heat labels now use branded text (no emojis)
 const HEAT_LABELS: Record<HeatLevel, string> = {
-  match: "🔲", spark: "✨", ignite: "🔥", flame: "🔥", hot: "🔥🔥",
-  burning: "🔥🔥🔥", raging: "💥", inferno: "🌋", star: "⭐",
+  match: "—", spark: "spark", ignite: "ignite", flame: "flame", hot: "hot",
+  burning: "burning", raging: "raging", inferno: "inferno", star: "star",
 };
 
 interface TrendingDrop {
@@ -337,7 +338,7 @@ const Discover = () => {
                 </svg>
                 Hot
               </span>
-            ) : t === "interests" ? "✦ Vibes" : "👤 For You"}
+            ) : t === "interests" ? "✦ Vibes" : "For You"}
           </button>
         ))}
       </div>
@@ -408,8 +409,8 @@ const Discover = () => {
                     <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2" />
                     <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none" />
                   </motion.svg>
-                  <p className="text-sm font-medium text-foreground">No drops yet — be the first 🔥</p>
-                  <p className="text-xs text-muted-foreground text-center px-8">Things heat up fast. Drop a signal and watch it spread.</p>
+                  <p className="text-sm font-medium text-foreground">No flares yet — be the first</p>
+                  <p className="text-xs text-muted-foreground text-center px-8">Things heat up fast. Shoot a flare and watch it spread.</p>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => navigate("/home")}

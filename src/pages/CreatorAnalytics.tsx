@@ -152,10 +152,10 @@ const CreatorAnalytics = () => {
           {/* Summary cards */}
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Total Views", value: totals.views, icon: "👁" },
+              { label: "Total Views", value: totals.views, icon: "◉" },
               { label: "Total Felts", value: totals.felts, icon: "✦" },
-              { label: "Total Stitches", value: totals.stitches, icon: "🧵" },
-              { label: "Total Drops", value: totals.drops, icon: "🔥" },
+              { label: "Total Stitches", value: totals.stitches, icon: "⫽" },
+              { label: "Total Flares", value: totals.drops, icon: "◆" },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -269,9 +269,9 @@ const CreatorAnalytics = () => {
                       <p className="text-[10px] text-muted-foreground">{timeAgo(drop.created_at)}</p>
                     </div>
                     <div className="flex gap-3 text-[10px] text-muted-foreground">
-                      <span>👁 {drop.views}</span>
+                      <span>◉ {drop.views}</span>
                       <span>✦ {drop.felts}</span>
-                      <span>🧵 {drop.stitches}</span>
+                      <span>⫽ {drop.stitches}</span>
                     </div>
                   </motion.div>
                 ))}

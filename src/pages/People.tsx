@@ -312,7 +312,7 @@ const People = () => {
         // Remove from suggestions after igniting
         setSuggested((prev) => prev.filter((r) => r.user_id !== targetUserId));
         setAllSuggestions((prev) => prev.filter((r) => r.user_id !== targetUserId));
-        toast.success("Ignited 🔥");
+        toast.success("Ignited ✦");
         setTimeout(() => setAnimating(null), 1200);
       }
     },
@@ -335,7 +335,7 @@ const People = () => {
           .from("follows")
           .upsert({ follower_id: user.id, following_id: data.user_id });
         setFollowingIds((prev) => new Set(prev).add(data.user_id));
-        toast.success(`Ignited ${data.display_name} 🔥`);
+        toast.success(`Ignited ${data.display_name} ✦`);
         setTab("search");
       } else {
         toast.error("User not found");

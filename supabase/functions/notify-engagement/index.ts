@@ -47,17 +47,17 @@ serve(async (req) => {
     // 3. Send push notifications for heating signals
     let notified = 0;
     for (const signal of hotSignals) {
-      const levelLabel = signal.heat_level === "star" ? "⭐ STAR" : `🔥 ${signal.heat_level?.toUpperCase()}`;
+      const levelLabel = signal.heat_level === "star" ? "STAR" : signal.heat_level?.toUpperCase();
       const body = signal.stitch_word
-        ? `Your drop "${signal.stitch_word}" is now ${levelLabel}!`
-        : `Your drop just hit ${levelLabel}! Keep it lit.`;
+        ? `Your flare "${signal.stitch_word}" is now ${levelLabel}!`
+        : `Your flare just hit ${levelLabel}! Keep it lit.`;
 
       // Send push via send-push function
       try {
         await supabase.functions.invoke("send-push", {
           body: {
             user_id: signal.user_id,
-            title: "Your signal is heating up 🔥",
+            title: "Your flare is heating up",
             body,
             url: "/",
           },
@@ -88,7 +88,7 @@ serve(async (req) => {
 
         if (!followers || followers.length === 0) continue;
 
-        const levelLabel = rs.heat_level === "star" ? "⭐ STAR" : `🔥 ${rs.heat_level?.toUpperCase()}`;
+        const levelLabel = rs.heat_level === "star" ? "STAR" : rs.heat_level?.toUpperCase();
         const word = rs.stitch_word ? ` "${rs.stitch_word}"` : "";
 
         for (const f of followers) {
@@ -117,8 +117,8 @@ serve(async (req) => {
             await supabase.functions.invoke("send-push", {
               body: {
                 user_id: f.follower_id,
-                title: "🔥 Heat Advisory",
-                body: `A drop${word} you follow is rapidly rising — now ${levelLabel}!`,
+                title: "Heat Advisory",
+                body: `A flare${word} you follow is rapidly rising — now ${levelLabel}!`,
                 url: "/",
               },
             });

@@ -95,7 +95,7 @@ const NotificationBell = () => {
       case "felt": return "felt your flare";
       case "follow": return "ignited you";
       case "dm": return `sent you a word`;
-      case "heat_advisory": return `'s flare is rapidly rising — now 🔥 ${n.word?.toUpperCase()}`;
+      case "heat_advisory": return `'s flare is rapidly rising — now ${n.word?.toUpperCase()}`;
       default: return "interacted with your flare";
     }
   };
@@ -180,7 +180,7 @@ const NotificationBell = () => {
                         n.type === "heat_advisory" ? "bg-destructive/15" : "bg-primary/10"
                       }`}>
                         <span className={`text-[10px] ${n.type === "heat_advisory" ? "text-destructive" : "text-primary"}`}>
-                          {n.type === "heat_advisory" ? "🔥" : "✦"}
+                          {n.type === "heat_advisory" ? "✦" : "✦"}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
