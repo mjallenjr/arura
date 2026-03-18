@@ -36,7 +36,7 @@ const BrandStar = ({ size = 28 }: { size?: number }) => (
 const TapDemo = () => {
   const [heat, setHeat] = useState(0);
   const [ripple, setRipple] = useState(false);
-  const levels = ["match", "spark", "flame", "⭐"];
+  const levels = ["match", "spark", "flame", "star"];
 
   const handleTap = () => {
     if (heat >= 4) return;

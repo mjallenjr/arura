@@ -13,11 +13,34 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   );
 };
 
+const BrandFlameInline = ({ opacity = 0.7 }: { opacity?: number }) => (
+  <svg width="14" height="14" viewBox="0 0 32 32" fill="none" className="text-primary inline-block" style={{ opacity }}>
+    <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+  </svg>
+);
+
+const BrandStarInline = () => (
+  <svg width="14" height="14" viewBox="0 0 32 32" fill="none" className="text-primary inline-block drop-shadow-[0_0_4px_hsl(var(--primary)/0.5)]">
+    <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" fill="currentColor" opacity="0.3"/>
+    <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+  </svg>
+);
+
+const heatIcons: Record<string, React.ReactNode> = {
+  match: <BrandFlameInline opacity={0.35} />,
+  spark: <BrandFlameInline opacity={0.55} />,
+  flame: <BrandFlameInline opacity={0.75} />,
+  star: <BrandStarInline />,
+};
+
 const sampleSignals = [
-  { id: 1, user: "ember.luna", caption: "golden hour", gradient: "from-amber-500/20 via-orange-400/15 to-rose-500/10", heat: "flame", emoji: "🔥", timeLeft: "1h 42m", stitch: "magic" },
-  { id: 2, user: "kai.drift", caption: "3am thoughts", gradient: "from-indigo-500/20 via-purple-400/15 to-blue-500/10", heat: "spark", emoji: "✨", timeLeft: "47m", stitch: null },
-  { id: 3, user: "sol.flare", caption: "first snow", gradient: "from-sky-500/20 via-cyan-400/15 to-teal-500/10", heat: "⭐", emoji: "⭐", timeLeft: "12m", stitch: "perfect" },
-  { id: 4, user: "fern.glow", caption: "late night ramen", gradient: "from-rose-500/20 via-pink-400/15 to-fuchsia-500/10", heat: "match", emoji: "🔥", timeLeft: "1h 58m", stitch: null },
+  { id: 1, user: "ember.luna", caption: "golden hour", gradient: "from-primary/15 via-primary/10 to-accent/10", heat: "flame", timeLeft: "1h 42m", stitch: "magic" },
+  { id: 2, user: "kai.drift", caption: "3am thoughts", gradient: "from-primary/10 via-accent/15 to-secondary/10", heat: "spark", timeLeft: "47m", stitch: null },
+  { id: 3, user: "sol.flare", caption: "first snow", gradient: "from-accent/15 via-primary/10 to-secondary/10", heat: "star", timeLeft: "12m", stitch: "perfect" },
+  { id: 4, user: "fern.glow", caption: "late night ramen", gradient: "from-secondary/15 via-primary/10 to-accent/10", heat: "match", timeLeft: "1h 58m", stitch: null },
 ];
 
 const TeaserFeedSection = () => {
@@ -73,7 +96,7 @@ const TeaserFeedSection = () => {
 
                     {/* Heat badge */}
                     <div className="absolute top-3 right-3 bg-background/60 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
-                      <span className="text-xs">{signal.emoji}</span>
+                      {heatIcons[signal.heat]}
                       <span className="text-[10px] font-medium text-foreground/70">{signal.heat}</span>
                     </div>
 

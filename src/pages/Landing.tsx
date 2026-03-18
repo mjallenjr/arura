@@ -212,14 +212,42 @@ const Landing = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
-              { emoji: "⏱", rule: "Everything expires", detail: "2 hours, then it's gone forever." },
-              { emoji: "🔥", rule: "Heat, not likes", detail: "match → spark → flame → ⭐" },
-              { emoji: "💬", rule: "Brief DMs", detail: "10 words max. Say what matters." },
-              { emoji: "🧵", rule: "Stitch a word", detail: "Overlay your mark on any signal." },
+              { icon: "timer", rule: "Everything expires", detail: "2 hours, then it's gone forever." },
+              { icon: "flame", rule: "Heat, not likes", detail: "match → spark → flame → star" },
+              { icon: "dm", rule: "Brief DMs", detail: "10 words max. Say what matters." },
+              { icon: "stitch", rule: "Stitch a word", detail: "Overlay your mark on any signal." },
             ].map((item, i) => (
               <FadeIn key={i} delay={i * 0.08}>
                 <div className="rounded-2xl border border-border/50 bg-card/50 p-6 hover:border-primary/20 transition-colors">
-                  <span className="text-2xl mb-3 block">{item.emoji}</span>
+                  <div className="mb-3">
+                    {item.icon === "flame" ? (
+                      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" className="text-primary">
+                        <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+                        <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+                        <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
+                        <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.45"/>
+                      </svg>
+                    ) : item.icon === "timer" ? (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
+                        <circle cx="12" cy="13" r="8" stroke="currentColor" strokeWidth="1.5" opacity="0.7"/>
+                        <path d="M12 9v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M10 3h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <circle cx="12" cy="13" r="8" fill="currentColor" opacity="0.1"/>
+                      </svg>
+                    ) : item.icon === "dm" ? (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
+                        <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" fill="currentColor" opacity="0.1"/>
+                      </svg>
+                    ) : (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
+                        <path d="M4 4l4 4m8 8l4 4M4 20l16-16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <circle cx="9" cy="9" r="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.15"/>
+                        <circle cx="15" cy="15" r="2" stroke="currentColor" strokeWidth="1.5" fill="currentColor" opacity="0.15"/>
+                      </svg>
+                    )}
+                  </div>
                   <h3 className="text-sm font-semibold text-foreground mb-1">{item.rule}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">{item.detail}</p>
                 </div>

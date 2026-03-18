@@ -17,7 +17,7 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
 const faqs = [
   {
     q: "What happens after 2 hours?",
-    a: "If nobody engages, your signal fades — gone forever. But if people feel it, it gains heat: match → spark → ignite → flame → hot → burning → raging → inferno → ⭐ star. The hotter it gets, the longer it lives. Reach star status and it stays for a full year. Everything burns — but the best things keep burning.",
+    a: "If nobody engages, your signal fades — gone forever. But if people feel it, it gains heat: match → spark → ignite → flame → hot → burning → raging → inferno → star. The hotter it gets, the longer it lives. Reach star status and it stays for a full year. Everything burns — but the best things keep burning.",
   },
   {
     q: "Why only 5 seconds?",
@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     q: "What's 'heat' and how does it work?",
-    a: "Heat replaces likes. When people engage with your signal, it gains heat: match → spark → flame → ⭐. It's about collective energy, not individual validation.",
+    a: "Heat replaces likes. When people engage with your signal, it gains heat: match → spark → flame → star. It's about collective energy, not individual validation.",
   },
   {
     q: "Why are DMs limited to 10 words?",
