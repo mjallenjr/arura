@@ -23,6 +23,7 @@ const NavBar = () => {
   }, [navigate, vibrate]);
 
   if (location.pathname === "/auth") return null;
+  if (location.pathname === "/" && document.body.hasAttribute("data-immersive")) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe">
