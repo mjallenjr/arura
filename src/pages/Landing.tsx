@@ -177,7 +177,7 @@ const Landing = () => {
           </FadeIn>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {[
-              { img: mockupCamera, label: "Drop a signal", desc: "5 seconds. No retakes. Just you." },
+              { img: mockupCamera, label: "Shoot a flare", desc: "5 seconds. No retakes. Just you." },
               { img: mockupFeed, label: "Watch it burn", desc: "Signals gain heat as people engage." },
               { img: mockupPeople, label: "Find your embers", desc: "Real connections, ranked by aura." },
             ].map((item, i) => (
