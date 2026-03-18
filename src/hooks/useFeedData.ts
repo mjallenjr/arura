@@ -5,7 +5,7 @@ import { useAds } from "@/hooks/useAds";
 import { useBlocks } from "@/hooks/useBlocks";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSeedContent } from "@/hooks/useSeedContent";
-import { Signal, FALLBACK_DISCOVERY, shuffleArray, getCachedFeed, cacheFeed } from "@/lib/feed-types";
+import { Signal, FALLBACK_DISCOVERY, shuffleArray, getCachedFeed, cacheFeed, resolveMediaUrl } from "@/lib/feed-types";
 
 export function useFeedData() {
   const { user } = useAuth();
