@@ -15,7 +15,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "knitting", "crochet", "quilting", "weaving", "pottery", "glassblowing", "woodworking",
     "jewelry making", "metalwork", "origami", "paper craft", "stained glass", "mosaic",
   ],
-  "🎬 Film & TV": [
+  "Film & TV": [
     "film", "cinema", "documentaries", "anime", "horror", "sci-fi", "thriller", "comedy",
     "drama", "romance", "action", "fantasy", "noir", "independent film", "short films",
     "screenwriting", "directing", "acting", "filmmaking", "cinematography", "editing",
