@@ -354,6 +354,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         onRekindle={() => handleRekindle(signal.id, signal.user_id)}
         onShare={() => handleShare(signal.id)}
         onFan={() => { getFanCount(signal.id); setShowFanSheet(true); }}
+        onReply={() => setShowQuickReply(true)}
       />
 
       <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
