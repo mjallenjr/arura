@@ -227,6 +227,14 @@ const Discover = () => {
   useEffect(() => {
     loadTrending();
     loadSuggestedEmbers();
+    // Load social proof for featured vibes
+    supabase.rpc("get_vibe_counts", { p_vibes: FEATURED_VIBES }).then(({ data }) => {
+      if (data) {
+        const counts: Record<string, number> = {};
+        (data as any[]).forEach((d: any) => { counts[d.vibe] = Number(d.ember_count); });
+        setVibeCounts(counts);
+      }
+    });
   }, [loadTrending, loadSuggestedEmbers]);
 
   const toggleFollow = useCallback(async (targetId: string) => {
