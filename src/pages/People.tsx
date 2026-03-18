@@ -356,7 +356,7 @@ const People = () => {
         <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedEmberId(person.user_id)}>
           <div className={`h-10 w-10 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center overflow-hidden ${person.user_id === EMBER_FOUNDER_ID ? 'animate-ember-glow' : ''}`}>
             {person.avatar_url ? (
-              <img src={person.avatar_url} alt="" className="h-full w-full object-cover" />
+              <img src={person.avatar_url} alt={`${person.display_name}'s avatar`} className="h-full w-full object-cover" />
             ) : (
               <span className="text-xs font-medium text-secondary-foreground">
                 {person.display_name.charAt(0).toUpperCase()}
