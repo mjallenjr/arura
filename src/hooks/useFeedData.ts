@@ -231,7 +231,9 @@ export function useFeedData() {
           const recencyScore = Math.max(0, 100 - (ageMs / (2 * 60 * 60 * 1000)) * 100);
           const compositeScore = auraScore * 0.35 + engagementScore * 0.4 + recencyScore * 0.25;
           const heatScore = felts * 3 + stitches * 8 + views;
-          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, heat_score: heatScore, _score: compositeScore };
+          const isFanned = fannedIds.has(s.id);
+          const fannedBy = isFanned ? undefined : undefined; // will resolve below
+          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, heat_score: heatScore, _score: isFanned ? compositeScore + 50 : compositeScore, isFanned };
         })
         .sort((a, b) => (b._score ?? 0) - (a._score ?? 0));
 
