@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { resolveMediaUrl } from "@/lib/feed-types";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,8 +48,7 @@ const SignalView = () => {
       setSignal(data as SignalData);
 
       if (data.storage_path) {
-        const { data: urlData } = supabase.storage.from("signals").getPublicUrl(data.storage_path);
-        setMediaUrl(urlData.publicUrl);
+        setMediaUrl(resolveMediaUrl(data.storage_path));
       }
 
       // Get author name

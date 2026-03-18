@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { resolveMediaUrl } from "@/lib/feed-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -86,10 +87,10 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
 
         const top = ranked[0];
         if (top.storage_path) {
-          const { data: urlData } = supabase.storage.from("signals").getPublicUrl(top.storage_path);
+          const mediaUrl = resolveMediaUrl(top.storage_path);
           topDrop = {
             signal_id: top.id,
-            media_url: urlData.publicUrl,
+            media_url: mediaUrl,
             type: top.type,
             stitch_word: top.stitch_word,
             felt_count: top.felt_count,

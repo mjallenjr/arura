@@ -5,7 +5,7 @@ import { useAds } from "@/hooks/useAds";
 import { useBlocks } from "@/hooks/useBlocks";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useSeedContent } from "@/hooks/useSeedContent";
-import { Signal, FALLBACK_DISCOVERY, shuffleArray, getCachedFeed, cacheFeed } from "@/lib/feed-types";
+import { Signal, FALLBACK_DISCOVERY, shuffleArray, getCachedFeed, cacheFeed, resolveMediaUrl } from "@/lib/feed-types";
 
 export function useFeedData() {
   const { user } = useAuth();
@@ -47,7 +47,7 @@ export function useFeedData() {
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
       return shuffleArray(rawSignals.map((s) => {
         let media_url: string | null = null;
-        if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+        if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
         return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
       }));
     } catch { return []; }
@@ -66,7 +66,7 @@ export function useFeedData() {
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
       return picked.map((s: any) => {
         let media_url: string | null = null;
-        if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+        if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
         return {
           id: s.signal_id, user_id: s.signal_user_id, type: s.signal_type,
           storage_path: s.storage_path, song_clip_url: s.song_clip_url, song_title: s.song_title,
@@ -161,7 +161,7 @@ export function useFeedData() {
             const sNameMap = new Map(sProfiles?.map((p) => [p.user_id, p.display_name]) ?? []);
             fannedSignals = fSignals.map(s => {
               let media_url: string | null = null;
-              if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+              if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
               return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: fNameMap.get(s.user_id) ?? "unknown", media_url, isFanned: true, fannedBy: sNameMap.get(fannedSenderMap.get(s.id) ?? "") ?? "someone" };
             });
           }
@@ -220,7 +220,7 @@ export function useFeedData() {
         .filter((s) => !isBlocked(s.user_id))
         .map((s) => {
           let media_url: string | null = null;
-          if (s.storage_path) { const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = data.publicUrl; }
+          if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
           const auraPos = auraRank.get(s.user_id) ?? rankedIds.length;
           const auraScore = Math.max(0, 100 - (auraPos / Math.max(rankedIds.length, 1)) * 100);
           const felts = feltCounts.get(s.id) ?? 0;

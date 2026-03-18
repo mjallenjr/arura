@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { resolveMediaUrl } from "@/lib/feed-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -120,8 +121,7 @@ const Discover = () => {
       .map((s: any) => {
         let media_url: string | null = null;
         if (s.storage_path) {
-          const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path);
-          media_url = data.publicUrl;
+          media_url = resolveMediaUrl(s.storage_path);
         }
         return {
           id: s.signal_id,
