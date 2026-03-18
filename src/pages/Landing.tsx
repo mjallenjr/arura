@@ -6,7 +6,10 @@ import { useNavigate } from "react-router-dom";
 import mockupFeed from "@/assets/landing/mockup-feed.jpg";
 import mockupPeople from "@/assets/landing/mockup-people.jpg";
 import mockupCamera from "@/assets/landing/mockup-camera.jpg";
-
+import InteractiveDemoSection from "@/components/landing/InteractiveDemoSection";
+import SocialProofSection from "@/components/landing/SocialProofSection";
+import FAQSection from "@/components/landing/FAQSection";
+import TeaserFeedSection from "@/components/landing/TeaserFeedSection";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
@@ -260,6 +263,12 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* New engagement sections */}
+      <InteractiveDemoSection />
+      <TeaserFeedSection />
+      <SocialProofSection />
+      <FAQSection />
 
       {/* ── FINAL CTA ── */}
       <section className="py-24 px-6 border-t border-border/50">
