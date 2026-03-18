@@ -159,18 +159,25 @@ const FAQSection = () => (
       </FadeIn>
 
       <FadeIn delay={0.1}>
-        <Accordion type="single" collapsible className="space-y-2">
-          {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="border border-border/30 rounded-2xl px-5 bg-card/30 data-[state=open]:border-primary/20 transition-colors">
-              <AccordionTrigger className="text-sm font-semibold text-foreground hover:no-underline py-4">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                {faq.a}
-              </AccordionContent>
-            </AccordionItem>
+        <div className="space-y-8">
+          {faqCategories.map((cat, ci) => (
+            <div key={ci}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary/60 mb-3">{cat.label}</p>
+              <Accordion type="single" collapsible className="space-y-2">
+                {cat.items.map((faq, i) => (
+                  <AccordionItem key={i} value={`faq-${ci}-${i}`} className="border border-border/30 rounded-2xl px-5 bg-card/30 data-[state=open]:border-primary/20 transition-colors">
+                    <AccordionTrigger className="text-sm font-semibold text-foreground hover:no-underline py-4 text-left">
+                      {faq.q}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                      {faq.a}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
           ))}
-        </Accordion>
+        </div>
       </FadeIn>
     </div>
   </section>
