@@ -105,6 +105,14 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
         fuelingCount: fuelingRes.count ?? 0,
         topDrop,
       });
+
+      // Fetch referral count for badge
+      const { count: refCount } = await supabase
+        .from("referrals")
+        .select("id", { count: "exact", head: true })
+        .eq("referrer_id", userId);
+      setReferralReward(getReward(refCount ?? 0));
+
       setLoading(false);
     };
     load();
