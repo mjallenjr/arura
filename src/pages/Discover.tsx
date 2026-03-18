@@ -5,14 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import EmberProfile from "@/components/EmberProfile";
 import { useHaptics } from "@/hooks/useHaptics";
+import { VIBE_CATEGORIES, FEATURED_VIBES, searchVibes } from "@/lib/vibes";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
-
-const TRENDING_INTERESTS = [
-  "music", "photography", "travel", "fitness", "art", "fashion",
-  "coffee", "nature", "gaming", "cooking", "surfing", "meditation",
-  "film", "dancing", "tattoos", "painting", "running", "tech",
-];
 
 interface TrendingDrop {
   id: string;
