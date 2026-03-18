@@ -88,8 +88,8 @@ const steps: Step[] = [
   },
   {
     title: "Words",
-    subtitle: "say it in one word",
-    body: "DMs are single words only. 12 characters max. No paragraphs, no novels — just a word that says it all.",
+    subtitle: "keep it brief",
+    body: "DMs are 10 words max. No paragraphs, no novels — just enough to say what matters.",
   },
 ];
 

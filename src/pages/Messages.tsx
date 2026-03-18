@@ -241,10 +241,10 @@ const Messages = () => {
           <div className="flex items-center gap-2 signal-surface rounded-2xl px-4 py-2">
             <input
               type="text"
-              placeholder="one word"
+              placeholder="say something (10 words max)"
               value={word}
-              onChange={(e) => setWord(e.target.value.replace(/\s/g, "").slice(0, 12))}
-              maxLength={12}
+              onChange={(e) => setWord(e.target.value.slice(0, 120))}
+              maxLength={120}
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
               onKeyDown={(e) => e.key === "Enter" && sendWord()}
             />
