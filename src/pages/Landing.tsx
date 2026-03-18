@@ -10,6 +10,22 @@ import mockupCamera from "@/assets/landing/mockup-camera.jpg";
 
 const ease = [0.2, 0.8, 0.2, 1] as const;
 
+const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, ease, delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 const Landing = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
