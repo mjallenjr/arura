@@ -94,7 +94,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "hamsters", "ferrets", "animal rescue", "veterinary", "wildlife photography",
     "marine biology", "dog training", "cat behavior", "aquariums", "terrariums",
   ],
-  "🏠 Home & DIY": [
+  "Home & DIY": [
     "interior design", "home decor", "minimalism", "renovation", "diy", "carpentry",
     "upcycling", "organization", "tiny homes", "architecture", "landscape design",
     "furniture design", "home automation", "candle making", "soap making",
