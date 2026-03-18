@@ -183,7 +183,7 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
                   <span className="text-sm font-medium text-foreground flex-1 text-left flex items-center gap-1.5">
                     {ember.display_name}
                     {ember.isSparked && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="shrink-0 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]">
                         <path
                           d="M12 2C10 6.5 7 9 7 13.5a5 5 0 0010 0C17 9 14 6.5 12 2z"
                           fill="hsl(var(--primary))"
