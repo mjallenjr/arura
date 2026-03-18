@@ -25,6 +25,7 @@ const signalTransition = {
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { isPro } = useSubscription();
   const [state, setState] = useState<AppState>("home");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
