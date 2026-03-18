@@ -114,8 +114,11 @@ const NotificationBell = () => {
         className="relative p-2"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
       >
+        {/* Smoke wisp icon */}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
-          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+          <path d="M12 20c0 0-1-1.5 0-3s-1-3 0-4.5 -1-3 0-4.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M8 18c0 0-.8-1.2 0-2.5s-.8-2.5 0-3.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+          <path d="M16 17c0 0-.7-1 0-2.2s-.7-2.2 0-3" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
         </svg>
         {unreadCount > 0 && (
           <motion.span
