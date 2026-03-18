@@ -1011,6 +1011,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      update_seed_heat_scores: { Args: never; Returns: undefined }
       update_signal_heat_levels: { Args: never; Returns: undefined }
     }
     Enums: {
