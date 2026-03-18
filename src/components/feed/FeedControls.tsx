@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import HeatBadge from "@/components/feed/HeatBadge";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -9,6 +10,7 @@ interface Signal {
   isSuggested?: boolean;
   display_name: string;
   song_title: string | null;
+  heat_level?: string;
   user_id: string;
 }
 
@@ -104,6 +106,7 @@ const FeedControls = ({
       {/* Bottom info overlay (non-ad) */}
       {!signal.isAd && (
         <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
+        <div className="flex items-center gap-2">
           <motion.p
             key={signal.display_name}
             initial={{ opacity: 0, y: 4 }}
@@ -113,6 +116,10 @@ const FeedControls = ({
           >
             {signal.display_name}
           </motion.p>
+          {signal.heat_level && signal.heat_level !== "match" && (
+            <HeatBadge level={signal.heat_level} />
+          )}
+        </div>
           {signal.song_title && (
             <p className="mt-1 text-xs text-muted-foreground/60">♪ {signal.song_title}</p>
           )}
