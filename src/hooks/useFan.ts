@@ -1,16 +1,10 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useAds } from "@/hooks/useAds";
 import { toast } from "sonner";
 
-interface UseFanOptions {
-  onAdRequired?: () => Promise<boolean>;
-}
-
-export function useFan({ onAdRequired }: UseFanOptions = {}) {
+export function useFan() {
   const { user } = useAuth();
-  const { fetchTargetedAd } = useAds();
   const [fanCounts, setFanCounts] = useState<Record<string, number>>({});
   const [fanning, setFanning] = useState(false);
   const [sparkedCache, setSparkedCache] = useState<Record<string, boolean>>({});
