@@ -1042,7 +1042,7 @@ const Profile = () => {
               <p className="label-signal">{showingList === "ignited" ? "embers you ignited" : "embers fueling you"}</p>
               <div className="w-5" />
             </div>
-            <div className="flex-1 overflow-y-auto px-4 pb-8">
+            <div className="flex-1 overflow-y-auto px-4 pb-24">
               {loadingList ? (
                 <div className="flex justify-center py-12">
                   <motion.div
