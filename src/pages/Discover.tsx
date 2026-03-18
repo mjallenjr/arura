@@ -443,7 +443,7 @@ const Discover = () => {
                   </div>
 
                   {/* Browse by category */}
-                  <p className="label-signal mb-2">browse categories</p>
+                  <p className="label-signal mb-2">Drift Categories</p>
                   <div className="flex flex-col gap-1.5">
                     {Object.entries(VIBE_CATEGORIES).map(([category, vibes]) => (
                       <div key={category}>
