@@ -117,7 +117,7 @@ const StitchDemo = () => {
   const [word, setWord] = useState("");
   const [placed, setPlaced] = useState(false);
   const [pos, setPos] = useState({ x: 50, y: 33 }); // percentage
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(1.8);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const lastTouch = useRef<{ dist: number } | null>(null);
