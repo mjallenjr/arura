@@ -10,6 +10,7 @@ import { useReferral } from "@/hooks/useReferral";
 import { useCreatorEarnings } from "@/hooks/useCreatorEarnings";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import ProfileHeatHistory from "@/components/ProfileHeatHistory";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
