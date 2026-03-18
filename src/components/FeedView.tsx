@@ -561,11 +561,13 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
   // ── Share handler ──
   const handleShare = useCallback(async (signalId: string) => {
-    const url = `${window.location.origin}/signal/${signalId}`;
+    // Use edge function URL for sharing — serves dynamic OG tags to social crawlers
+    const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/signal-og?id=${signalId}`;
+    const fallbackUrl = `${window.location.origin}/signal/${signalId}`;
     if (navigator.share) {
-      try { await navigator.share({ title: "arura signal", url }); } catch {}
+      try { await navigator.share({ title: "arura signal", url: ogUrl }); } catch {}
     } else {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(ogUrl);
       toast.success("Link copied");
     }
   }, []);
