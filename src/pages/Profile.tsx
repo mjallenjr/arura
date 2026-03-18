@@ -541,7 +541,7 @@ const Profile = () => {
           <label className="relative cursor-pointer group">
             <div className="h-20 w-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 signal-ease">
               {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                <img src={avatarUrl} alt="Your profile avatar" className="h-full w-full object-cover" />
               ) : (
                 <span className="text-2xl font-medium text-secondary-foreground">{initial}</span>
               )}
