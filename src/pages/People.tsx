@@ -589,7 +589,7 @@ const People = () => {
                   transition={signalTransition}
                   className="mb-4 rounded-2xl overflow-hidden relative"
                 >
-                  <img src={currentAd.media_url} alt="" className="w-full h-44 object-cover" />
+                  <img src={currentAd.media_url} alt={`Sponsored: ${currentAd.company_name}`} className="w-full h-44 object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-widest">sponsored</span>

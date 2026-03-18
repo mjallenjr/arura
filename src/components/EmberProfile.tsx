@@ -528,7 +528,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                 {data.topDrop.type === "photo" ? (
                   <img
                     src={data.topDrop.media_url}
-                    alt=""
+                    alt={`Top signal by ${data.display_name}`}
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (

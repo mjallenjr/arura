@@ -1098,7 +1098,7 @@ const Profile = () => {
                     >
                       <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
                         {ember.avatar_url ? (
-                          <img src={ember.avatar_url} alt="" className="h-full w-full object-cover" />
+                          <img src={ember.avatar_url} alt={`${ember.display_name}'s avatar`} className="h-full w-full object-cover" />
                         ) : (
                           <span className="text-xs font-medium text-secondary-foreground">
                             {ember.display_name.charAt(0).toUpperCase()}

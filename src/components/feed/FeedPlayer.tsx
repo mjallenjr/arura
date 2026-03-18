@@ -23,7 +23,7 @@ const FeedPlayer = ({ signalId, mediaUrl, type }: FeedPlayerProps) => {
         {mediaUrl && !mediaError && type === "photo" && (
           <img
             src={mediaUrl}
-            alt=""
+            alt="Signal content"
             className="absolute inset-0 h-full w-full object-cover"
             onError={() => setMediaError(true)}
           />
