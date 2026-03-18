@@ -412,7 +412,7 @@ const Discover = () => {
                   <p className="text-xs text-muted-foreground text-center px-8">Things heat up fast. Drop a signal and watch it spread.</p>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate("/home")}
                     className="rounded-2xl bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow mt-2"
                   >
                     Drop something warm
