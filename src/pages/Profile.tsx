@@ -661,7 +661,7 @@ const Profile = () => {
                   {/* Thumbnail */}
                   <div className="h-14 w-14 rounded-lg bg-secondary overflow-hidden flex-shrink-0">
                     {drop.media_url && drop.type === "photo" && (
-                      <img src={drop.media_url} alt="" className="h-full w-full object-cover" />
+                      <img src={drop.media_url} alt={`Signal: ${drop.stitch_word || 'photo'}`} className="h-full w-full object-cover" />
                     )}
                     {drop.media_url && drop.type === "video" && (
                       <div className="h-full w-full flex items-center justify-center bg-secondary">
