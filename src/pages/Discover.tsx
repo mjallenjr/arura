@@ -61,18 +61,12 @@ const Discover = () => {
     if (!user) return;
     setLoading(true);
 
-    // Get active signals from people I don't follow (discovery)
-    const { data: myFollows } = await supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", user.id);
-    const followingSet = new Set(myFollows?.map((f) => f.following_id) ?? []);
-
-    // Get all active signals
+    // Get active signals (RLS now allows all active signals for discovery)
     const { data: signals } = await supabase
       .from("signals")
       .select("*")
       .gt("expires_at", new Date().toISOString())
+      .neq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -82,33 +76,15 @@ const Discover = () => {
       return;
     }
 
-    // Filter to drops from people not followed
-    const discoverySignals = signals.filter(
-      (s) => s.user_id !== user.id && !followingSet.has(s.user_id)
-    );
-
-    const signalIds = discoverySignals.map((s) => s.id);
-
-    // Get engagement counts
-    const [stitchRes, feltRes] = await Promise.all([
-      signalIds.length > 0 ? supabase.from("stitches").select("signal_id").in("signal_id", signalIds) : { data: [] },
-      signalIds.length > 0 ? supabase.from("felts").select("signal_id").in("signal_id", signalIds) : { data: [] },
-    ]);
-
-    const stitchCounts: Record<string, number> = {};
-    const feltCounts: Record<string, number> = {};
-    (stitchRes.data ?? []).forEach((s: any) => { stitchCounts[s.signal_id] = (stitchCounts[s.signal_id] || 0) + 1; });
-    (feltRes.data ?? []).forEach((f: any) => { feltCounts[f.signal_id] = (feltCounts[f.signal_id] || 0) + 1; });
-
     // Get author names
-    const authorIds = [...new Set(discoverySignals.map((s) => s.user_id))];
+    const authorIds = [...new Set(signals.map((s) => s.user_id))];
     const { data: profiles } = await supabase
       .from("public_profiles")
       .select("user_id, display_name")
-      .in("user_id", authorIds.length > 0 ? authorIds : ["none"]);
+      .in("user_id", authorIds);
     const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
 
-    const trending: TrendingDrop[] = discoverySignals
+    const trending: TrendingDrop[] = signals
       .map((s) => {
         let media_url: string | null = null;
         if (s.storage_path) {
@@ -119,11 +95,10 @@ const Discover = () => {
           ...s,
           media_url,
           display_name: nameMap.get(s.user_id) ?? "unknown",
-          stitch_count: stitchCounts[s.id] || 0,
-          felt_count: feltCounts[s.id] || 0,
+          stitch_count: 0,
+          felt_count: 0,
         };
       })
-      .sort((a, b) => (b.stitch_count + b.felt_count) - (a.stitch_count + a.felt_count))
       .slice(0, 20);
 
     setTrendingDrops(trending);
