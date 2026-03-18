@@ -11,6 +11,7 @@ import { useCreatorEarnings } from "@/hooks/useCreatorEarnings";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import ProfileHeatHistory from "@/components/ProfileHeatHistory";
+import ReferralBadge from "@/components/ReferralBadge";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -73,7 +74,7 @@ const Profile = () => {
   const [deleting, setDeleting] = useState(false);
   const [viewers, setViewers] = useState<SignalViewer[]>([]);
   const [loadingViewers, setLoadingViewers] = useState(false);
-  const { referralCode, referralCount, shareLink } = useReferral();
+  const { referralCode, referralCount, shareLink, reward } = useReferral();
   const {
     impressions: creatorImpressions,
     creatorShare,
@@ -982,10 +983,39 @@ const Profile = () => {
               {/* Referral */}
               {shareLink && (
                 <div className="signal-surface rounded-xl p-4">
-                  <p className="label-signal mb-2">🔗 Invite & Earn</p>
-                  <p className="text-xs text-muted-foreground mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="label-signal">🔗 Invite & Earn</p>
+                    {reward.tier !== "none" && (
+                      <ReferralBadge reward={reward} size="sm" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-1">
                     You've referred <span className="text-foreground font-semibold">{referralCount}</span> embers
                   </p>
+                  {reward.tier !== "none" && (
+                    <p className="text-[10px] text-primary mb-3">
+                      +{reward.bonusMinutes}min on every signal you drop
+                    </p>
+                  )}
+                  {reward.tier === "none" && (
+                    <p className="text-[10px] text-muted-foreground/70 mb-3">
+                      Refer 1 ember to unlock +15min signal bonus
+                    </p>
+                  )}
+                  {reward.tier !== "none" && referralCount < reward.nextTierAt && reward.nextTierAt > referralCount && (
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between text-[9px] text-muted-foreground mb-1">
+                        <span>{reward.label}</span>
+                        <span>{referralCount}/{reward.nextTierAt} to next tier</span>
+                      </div>
+                      <div className="h-1 rounded-full bg-primary/10 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-500"
+                          style={{ width: `${Math.min(100, (referralCount / reward.nextTierAt) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => {

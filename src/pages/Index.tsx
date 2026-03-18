@@ -13,6 +13,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useReferral } from "@/hooks/useReferral";
 import { toast } from "sonner";
 
 type AppState = "home" | "camera" | "confirm" | "feed";
@@ -27,6 +28,7 @@ const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isPro } = useSubscription();
+  const { reward } = useReferral();
   const [state, setState] = useState<AppState>("home");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
   const [isRecording, setIsRecording] = useState(false);
@@ -169,10 +171,10 @@ const Index = () => {
         if (uploadError) throw uploadError;
       }
 
-      // Pro users get 24h signal duration
-      const expiresAt = isPro
-        ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+      // Pro users get 24h, referral rewards add bonus minutes, default 2h
+      const baseMinutes = isPro ? 24 * 60 : 120;
+      const bonusMinutes = reward.bonusMinutes;
+      const expiresAt = new Date(Date.now() + (baseMinutes + bonusMinutes) * 60 * 1000).toISOString();
 
       const { error: insertError } = await supabase.from("signals").insert({
         user_id: user.id,
@@ -185,7 +187,8 @@ const Index = () => {
         expires_at: expiresAt,
       } as any);
       if (insertError) throw insertError;
-      toast.success(isPro ? "Signal posted — live for 24h ✦" : "Signal posted");
+      const bonusLabel = bonusMinutes > 0 ? ` (+${bonusMinutes}min referral bonus)` : "";
+      toast.success(isPro ? `Signal posted — live for 24h ✦${bonusLabel}` : `Signal posted${bonusLabel}`);
       resetToHome();
     } catch (err) {
       console.error("Post failed:", err);
