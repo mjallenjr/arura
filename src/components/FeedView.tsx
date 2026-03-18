@@ -582,6 +582,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         if (user && current && !current.isDiscovery) {
           supabase.from("felts").insert({ user_id: user.id, signal_id: current.id }).then(() => {});
         }
+        playFelt();
+        hapticFelt();
         const id = `${Date.now()}-${Math.random()}`;
         setFeltEffects((prev) => [...prev, { id, x, y }]);
         setTimeout(() => { setFeltEffects((prev) => prev.filter((f) => f.id !== id)); }, 700);
