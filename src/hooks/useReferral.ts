@@ -2,6 +2,35 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+export interface ReferralReward {
+  tier: "none" | "spark" | "flame" | "inferno" | "eternal";
+  label: string;
+  bonusMinutes: number; // extra signal duration
+  nextTierAt: number;   // referrals needed for next tier
+}
+
+const REWARD_TIERS: { min: number; tier: ReferralReward["tier"]; label: string; bonusMinutes: number }[] = [
+  { min: 25, tier: "eternal",  label: "Eternal Flame",  bonusMinutes: 120 },
+  { min: 10, tier: "inferno",  label: "Inferno Spark",  bonusMinutes: 60 },
+  { min: 5,  tier: "flame",    label: "Flame Carrier",  bonusMinutes: 30 },
+  { min: 1,  tier: "spark",    label: "First Spark",    bonusMinutes: 15 },
+];
+
+function getReward(count: number): ReferralReward {
+  for (const t of REWARD_TIERS) {
+    if (count >= t.min) {
+      const nextTier = REWARD_TIERS[REWARD_TIERS.indexOf(t) - 1];
+      return {
+        tier: t.tier,
+        label: t.label,
+        bonusMinutes: t.bonusMinutes,
+        nextTierAt: nextTier ? nextTier.min : t.min,
+      };
+    }
+  }
+  return { tier: "none", label: "", bonusMinutes: 0, nextTierAt: 1 };
+}
+
 export function useReferral() {
   const { user } = useAuth();
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -27,7 +56,6 @@ export function useReferral() {
   const claimReferral = useCallback(async (code: string) => {
     if (!user) return false;
 
-    // Find referrer by code
     const { data: referrer } = await supabase
       .from("public_profiles")
       .select("user_id")
@@ -45,9 +73,11 @@ export function useReferral() {
     return !error;
   }, [user]);
 
+  const reward = getReward(referralCount);
+
   const shareLink = referralCode
     ? `${window.location.origin}/auth?ref=${referralCode}`
     : null;
 
-  return { referralCode, referralCount, shareLink, claimReferral, loading };
+  return { referralCode, referralCount, shareLink, claimReferral, loading, reward };
 }
