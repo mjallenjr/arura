@@ -244,9 +244,26 @@ const Index = () => {
         {showVibesPicker && user && (
           <VibesPicker
             userId={user.id}
-            onComplete={() => {
+            onComplete={(vibes) => {
               setShowVibesPicker(false);
               localStorage.setItem("arura_vibes_picked", "true");
+              setPickedInterests(vibes);
+              // Show ember suggestions after vibes
+              const hasIgnited = localStorage.getItem("arura_embers_picked");
+              if (!hasIgnited) setShowEmberSuggestions(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showEmberSuggestions && user && (
+          <EmberSuggestions
+            userId={user.id}
+            userInterests={pickedInterests}
+            onComplete={() => {
+              setShowEmberSuggestions(false);
+              localStorage.setItem("arura_embers_picked", "true");
             }}
           />
         )}
