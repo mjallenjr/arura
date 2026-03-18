@@ -17,14 +17,6 @@ interface TrendingBarProps {
   onSignalTap: (signalId: string) => void;
 }
 
-const heatEmoji: Record<string, string> = {
-  flame: "🔥",
-  hot: "🔥🔥",
-  burning: "🔥🔥🔥",
-  raging: "💥",
-  inferno: "🌋",
-  star: "⭐",
-};
 
 const TrendingBar = ({ onSignalTap }: TrendingBarProps) => {
   const [trending, setTrending] = useState<TrendingSignal[]>([]);
