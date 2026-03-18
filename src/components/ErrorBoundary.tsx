@@ -33,7 +33,7 @@ class ErrorBoundary extends Component<Props, State> {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center gap-4 text-center max-w-sm"
           >
-            <span className="text-4xl">💥</span>
+            <span className="text-4xl text-primary">✦</span>
             <h2 className="text-lg font-medium text-foreground">Something broke</h2>
             <p className="text-xs text-muted-foreground">
               {this.state.error?.message || "An unexpected error occurred"}

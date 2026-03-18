@@ -269,9 +269,9 @@ const CreatorAnalytics = () => {
                       <p className="text-[10px] text-muted-foreground">{timeAgo(drop.created_at)}</p>
                     </div>
                     <div className="flex gap-3 text-[10px] text-muted-foreground">
-                      <span>👁 {drop.views}</span>
+                      <span>◉ {drop.views}</span>
                       <span>✦ {drop.felts}</span>
-                      <span>🧵 {drop.stitches}</span>
+                      <span>⫽ {drop.stitches}</span>
                     </div>
                   </motion.div>
                 ))}

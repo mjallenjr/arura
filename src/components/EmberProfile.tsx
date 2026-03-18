@@ -470,7 +470,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                {refueled ? "🔥 refueled" : "refuel"}
+                {refueled ? "✦ refueled" : "refuel"}
               </motion.button>
             </motion.div>
           )}

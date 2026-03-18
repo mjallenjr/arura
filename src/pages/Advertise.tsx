@@ -67,7 +67,7 @@ const Advertise = () => {
     return (
       <div className="flex h-svh w-full items-center justify-center bg-background p-8">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={t} className="text-center">
-          <div className="text-5xl mb-4">🔥</div>
+          <div className="text-5xl mb-4 text-primary">✦</div>
           <h2 className="display-signal mb-2">You're in.</h2>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             We'll reach out within 24 hours with your campaign setup. Get ready to reach the most engaged audience on the internet.

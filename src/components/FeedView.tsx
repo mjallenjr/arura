@@ -117,8 +117,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       }, (payload: any) => {
         const row = payload.new;
         if (row?.type === "heat_advisory" && row?.signal_id) {
-          toast("🔥 Heat Advisory", {
-            description: `A drop you follow just hit ${row.word?.toUpperCase() ?? "HOT"} — tap to jump!`,
+          toast("✦ Heat Advisory", {
+            description: `A flare you follow just hit ${row.word?.toUpperCase() ?? "HOT"} — tap to jump!`,
             duration: 6000,
             action: { label: "Go", onClick: () => jumpToSignal(row.signal_id) },
           });

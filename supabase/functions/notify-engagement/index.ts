@@ -117,8 +117,8 @@ serve(async (req) => {
             await supabase.functions.invoke("send-push", {
               body: {
                 user_id: f.follower_id,
-                title: "🔥 Heat Advisory",
-                body: `A drop${word} you follow is rapidly rising — now ${levelLabel}!`,
+                title: "Heat Advisory",
+                body: `A flare${word} you follow is rapidly rising — now ${levelLabel}!`,
                 url: "/",
               },
             });

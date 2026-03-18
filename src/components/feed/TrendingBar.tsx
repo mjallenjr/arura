@@ -87,8 +87,8 @@ const TrendingBar = ({ onSignalTap }: TrendingBarProps) => {
             onClick={() => onSignalTap(s.id)}
             className="flex-shrink-0 flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1.5 signal-ease hover:bg-primary/20"
           >
-            <span className="text-xs">
-              {heatEmoji[s.heat_level] ?? "🔥"}
+            <span className="text-xs flex items-center">
+              <HeatIcon level={s.heat_level} size={12} />
             </span>
             <span className="text-[10px] font-medium text-foreground whitespace-nowrap max-w-[80px] truncate">
               {s.stitch_word ?? s.display_name}

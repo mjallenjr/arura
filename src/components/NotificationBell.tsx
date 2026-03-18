@@ -180,7 +180,7 @@ const NotificationBell = () => {
                         n.type === "heat_advisory" ? "bg-destructive/15" : "bg-primary/10"
                       }`}>
                         <span className={`text-[10px] ${n.type === "heat_advisory" ? "text-destructive" : "text-primary"}`}>
-                          {n.type === "heat_advisory" ? "🔥" : "✦"}
+                          {n.type === "heat_advisory" ? "✦" : "✦"}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
