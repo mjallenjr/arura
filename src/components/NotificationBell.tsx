@@ -102,6 +102,9 @@ const NotificationBell = () => {
 
   return (
     <div className="relative">
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}` : "No unread notifications"}
+      </span>
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => {
@@ -109,6 +112,7 @@ const NotificationBell = () => {
           if (!showDropdown) markAllRead();
         }}
         className="relative p-2"
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground">
           <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
