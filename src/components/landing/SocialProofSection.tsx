@@ -13,11 +13,18 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   );
 };
 
+const BrandFlameSmall = ({ opacity = 0.7 }: { opacity?: number }) => (
+  <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity }}>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+  </svg>
+);
+
 const testimonials = [
-  { quote: "Finally an app that doesn't make me perform.", name: "luna.ember", vibe: "🌙" },
-  { quote: "I actually talk to people now instead of scrolling.", name: "kai.drift", vibe: "🌊" },
-  { quote: "The 2-hour expiry changed how I share moments.", name: "sol.flare", vibe: "☀️" },
-  { quote: "10-word DMs hit different. Every word counts.", name: "fern.glow", vibe: "🌿" },
+  { quote: "Finally an app that doesn't make me perform.", name: "luna.ember", opacity: 0.5 },
+  { quote: "I actually talk to people now instead of scrolling.", name: "kai.drift", opacity: 0.6 },
+  { quote: "The 2-hour expiry changed how I share moments.", name: "sol.flare", opacity: 0.8 },
+  { quote: "10-word DMs hit different. Every word counts.", name: "fern.glow", opacity: 1 },
 ];
 
 const stats = [
