@@ -28,6 +28,7 @@ const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isPro } = useSubscription();
+  const { reward } = useReferral();
   const [state, setState] = useState<AppState>("home");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
   const [isRecording, setIsRecording] = useState(false);
