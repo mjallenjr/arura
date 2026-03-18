@@ -175,6 +175,38 @@ const Discover = () => {
     setRefreshing(false);
   }, [tab, vibrate, loadTrending, loadSuggestedEmbers]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    vibrate(20);
+    if (tab === "trending") await loadTrending();
+    else if (tab === "embers") await loadSuggestedEmbers();
+    setRefreshing(false);
+  }, [tab, vibrate, loadTrending, loadSuggestedEmbers]);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const el = scrollRef.current;
+    if (el && el.scrollTop <= 0) {
+      touchStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling.current || refreshing) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) setPullDistance(Math.min(delta * 0.5, 120));
+  }, [refreshing]);
+
+  const onTouchEnd = useCallback(() => {
+    if (!isPulling.current) return;
+    isPulling.current = false;
+    if (pullDistance >= PULL_THRESHOLD && !refreshing) {
+      handleRefresh().finally(() => setPullDistance(0));
+    } else {
+      setPullDistance(0);
+    }
+  }, [pullDistance, refreshing, handleRefresh]);
+
   // Search by interest
   const searchByInterest = useCallback(async (interest: string) => {
     if (!user) return;
