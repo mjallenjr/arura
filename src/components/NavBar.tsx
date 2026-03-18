@@ -5,7 +5,7 @@ import NotificationBell from "@/components/NotificationBell";
 import { useHaptics } from "@/hooks/useHaptics";
 
 const tabs = [
-  { path: "/home", label: "arura", icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" },
+  { path: "/home", label: "arura", icon: "M12 3c-1 4-4 6-4 10a4 4 0 008 0c0-4-3-6-4-10z" },
   { path: "/discover", label: "wonder", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
   { path: "/camps", label: "camps", icon: "M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8zM8 14l-2-2 1.5-1.5L9 12l4-4 1.5 1.5L8 14z" },
   { path: "/messages", label: "words", icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },

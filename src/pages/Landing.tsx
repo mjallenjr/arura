@@ -216,6 +216,8 @@ const Landing = () => {
               { icon: "flame", rule: "Heat, not likes", detail: "match → spark → flame → star" },
               { icon: "dm", rule: "Brief DMs", detail: "10 words max. Say what matters." },
               { icon: "stitch", rule: "Stitch a word", detail: "Overlay your mark on any signal." },
+              { icon: "camp", rule: "Camps form organically", detail: "Share a vibe with 5+ embers and a campfire ignites." },
+              { icon: "ranger", rule: "Earn Park Ranger", detail: "Top contributor at 25 campers names the campground." },
             ].map((item, i) => (
               <FadeIn key={i} delay={i * 0.08}>
                 <div className="rounded-2xl border border-border/50 bg-card/50 p-6 hover:border-primary/20 transition-colors">
@@ -240,6 +242,16 @@ const Landing = () => {
                         <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" fill="currentColor" opacity="0.1"/>
                       </svg>
+                    ) : item.icon === "camp" ? (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                        <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" fill="currentColor" opacity="0.2"/>
+                        <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                    ) : item.icon === "ranger" ? (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                        <path d="M12 2l2.6 6.4L21 9.5l-4.9 4.1L17.5 20 12 16.6 6.5 20l1.4-6.4L3 9.5l6.4-1.1z" fill="currentColor" opacity="0.2"/>
+                        <path d="M12 2l2.6 6.4L21 9.5l-4.9 4.1L17.5 20 12 16.6 6.5 20l1.4-6.4L3 9.5l6.4-1.1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+                      </svg>
                     ) : (
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
                         <path d="M4 4l4 4m8 8l4 4M4 20l16-16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -258,6 +270,72 @@ const Landing = () => {
       </section>
 
       <HeatTierSection />
+
+      {/* ── CAMPFIRES ── */}
+      <section className="py-24 px-6 border-t border-border/50">
+        <div className="max-w-4xl mx-auto">
+          <FadeIn>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-amber-400 text-center mb-4">Campgrounds</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.04em] text-center mb-6">
+              Find your fire.<br />Build your <span className="text-amber-400">camp.</span>
+            </h2>
+            <p className="text-sm text-muted-foreground text-center max-w-lg mx-auto mb-16 leading-relaxed">
+              When 5 embers share the same vibe, a campfire sparks to life. Grow it to 25 campers and it becomes a bonfire — with a Park Ranger who names the campground.
+            </p>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {[
+              {
+                icon: (
+                  <svg width="28" height="28" viewBox="0 0 32 32" fill="none" className="text-amber-400">
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.3"/>
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                  </svg>
+                ),
+                title: "Campfire",
+                subtitle: "5+ embers",
+                desc: "Share a vibe with 5 others and a campfire forms automatically. You're an ember and a camper.",
+              },
+              {
+                icon: (
+                  <svg width="28" height="28" viewBox="0 0 32 32" fill="none" className="text-amber-400">
+                    <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+                    <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.35"/>
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.5"/>
+                  </svg>
+                ),
+                title: "Bonfire",
+                subtitle: "25+ campers",
+                desc: "At 25 campers, the fire evolves. The top contributor becomes the Park Ranger.",
+              },
+              {
+                icon: (
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                    <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" fill="currentColor" opacity="0.2"/>
+                    <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M8 14l-2-2 1.5-1.5L9 12l4-4 1.5 1.5L8 14z" fill="currentColor" opacity="0.6"/>
+                  </svg>
+                ),
+                title: "Park Ranger",
+                subtitle: "Top contributor",
+                desc: "The camper with the most flares and stitches names the campground — 3 words max.",
+              },
+            ].map((item, i) => (
+              <FadeIn key={i} delay={i * 0.12}>
+                <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-primary/5 p-6 text-center">
+                  <div className="flex justify-center mb-3">{item.icon}</div>
+                  <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-[10px] font-medium text-amber-400/80 uppercase tracking-wider mt-0.5 mb-2">{item.subtitle}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── WHY NOT THEM ── */}
       <section className="py-24 px-6 border-t border-border/50 relative overflow-hidden">
@@ -282,6 +360,8 @@ const Landing = () => {
               { them: "Posts live forever", us: "2 hours, then gone" },
               { them: "DM overload", us: "10 words. That's it." },
               { them: "Curated performance", us: "5-second raw moments" },
+              { them: "Groups you have to find", us: "Camps form around shared vibes" },
+              { them: "Admins appointed by founders", us: "Park Rangers earned by contribution" },
             ].map((row, i) => (
               <FadeIn key={i} delay={i * 0.06}>
                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3.5 border-b border-border/30 last:border-0">
