@@ -630,7 +630,9 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         onReportClick={() => setShowReportMenu(true)}
       />
 
-      <FeedPlayer signalId={signal.id} mediaUrl={signal.media_url} type={signal.type} />
+      <div style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
+        <FeedPlayer signalId={signal.id} mediaUrl={signal.media_url} type={signal.type} />
+      </div>
 
       <StitchOverlay
         stitchWord={signal.stitch_word}
