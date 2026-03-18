@@ -566,7 +566,46 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const isSuggestedFeed = signals.length > 0 && signals[0].isSuggested;
 
   return (
-    <div ref={feedRef} className="relative h-full w-full bg-background touch-none" onClick={handleTap}>
+    <div
+      ref={feedRef}
+      className="relative h-full w-full bg-background touch-none"
+      onClick={handleTap}
+      onTouchStart={(e) => {
+        if (showStitchInput || e.touches.length > 1) return;
+        swipeStartXRef.current = e.touches[0].clientX;
+        swipeStartYRef.current = e.touches[0].clientY;
+        isSwiping.current = false;
+        swipeDeltaRef.current = 0;
+      }}
+      onTouchMove={(e) => {
+        if (swipeStartXRef.current === null || swipeStartYRef.current === null || showStitchInput || e.touches.length > 1) return;
+        const dx = e.touches[0].clientX - swipeStartXRef.current;
+        const dy = e.touches[0].clientY - swipeStartYRef.current;
+        // Only start swiping if horizontal movement dominates
+        if (!isSwiping.current && Math.abs(dx) > 15 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          isSwiping.current = true;
+        }
+        if (isSwiping.current) {
+          swipeDeltaRef.current = dx;
+          setSwipeOffset(dx);
+        }
+      }}
+      onTouchEnd={() => {
+        if (isSwiping.current) {
+          const threshold = 80;
+          if (swipeDeltaRef.current < -threshold) {
+            advanceSignal(); // swipe left → next
+          } else if (swipeDeltaRef.current > threshold) {
+            goBackSignal(); // swipe right → previous
+          }
+        }
+        swipeStartXRef.current = null;
+        swipeStartYRef.current = null;
+        isSwiping.current = false;
+        swipeDeltaRef.current = 0;
+        setSwipeOffset(0);
+      }}
+    >
       {/* Offline/cached indicator */}
       {isFromCache && (
         <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 rounded-full bg-muted/80 backdrop-blur-sm px-3 py-1">
