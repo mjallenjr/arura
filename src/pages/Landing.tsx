@@ -213,7 +213,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
               { icon: "timer", rule: "Everything expires", detail: "2 hours, then it's gone forever." },
-              { icon: "flame", rule: "Heat, not likes", detail: "match → spark → flame → ⭐ star" },
+              { icon: "flame", rule: "Heat, not likes", detail: "match → spark → flame → star" },
               { icon: "dm", rule: "Brief DMs", detail: "10 words max. Say what matters." },
               { icon: "stitch", rule: "Stitch a word", detail: "Overlay your mark on any signal." },
             ].map((item, i) => (

@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     q: "What's 'heat' and how does it work?",
-    a: "Heat replaces likes. When people engage with your signal, it gains heat: match → spark → flame → ⭐. It's about collective energy, not individual validation.",
+    a: "Heat replaces likes. When people engage with your signal, it gains heat: match → spark → flame → star. It's about collective energy, not individual validation.",
   },
   {
     q: "Why are DMs limited to 10 words?",

@@ -64,7 +64,7 @@ const HeatTierSection = () => {
             Keep it lit.
           </h2>
           <p className="text-sm text-muted-foreground text-center mb-14 max-w-md mx-auto">
-            Every signal starts as a match. Engage it and it climbs. Ignore it and it dies. Only the hottest reach ⭐&nbsp;star.
+            Every signal starts as a match. Engage it and it climbs. Ignore it and it dies. Only the hottest reach star.
           </p>
         </FadeIn>
 
