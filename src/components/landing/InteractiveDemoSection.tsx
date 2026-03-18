@@ -101,9 +101,11 @@ const StitchDemo = () => {
   const [placed, setPlaced] = useState(false);
 
   return (
-    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-accent/15 via-primary/10 to-secondary/20 border border-border/50">
+    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border/50">
+      <img src="/discover/clouds-lake.jpg" alt="Lake signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/30 to-transparent" />
       <div className="absolute inset-0 flex items-center justify-center">
-        <p className="text-lg font-bold text-foreground/60 italic">sunset vibes</p>
+        <p className="text-lg font-bold text-foreground/80 italic drop-shadow-lg">sunset vibes</p>
       </div>
       {placed && word && (
         <motion.div
