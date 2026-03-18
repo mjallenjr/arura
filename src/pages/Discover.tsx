@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import EmberProfile from "@/components/EmberProfile";
+import { useHaptics } from "@/hooks/useHaptics";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -47,6 +48,17 @@ const Discover = () => {
   const [loading, setLoading] = useState(true);
   const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const { vibrate } = useHaptics();
+
+  // Pull-to-refresh state
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef(0);
+  const [pullDistance, setPullDistance] = useState(0);
+  const isPulling = useRef(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const PULL_THRESHOLD = 80;
+
+  // Pull-to-refresh handlers defined after data loaders
 
   // Load following list
   useEffect(() => {
@@ -155,6 +167,39 @@ const Discover = () => {
     setSuggestedEmbers(scored);
   }, [user]);
 
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    vibrate(20);
+    if (tab === "trending") await loadTrending();
+    else if (tab === "embers") await loadSuggestedEmbers();
+    setRefreshing(false);
+  }, [tab, vibrate, loadTrending, loadSuggestedEmbers]);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const el = scrollRef.current;
+    if (el && el.scrollTop <= 0) {
+      touchStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling.current || refreshing) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0) setPullDistance(Math.min(delta * 0.5, 120));
+  }, [refreshing]);
+
+  const onTouchEnd = useCallback(() => {
+    if (!isPulling.current) return;
+    isPulling.current = false;
+    if (pullDistance >= PULL_THRESHOLD && !refreshing) {
+      handleRefresh().finally(() => setPullDistance(0));
+    } else {
+      setPullDistance(0);
+    }
+  }, [pullDistance, refreshing, handleRefresh]);
+
   // Search by interest
   const searchByInterest = useCallback(async (interest: string) => {
     if (!user) return;
@@ -236,7 +281,43 @@ const Discover = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-32">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-4 pb-32"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Pull-to-refresh indicator */}
+        <AnimatePresence>
+          {pullDistance > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex justify-center py-2"
+            >
+              <motion.svg
+                width="20" height="20" viewBox="0 0 32 32" fill="none"
+                className="text-primary"
+                animate={{ rotate: pullDistance >= PULL_THRESHOLD ? 360 : 0, scale: pullDistance >= PULL_THRESHOLD ? 1.2 : 0.8 }}
+                transition={{ type: "spring", bounce: 0.3 }}
+              >
+                <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.4" />
+                <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+              </motion.svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {refreshing && (
+          <div className="flex justify-center py-2">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+              className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full"
+            />
+          </div>
+        )}
         <AnimatePresence mode="wait">
           {tab === "trending" && (
             <motion.div
