@@ -18,6 +18,7 @@ import CreatorAnalytics from "@/pages/CreatorAnalytics";
 import NotFound from "@/pages/NotFound";
 import ResetPassword from "@/pages/ResetPassword";
 import Install from "@/pages/Install";
+import Landing from "@/pages/Landing";
 import React from "react";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -50,8 +51,9 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/auth" element={user ? <Navigate to="/" replace /> : <PageTransition className="h-svh"><Auth /></PageTransition>} />
-        <Route path="/" element={<ProtectedRoute><PageTransition className="h-svh"><Index /></PageTransition></ProtectedRoute>} />
+        <Route path="/auth" element={user ? <Navigate to="/home" replace /> : <PageTransition className="h-svh"><Auth /></PageTransition>} />
+        <Route path="/" element={user ? <Navigate to="/home" replace /> : <PageTransition><Landing /></PageTransition>} />
+        <Route path="/home" element={<ProtectedRoute><PageTransition className="h-svh"><Index /></PageTransition></ProtectedRoute>} />
         <Route path="/discover" element={<ProtectedRoute><PageTransition className="h-svh"><Discover /></PageTransition></ProtectedRoute>} />
         <Route path="/people" element={<ProtectedRoute><PageTransition className="h-svh"><People /></PageTransition></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><PageTransition className="h-svh"><Messages /></PageTransition></ProtectedRoute>} />
