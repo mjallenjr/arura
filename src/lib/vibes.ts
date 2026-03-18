@@ -51,7 +51,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
   ],
   "🌿 Nature": [
     "nature", "plants", "gardening", "houseplants", "succulents", "bonsai", "flowers",
-    "hiking", "camping", "backpacking", "foraging", "birdwatching", "wildlife",
+    "hiking", "camping", "backpacking", "foraging", "birdwatching", "wildlife", "fly fishing",
     "marine life", "astronomy", "stargazing", "sunsets", "sunrises", "mountains",
     "forests", "oceans", "beaches", "deserts", "rivers", "waterfalls", "national parks",
     "sustainability", "conservation", "ecology", "permaculture", "beekeeping",
