@@ -220,7 +220,7 @@ export function useFeedData() {
         .filter((s) => !isBlocked(s.user_id))
         .map((s) => {
           let media_url: string | null = null;
-          if (s.storage_path) { const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = data.publicUrl; }
+          if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
           const auraPos = auraRank.get(s.user_id) ?? rankedIds.length;
           const auraScore = Math.max(0, 100 - (auraPos / Math.max(rankedIds.length, 1)) * 100);
           const felts = feltCounts.get(s.id) ?? 0;
