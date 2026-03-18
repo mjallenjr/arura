@@ -180,7 +180,7 @@ const Index = () => {
     } finally {
       setUploading(false);
     }
-  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, resetToHome, isPro]);
+  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, stitchWordPos, stitchWordScale, stitchWordRotation, resetToHome, isPro]);
 
   const toggleCamera = useCallback(() => {
     setCameraFacing((f) => (f === "user" ? "environment" : "user"));
