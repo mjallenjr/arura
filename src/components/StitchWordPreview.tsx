@@ -11,11 +11,11 @@ interface StitchWordPreviewProps {
   onRotationChange: (rotation: number) => void;
 }
 
-function getTouchDistance(t1: Touch, t2: Touch) {
+function getTouchDistance(t1: { clientX: number; clientY: number }, t2: { clientX: number; clientY: number }) {
   return Math.sqrt((t1.clientX - t2.clientX) ** 2 + (t1.clientY - t2.clientY) ** 2);
 }
 
-function getTouchAngle(t1: Touch, t2: Touch) {
+function getTouchAngle(t1: { clientX: number; clientY: number }, t2: { clientX: number; clientY: number }) {
   return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * (180 / Math.PI);
 }
 
