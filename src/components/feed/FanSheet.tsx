@@ -180,8 +180,11 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
                       </span>
                     )}
                   </div>
-                  <span className="text-sm font-medium text-foreground flex-1 text-left">
+                  <span className="text-sm font-medium text-foreground flex-1 text-left flex items-center gap-1.5">
                     {ember.display_name}
+                    {ember.isSparked && (
+                      <Zap className="w-3 h-3 text-primary fill-primary" />
+                    )}
                   </span>
                   <span className="text-[10px] font-medium">
                     {sending === ember.user_id
