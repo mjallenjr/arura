@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import FeltEffect from "@/components/FeltEffect";
 import ReportBlockMenu from "@/components/ReportBlockMenu";
@@ -739,6 +740,15 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         setSwipeOffset(0);
       }}
     >
+      {/* Close button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onEnd(); }}
+        aria-label="Close feed"
+        className="absolute top-4 right-4 z-30 h-9 w-9 rounded-full signal-surface signal-blur flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
       {/* Offline/cached indicator */}
       {isFromCache && (
         <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 rounded-full bg-muted/80 backdrop-blur-sm px-3 py-1">
