@@ -622,7 +622,7 @@ const Profile = () => {
                   tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
                 }`}
               >
-                {t === "drops" ? "My Drops" : t === "activity" ? "Activity" : "Settings"}
+                {t === "flares" ? "My Flares" : t === "activity" ? "Activity" : "Settings"}
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center">
                     {unreadCount}
