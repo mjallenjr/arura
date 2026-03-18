@@ -67,7 +67,7 @@ const SocialProofSection = () => (
             <div className="rounded-2xl border border-border/30 bg-card/40 p-5 hover:border-primary/20 transition-colors">
               <p className="text-sm text-foreground leading-relaxed mb-4">"{t.quote}"</p>
               <div className="flex items-center gap-2">
-                <span className="text-lg">{t.vibe}</span>
+                <BrandFlameSmall opacity={t.opacity} />
                 <span className="text-xs text-muted-foreground font-medium">{t.name}</span>
               </div>
             </div>

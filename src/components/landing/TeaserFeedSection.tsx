@@ -96,7 +96,7 @@ const TeaserFeedSection = () => {
 
                     {/* Heat badge */}
                     <div className="absolute top-3 right-3 bg-background/60 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
-                      <span className="text-xs">{signal.emoji}</span>
+                      {heatIcons[signal.heat]}
                       <span className="text-[10px] font-medium text-foreground/70">{signal.heat}</span>
                     </div>
 
