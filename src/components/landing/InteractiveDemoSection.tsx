@@ -51,8 +51,10 @@ const TapDemo = () => {
     <motion.div
       onClick={handleTap}
       whileTap={{ scale: 0.97 }}
-      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer select-none bg-gradient-to-br from-primary/15 via-secondary/30 to-accent/15 border border-border/50"
+      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer select-none border border-border/50"
     >
+      <img src="/discover/sunset-pier.jpg" alt="Sunset signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-transparent" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
         {heat === 0 ? (
           <BrandFlame size={32} opacity={0.35} />
@@ -98,9 +100,11 @@ const StitchDemo = () => {
   const [placed, setPlaced] = useState(false);
 
   return (
-    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-accent/15 via-primary/10 to-secondary/20 border border-border/50">
+    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border/50">
+      <img src="/discover/clouds-lake.jpg" alt="Lake signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/30 to-transparent" />
       <div className="absolute inset-0 flex items-center justify-center">
-        <p className="text-lg font-bold text-foreground/60 italic">sunset vibes</p>
+        <p className="text-lg font-bold text-foreground/80 italic drop-shadow-lg">sunset vibes</p>
       </div>
       {placed && word && (
         <motion.div
@@ -140,7 +144,9 @@ const DMDemo = () => {
   const wordCount = msg.trim().split(/\s+/).filter(Boolean).length;
 
   return (
-    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-secondary/15 via-accent/10 to-primary/15 border border-border/50 flex flex-col justify-end p-3">
+    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border/50 flex flex-col justify-end p-3">
+      <img src="/discover/beach-sunrise.jpg" alt="Beach signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
       {sent ? (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-end mb-2">
           <span className="text-xs bg-primary/20 text-primary rounded-xl px-3 py-1.5 font-medium">{msg}</span>

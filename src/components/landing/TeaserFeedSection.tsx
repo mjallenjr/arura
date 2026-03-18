@@ -37,10 +37,10 @@ const heatIcons: Record<string, React.ReactNode> = {
 };
 
 const sampleSignals = [
-  { id: 1, user: "ember.luna", caption: "golden hour", gradient: "from-primary/15 via-primary/10 to-accent/10", heat: "flame", timeLeft: "1h 42m", stitch: "magic" },
-  { id: 2, user: "kai.drift", caption: "3am thoughts", gradient: "from-primary/10 via-accent/15 to-secondary/10", heat: "spark", timeLeft: "47m", stitch: null },
-  { id: 3, user: "sol.flare", caption: "first snow", gradient: "from-accent/15 via-primary/10 to-secondary/10", heat: "star", timeLeft: "12m", stitch: "perfect" },
-  { id: 4, user: "fern.glow", caption: "late night ramen", gradient: "from-secondary/15 via-primary/10 to-accent/10", heat: "match", timeLeft: "1h 58m", stitch: null },
+  { id: 1, user: "ember.luna", caption: "golden hour", img: "/discover/sunset-pier.jpg", heat: "flame", timeLeft: "1h 42m", stitch: "magic" },
+  { id: 2, user: "kai.drift", caption: "3am thoughts", img: "/discover/clouds-lake.jpg", heat: "spark", timeLeft: "47m", stitch: null },
+  { id: 3, user: "sol.flare", caption: "first snow", img: "/discover/waterfall.jpg", heat: "star", timeLeft: "12m", stitch: "perfect" },
+  { id: 4, user: "fern.glow", caption: "late night ramen", img: "/discover/river-autumn.jpg", heat: "match", timeLeft: "1h 58m", stitch: null },
 ];
 
 const TeaserFeedSection = () => {
@@ -86,10 +86,12 @@ const TeaserFeedSection = () => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -30 }}
                     transition={{ duration: 0.3, ease }}
-                    className={`aspect-[9/14] bg-gradient-to-br ${signal.gradient} relative`}
+                    className="aspect-[9/14] relative overflow-hidden"
                   >
+                    <img src={signal.img} alt={signal.caption} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <p className="text-xl font-bold text-foreground/70 italic text-center px-6" style={{ textShadow: "0 0 20px hsl(var(--primary) / 0.2)" }}>
+                      <p className="text-xl font-bold text-foreground/90 italic text-center px-6 drop-shadow-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
                         {signal.caption}
                       </p>
                     </div>
