@@ -32,6 +32,7 @@ export interface Signal {
   song_clip_url: string | null;
   song_title: string | null;
   stitch_word: string | null;
+  stitch_word_pos?: { x: number; y: number; scale: number; rotation: number } | null;
   created_at: string;
   display_name: string;
   media_url: string | null;
@@ -202,7 +203,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       return shuffleArray(rawSignals.map((s) => {
         let media_url: string | null = null;
         if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
-        return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
+        return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
       }));
     } catch { return []; }
   }, [user]);
@@ -358,7 +359,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           
           const compositeScore = auraScore * 0.35 + engagementScore * 0.4 + recencyScore * 0.25;
           
-          return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, _score: compositeScore };
+          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, _score: compositeScore };
         })
         .sort((a: any, b: any) => (b._score ?? 0) - (a._score ?? 0));
       
@@ -637,6 +638,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
       <StitchOverlay
         stitchWord={signal.stitch_word}
+        stitchWordPos={signal.stitch_word_pos}
         submittedStitch={submittedStitch}
         showStitchInput={showStitchInput}
         stitchInput={stitchInput}

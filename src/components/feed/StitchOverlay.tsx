@@ -4,6 +4,7 @@ const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
 interface StitchOverlayProps {
   stitchWord: string | null;
+  stitchWordPos?: { x: number; y: number; scale: number; rotation: number } | null;
   submittedStitch: {
     word: string;
     x: number;
@@ -34,6 +35,7 @@ interface StitchOverlayProps {
 
 const StitchOverlay = ({
   stitchWord,
+  stitchWordPos,
   submittedStitch,
   showStitchInput,
   stitchInput,
@@ -59,13 +61,16 @@ const StitchOverlay = ({
     <>
       {/* Creator's stitch word overlay */}
       {stitchWord && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 z-10 pointer-events-none">
           <motion.p
-            initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
-            animate={{ opacity: 1, scale: 1, rotate: -2 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ ...signalTransition, delay: 0.2 }}
-            className="text-4xl font-bold tracking-tight text-foreground drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]"
+            className="absolute text-4xl font-bold tracking-tight text-foreground"
             style={{
+              left: stitchWordPos ? `${stitchWordPos.x}%` : "50%",
+              top: stitchWordPos ? `${stitchWordPos.y}%` : "50%",
+              transform: `translate(-50%, -50%) scale(${stitchWordPos?.scale ?? 1}) rotate(${stitchWordPos?.rotation ?? -2}deg)`,
               textShadow: "0 0 20px hsl(var(--primary) / 0.4), 0 2px 8px rgba(0,0,0,0.6)",
               fontStyle: "italic",
             }}

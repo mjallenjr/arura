@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PostActions from "@/components/PostActions";
+import StitchWordPreview from "@/components/StitchWordPreview";
 import FeedView from "@/components/FeedView";
 import Onboarding from "@/components/Onboarding";
 import VibesPicker from "@/components/onboarding/VibesPicker";
@@ -38,6 +39,9 @@ const Index = () => {
   const [songUrl, setSongUrl] = useState("");
   const [songTitle, setSongTitle] = useState("");
   const [stitchWord, setStitchWord] = useState("");
+  const [stitchWordPos, setStitchWordPos] = useState({ x: 50, y: 40 });
+  const [stitchWordScale, setStitchWordScale] = useState(1);
+  const [stitchWordRotation, setStitchWordRotation] = useState(0);
   const [uploading, setUploading] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -121,6 +125,9 @@ const Index = () => {
     setSongUrl("");
     setSongTitle("");
     setStitchWord("");
+    setStitchWordPos({ x: 50, y: 40 });
+    setStitchWordScale(1);
+    setStitchWordRotation(0);
     setState("home");
   }, []);
 
@@ -131,6 +138,9 @@ const Index = () => {
     setSongUrl("");
     setSongTitle("");
     setStitchWord("");
+    setStitchWordPos({ x: 50, y: 40 });
+    setStitchWordScale(1);
+    setStitchWordRotation(0);
     setState("camera");
   }, []);
 
@@ -158,8 +168,9 @@ const Index = () => {
         song_clip_url: songUrl || null,
         song_title: songTitle || null,
         stitch_word: stitchWord || null,
+        stitch_word_pos: stitchWord ? { x: stitchWordPos.x, y: stitchWordPos.y, scale: stitchWordScale, rotation: stitchWordRotation } : null,
         expires_at: expiresAt,
-      });
+      } as any);
       if (insertError) throw insertError;
       toast.success(isPro ? "Signal posted — live for 24h ✦" : "Signal posted");
       resetToHome();
@@ -169,7 +180,7 @@ const Index = () => {
     } finally {
       setUploading(false);
     }
-  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, resetToHome, isPro]);
+  }, [user, captureMode, photoBlob, recordedBlob, songUrl, songTitle, stitchWord, stitchWordPos, stitchWordScale, stitchWordRotation, resetToHome, isPro]);
 
   const toggleCamera = useCallback(() => {
     setCameraFacing((f) => (f === "user" ? "environment" : "user"));
@@ -536,6 +547,19 @@ const Index = () => {
               />
             )}
 
+            {/* Draggable stitch word preview */}
+            {stitchWord && (
+              <StitchWordPreview
+                word={stitchWord}
+                position={stitchWordPos}
+                scale={stitchWordScale}
+                rotation={stitchWordRotation}
+                onPositionChange={setStitchWordPos}
+                onScaleChange={setStitchWordScale}
+                onRotationChange={setStitchWordRotation}
+              />
+            )}
+
             <div className="relative z-10 w-full max-w-sm">
               <PostActions
                 onPost={handlePost}
@@ -549,6 +573,11 @@ const Index = () => {
                 stitchWord={stitchWord}
                 onStitchWordChange={setStitchWord}
               />
+              {stitchWord && (
+                <p className="text-[10px] text-muted-foreground/50 text-center mt-2">
+                  drag to move · pinch to resize & rotate
+                </p>
+              )}
             </div>
           </motion.div>
         )}
