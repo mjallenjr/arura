@@ -149,7 +149,10 @@ const Messages = () => {
 
   const sendWord = useCallback(async () => {
     if (!user || !selectedUserId || !word.trim()) return;
-    const cleaned = word.replace(/\s/g, "").slice(0, 12);
+    const trimmed = word.trim();
+    const wordCount = trimmed.split(/\s+/).length;
+    if (wordCount > 10) { toast.error("10 words max"); return; }
+    const cleaned = trimmed.slice(0, 120);
     if (!cleaned) return;
 
     const { error } = await supabase.from("direct_messages").insert({
