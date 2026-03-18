@@ -50,7 +50,7 @@ serve(async (req) => {
       const levelLabel = signal.heat_level === "star" ? "⭐ STAR" : `🔥 ${signal.heat_level?.toUpperCase()}`;
       const body = signal.stitch_word
         ? `Your drop "${signal.stitch_word}" is now ${levelLabel}!`
-        : `Your drop just hit ${levelLabel}! Keep it burning.`;
+        : `Your drop just hit ${levelLabel}! Keep it lit.`;
 
       // Send push via send-push function
       try {
