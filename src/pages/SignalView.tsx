@@ -133,7 +133,7 @@ const SignalView = () => {
 
       {/* Top branding */}
       <div className="absolute top-4 left-4 z-20">
-        <a href="/" className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+        <a href="/home" className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
           <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-primary">
             <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z"
               fill="currentColor" opacity="0.3" />
