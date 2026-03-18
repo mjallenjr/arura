@@ -49,7 +49,7 @@ interface Step {
   title: string;
   subtitle: string;
   body: string;
-  interactive?: "flare" | "tap" | "stitch" | "heat";
+  interactive?: "flare" | "tap" | "stitch" | "heat" | "invite";
 }
 
 const steps: Step[] = [
