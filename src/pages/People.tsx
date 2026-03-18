@@ -312,7 +312,7 @@ const People = () => {
         // Remove from suggestions after igniting
         setSuggested((prev) => prev.filter((r) => r.user_id !== targetUserId));
         setAllSuggestions((prev) => prev.filter((r) => r.user_id !== targetUserId));
-        toast.success("Ignited 🔥");
+        toast.success("Ignited ✦");
         setTimeout(() => setAnimating(null), 1200);
       }
     },
