@@ -52,7 +52,7 @@ interface SignalViewer {
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<ProfileTab>("drops");
+  const [tab, setTab] = useState<ProfileTab>("flares");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
