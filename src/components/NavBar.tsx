@@ -7,7 +7,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 const tabs = [
   { path: "/home", label: "arura", icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" },
   { path: "/discover", label: "wonder", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
-  { path: "/people", label: "embers", icon: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
+  { path: "/camps", label: "camps", icon: "M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8zM8 14l-2-2 1.5-1.5L9 12l4-4 1.5 1.5L8 14z" },
   { path: "/messages", label: "words", icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
   { path: "/profile", label: "me", icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
 ];
