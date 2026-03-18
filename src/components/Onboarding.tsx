@@ -4,6 +4,7 @@ import InteractiveTapDemo from "@/components/onboarding/InteractiveTapDemo";
 import InteractiveStitchDemo from "@/components/onboarding/InteractiveStitchDemo";
 import InteractiveDropDemo from "@/components/onboarding/InteractiveDropDemo";
 import InteractiveHeatDemo from "@/components/onboarding/InteractiveHeatDemo";
+import InviteStep from "@/components/onboarding/InviteStep";
 
 const signalTransition = { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as const };
 
