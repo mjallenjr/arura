@@ -17,7 +17,7 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
 const faqs = [
   {
     q: "What happens after 2 hours?",
-    a: "Your signal vanishes — permanently. No archive, no memories tab, no data hoarding. It existed, people felt it, and now it's gone. That's the point.",
+    a: "If nobody engages, your signal fades — gone forever. But if people feel it, it gains heat: match → spark → ignite → flame → hot → burning → raging → inferno → ⭐ star. The hotter it gets, the longer it lives. Reach star status and it stays for a full year. Everything burns — but the best things keep burning.",
   },
   {
     q: "Why only 5 seconds?",
