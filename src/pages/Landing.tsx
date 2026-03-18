@@ -27,7 +27,44 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   );
 };
 
-const Landing = () => {
+const PhoneMockup = () => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % heroMockups.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex justify-center mb-8">
+      <div className="relative w-[180px] sm:w-[220px] aspect-[9/19] rounded-[2rem] border-2 border-border/60 bg-card shadow-2xl shadow-primary/10 overflow-hidden">
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-background rounded-b-xl z-20" />
+        {/* Screen */}
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={index}
+            src={heroMockups[index]}
+            alt="arura app preview"
+            className="absolute inset-0 w-full h-full object-cover"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+          />
+        </AnimatePresence>
+        {/* Screen overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-background/20 pointer-events-none z-10" />
+        {/* Bottom bar */}
+        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1/3 h-1 rounded-full bg-foreground/20 z-20" />
+      </div>
+    </div>
+  );
+};
+
+
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
