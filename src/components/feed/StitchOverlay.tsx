@@ -4,6 +4,7 @@ const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
 interface StitchOverlayProps {
   stitchWord: string | null;
+  stitchWordPos?: { x: number; y: number; scale: number; rotation: number } | null;
   submittedStitch: {
     word: string;
     x: number;
