@@ -26,7 +26,7 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
 
-  // Search embers
+  // Search embers and check sparked status
   useEffect(() => {
     if (!open || query.length < 2) {
       setResults([]);
@@ -38,11 +38,21 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
         search_term: query,
         requesting_user_id: userId,
       });
-      setResults((data as EmberResult[]) ?? []);
+      const profiles = (data as EmberResult[]) ?? [];
+      // Check sparked status for each result
+      const withSparked = await Promise.all(
+        profiles.map(async (p) => ({
+          ...p,
+          isSparked: await checkSparked(p.user_id),
+        }))
+      );
+      // Sort sparked embers first
+      withSparked.sort((a, b) => (b.isSparked ? 1 : 0) - (a.isSparked ? 1 : 0));
+      setResults(withSparked);
       setLoading(false);
     }, 300);
     return () => clearTimeout(timeout);
-  }, [query, open, userId]);
+  }, [query, open, userId, checkSparked]);
 
   // Load recent follows as default suggestions
   useEffect(() => {
