@@ -388,7 +388,7 @@ const Discover = () => {
               <div className="signal-surface rounded-xl px-4 py-2.5 mb-4">
                 <input
                   type="text"
-                  placeholder="Search 500+ vibes..."
+                  placeholder="Search 500+ Hazy Vibes..."
                   value={vibeQuery}
                   onChange={(e) => {
                     const q = e.target.value;
