@@ -351,6 +351,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         onReportClick={() => setShowReportMenu(true)}
         onRekindle={() => handleRekindle(signal.id, signal.user_id)}
         onShare={() => handleShare(signal.id)}
+        onFan={() => { getFanCount(signal.id); setShowFanSheet(true); }}
       />
 
       <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
