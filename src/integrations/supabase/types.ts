@@ -965,6 +965,10 @@ export type Database = {
           storage_path: string
         }[]
       }
+      get_mutual_follow_ids: {
+        Args: { p_candidate_ids: string[]; p_user_id: string }
+        Returns: string[]
+      }
       get_profiles_by_ids: {
         Args: { p_user_ids: string[] }
         Returns: {
