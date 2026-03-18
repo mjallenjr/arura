@@ -39,6 +39,9 @@ const Index = () => {
   const [songUrl, setSongUrl] = useState("");
   const [songTitle, setSongTitle] = useState("");
   const [stitchWord, setStitchWord] = useState("");
+  const [stitchWordPos, setStitchWordPos] = useState({ x: 50, y: 40 });
+  const [stitchWordScale, setStitchWordScale] = useState(1);
+  const [stitchWordRotation, setStitchWordRotation] = useState(0);
   const [uploading, setUploading] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
