@@ -1074,19 +1074,23 @@ const Profile = () => {
       {/* Ember profile detail overlay */}
       <AnimatePresence>
         {selectedEmberId && (
-          <EmberProfile userId={selectedEmberId} onClose={() => setSelectedEmberId(null)} />
+          <motion.div key="ember-profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <EmberProfile userId={selectedEmberId} onClose={() => setSelectedEmberId(null)} />
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* Interest picker overlay */}
       <AnimatePresence>
         {showInterestPicker && user && (
-          <InterestPicker
-            userId={user.id}
-            currentInterests={myInterests}
-            onSave={setMyInterests}
-            onClose={() => setShowInterestPicker(false)}
-          />
+          <motion.div key="interest-picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <InterestPicker
+              userId={user.id}
+              currentInterests={myInterests}
+              onSave={setMyInterests}
+              onClose={() => setShowInterestPicker(false)}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
 
