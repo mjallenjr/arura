@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import NotificationBell from "@/components/NotificationBell";
 import { useHaptics } from "@/hooks/useHaptics";
 
