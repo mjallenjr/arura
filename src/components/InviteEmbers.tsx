@@ -166,6 +166,20 @@ const InviteEmbers = ({ variant = "full" }: InviteEmbersProps) => {
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              if (!shareLink) return;
+              const body = encodeURIComponent(`Join me on Arura — where moments burn bright and fade fast. 🔥\n${shareLink}`);
+              window.open(`sms:?&body=${body}`, "_self");
+            }}
+            className="rounded-xl signal-surface px-4 py-3 text-sm font-medium text-muted-foreground"
+            title="Invite via SMS"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={handleCopy}
             className="rounded-xl signal-surface px-4 py-3 text-sm font-medium text-muted-foreground"
           >
