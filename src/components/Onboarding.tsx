@@ -235,6 +235,17 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
               <InteractiveHeatDemo onComplete={() => setInteractionDone(true)} />
             </motion.div>
           )}
+
+          {current.interactive === "invite" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...signalTransition, delay: 0.3 }}
+              className="mt-2 w-full"
+            >
+              <InviteStep onComplete={() => setInteractionDone(true)} />
+            </motion.div>
+          )}
         </motion.div>
       </AnimatePresence>
 
