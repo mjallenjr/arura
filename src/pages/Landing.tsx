@@ -271,10 +271,10 @@ const Landing = () => {
           </FadeIn>
           <FadeIn delay={0.1}>
             <h2 className="text-3xl font-bold tracking-[-0.04em] mb-3">
-              Ready to feel something real?
+              Don't let your ember<br />turn to ash.
             </h2>
             <p className="text-sm text-muted-foreground mb-8">
-              No app store. No signup wall. Just add to your home screen and go.
+              The moment's now. No app store, no signup wall — just go.
             </p>
           </FadeIn>
           <FadeIn delay={0.2}>
