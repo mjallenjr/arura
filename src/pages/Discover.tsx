@@ -460,9 +460,12 @@ const Discover = () => {
                         key={tag}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => searchByInterest(tag)}
-                        className="rounded-full px-3.5 py-2 text-xs font-medium signal-surface text-muted-foreground hover:text-foreground signal-ease"
+                        className="rounded-full px-3.5 py-2 text-xs font-medium signal-surface text-muted-foreground hover:text-foreground signal-ease flex items-center gap-1.5"
                       >
                         {tag}
+                        {vibeCounts[tag] > 0 && (
+                          <span className="text-[9px] text-primary/60">{vibeCounts[tag]}</span>
+                        )}
                       </motion.button>
                     ))}
                   </div>
