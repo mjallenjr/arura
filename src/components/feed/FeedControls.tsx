@@ -204,7 +204,33 @@ const FeedControls = ({
                 </svg>
                 share
               </motion.button>
+              {/* Fan button */}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                transition={{ delay: 3 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => { e.stopPropagation(); onFan(); }}
+                className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-[10px] font-medium text-primary signal-ease hover:bg-primary/20"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary">
+                  <path d="M12 2C8 6 4 10 4 14a8 8 0 0016 0c0-4-4-8-8-12z" />
+                  <path d="M9 18c0-2 1.5-3 3-5 1.5 2 3 3 3 5" opacity="0.6" />
+                </svg>
+                fan
+              </motion.button>
             </div>
+          )}
+
+          {/* Fanned-by badge */}
+          {signal.isFanned && signal.fannedBy && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              className="mt-2 text-[10px] text-primary/80 italic"
+            >
+              ✦ fanned by {signal.fannedBy}
+            </motion.p>
           )}
         </div>
       )}
