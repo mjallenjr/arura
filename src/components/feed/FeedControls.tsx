@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import HeatBadge from "@/components/feed/HeatBadge";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -9,6 +10,7 @@ interface Signal {
   isSuggested?: boolean;
   display_name: string;
   song_title: string | null;
+  heat_level?: string;
   user_id: string;
 }
 
