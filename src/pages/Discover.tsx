@@ -334,9 +334,25 @@ const Discover = () => {
                   />
                 </div>
               ) : trendingDrops.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="text-sm text-muted-foreground">No trending drops right now</p>
-                  <p className="text-xs text-muted-foreground/50 mt-2">Check back soon — things heat up fast</p>
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <motion.svg
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: [0.8, 1.1, 1] }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    width="48" height="48" viewBox="0 0 32 32" fill="none" className="text-primary"
+                  >
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2" />
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  </motion.svg>
+                  <p className="text-sm font-medium text-foreground">No drops yet — be the first 🔥</p>
+                  <p className="text-xs text-muted-foreground text-center px-8">Things heat up fast. Drop a signal and watch it spread.</p>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate("/")}
+                    className="rounded-2xl bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow mt-2"
+                  >
+                    Drop something warm
+                  </motion.button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
