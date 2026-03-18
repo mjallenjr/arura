@@ -31,6 +31,7 @@ const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem("arura_onboarded");
   });
+  const [showVibesPicker, setShowVibesPicker] = useState(false);
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("environment");
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
