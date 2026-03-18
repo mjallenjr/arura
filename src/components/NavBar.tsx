@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import NotificationBell from "@/components/NotificationBell";
 import { useHaptics } from "@/hooks/useHaptics";
 
@@ -22,7 +22,17 @@ const NavBar = () => {
     navigate(path);
   }, [navigate, vibrate]);
 
-  if (location.pathname === "/auth") return null;
+  const [immersive, setImmersive] = useState(false);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setImmersive(document.body.hasAttribute("data-immersive"));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["data-immersive"] });
+    return () => observer.disconnect();
+  }, []);
+
+  if (location.pathname === "/auth" || immersive) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe">

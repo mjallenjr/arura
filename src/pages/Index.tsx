@@ -51,6 +51,16 @@ const Index = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const cameraActive = state === "camera" || state === "confirm";
+
+  // Hide navbar when in immersive states (camera, confirm, feed)
+  useEffect(() => {
+    if (state !== "home") {
+      document.body.setAttribute("data-immersive", "true");
+    } else {
+      document.body.removeAttribute("data-immersive");
+    }
+    return () => document.body.removeAttribute("data-immersive");
+  }, [state]);
   const { videoRef, streamRef, hasPermission, error: cameraError, zoom, zoomCaps, applyZoom } = useCamera({
     facing: cameraFacing,
     active: cameraActive,
