@@ -630,7 +630,9 @@ export type Database = {
         Row: {
           created_at: string
           expires_at: string
+          heat_level: string
           id: string
+          last_engagement_at: string | null
           song_clip_url: string | null
           song_title: string | null
           stitch_word: string | null
@@ -641,7 +643,9 @@ export type Database = {
         Insert: {
           created_at?: string
           expires_at?: string
+          heat_level?: string
           id?: string
+          last_engagement_at?: string | null
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null
@@ -652,7 +656,9 @@ export type Database = {
         Update: {
           created_at?: string
           expires_at?: string
+          heat_level?: string
           id?: string
+          last_engagement_at?: string | null
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null
@@ -833,6 +839,15 @@ export type Database = {
           vibe: string
         }[]
       }
+      get_vibe_top_embers: {
+        Args: { p_vibes: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          user_id: string
+          vibe: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -871,6 +886,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      update_signal_heat_levels: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
