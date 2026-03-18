@@ -660,6 +660,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         hasStitched={!!hasStitched[signal.id]}
         showStitchInput={showStitchInput}
         showReportMenu={showReportMenu}
+        isFirstTouch={!!firstTouchSignals[signal.id]}
+        isLevelUpCredit={!!levelUpCreditSignals[signal.id] && signal.heat_level !== 'match'}
         onReportClick={() => setShowReportMenu(true)}
       />
 
