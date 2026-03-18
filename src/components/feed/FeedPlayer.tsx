@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface FeedPlayerProps {
   signalId: string;
@@ -7,8 +7,21 @@ interface FeedPlayerProps {
   type: string;
 }
 
+/** Generate a deterministic warm gradient from signal ID */
+function signalGradient(id: string): string {
+  const hash = id.split("").reduce((acc, c) => ((acc << 5) - acc + c.charCodeAt(0)) | 0, 0);
+  const abs = Math.abs(hash);
+  const hue1 = (abs % 60) + 200; // blue-purple range
+  const hue2 = ((abs >> 8) % 60) + 260;
+  const hue3 = ((abs >> 16) % 40) + 320;
+  const angle = abs % 360;
+  return `linear-gradient(${angle}deg, hsl(${hue1} 60% 15%), hsl(${hue2} 50% 20%), hsl(${hue3} 40% 12%))`;
+}
+
 const FeedPlayer = ({ signalId, mediaUrl, type }: FeedPlayerProps) => {
   const [mediaError, setMediaError] = useState(false);
+  const gradient = useMemo(() => signalGradient(signalId), [signalId]);
+  const hasMedia = !!mediaUrl && !mediaError;
 
   return (
     <AnimatePresence mode="wait">
@@ -18,9 +31,18 @@ const FeedPlayer = ({ signalId, mediaUrl, type }: FeedPlayerProps) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="absolute inset-0 flex items-center justify-center bg-background"
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ background: gradient }}
       >
-        {mediaUrl && !mediaError && type === "photo" && (
+        {/* Ambient noise texture */}
+        <div
+          className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {hasMedia && type === "photo" && (
           <img
             src={mediaUrl}
             alt="Signal content"
@@ -28,28 +50,22 @@ const FeedPlayer = ({ signalId, mediaUrl, type }: FeedPlayerProps) => {
             onError={() => setMediaError(true)}
           />
         )}
-        {mediaUrl && !mediaError && type === "video" && (
+        {hasMedia && type === "video" && (
           <video
             src={mediaUrl}
             autoPlay
             muted
             playsInline
+            loop
             className="absolute inset-0 h-full w-full object-cover"
             onError={() => setMediaError(true)}
           />
         )}
-        {(!mediaUrl || mediaError) && (
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary via-muted to-secondary flex items-center justify-center">
-            {mediaError && (
-              <div className="flex flex-col items-center gap-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted-foreground/40">
-                  <path d="M21 15V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10m18 0l-6.5-6.5a2 2 0 00-2.83 0L3 15m18 0v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                </svg>
-                <p className="text-[10px] text-muted-foreground/40">signal expired</p>
-              </div>
-            )}
-          </div>
-        )}
+
+        {/* Vignette overlay for all states */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%)",
+        }} />
       </motion.div>
     </AnimatePresence>
   );
