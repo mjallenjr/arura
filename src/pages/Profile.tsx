@@ -427,7 +427,7 @@ const Profile = () => {
 
         <div className="flex-1 relative">
           {viewingDrop.media_url && viewingDrop.type === "photo" && (
-            <img src={viewingDrop.media_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <img src={viewingDrop.media_url} alt={`Signal: ${viewingDrop.stitch_word || 'photo'}`} className="absolute inset-0 h-full w-full object-cover" />
           )}
           {viewingDrop.media_url && viewingDrop.type === "video" && (
             <video src={viewingDrop.media_url} autoPlay muted playsInline className="absolute inset-0 h-full w-full object-cover" />
