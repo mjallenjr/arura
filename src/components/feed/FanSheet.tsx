@@ -118,9 +118,7 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClo
               <div>
                 <h3 className="text-sm font-semibold text-foreground">Fan this flare</h3>
                 <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {fanCount >= 2
-                    ? "ad required for next fan"
-                    : `${2 - fanCount} free fan${2 - fanCount !== 1 ? "s" : ""} remaining`}
+                  sparked embers are free · others require an ad
                 </p>
               </div>
               <button
