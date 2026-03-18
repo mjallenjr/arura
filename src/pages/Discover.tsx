@@ -5,14 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import EmberProfile from "@/components/EmberProfile";
 import { useHaptics } from "@/hooks/useHaptics";
+import { VIBE_CATEGORIES, FEATURED_VIBES, searchVibes } from "@/lib/vibes";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
-
-const TRENDING_INTERESTS = [
-  "music", "photography", "travel", "fitness", "art", "fashion",
-  "coffee", "nature", "gaming", "cooking", "surfing", "meditation",
-  "film", "dancing", "tattoos", "painting", "running", "tech",
-];
 
 interface TrendingDrop {
   id: string;
@@ -49,6 +44,9 @@ const Discover = () => {
   const [selectedEmberId, setSelectedEmberId] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const { vibrate } = useHaptics();
+  const [vibeQuery, setVibeQuery] = useState("");
+  const [vibeSearchResults, setVibeSearchResults] = useState<string[]>([]);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   // Pull-to-refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -386,29 +384,119 @@ const Discover = () => {
               exit={{ opacity: 0 }}
               transition={signalTransition}
             >
-              <p className="label-signal mb-3">explore by vibe</p>
-              <div className="flex flex-wrap gap-1.5 mb-6">
-                {TRENDING_INTERESTS.map((tag) => (
-                  <motion.button
-                    key={tag}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => selectedInterest === tag ? setSelectedInterest(null) : searchByInterest(tag)}
-                    className={`rounded-full px-3.5 py-2 text-xs font-medium signal-ease ${
-                      selectedInterest === tag
-                        ? "bg-primary text-primary-foreground"
-                        : "signal-surface text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {tag}
-                  </motion.button>
-                ))}
+              {/* Search input */}
+              <div className="signal-surface rounded-xl px-4 py-2.5 mb-4">
+                <input
+                  type="text"
+                  placeholder="Search 500+ vibes..."
+                  value={vibeQuery}
+                  onChange={(e) => {
+                    const q = e.target.value;
+                    setVibeQuery(q);
+                    setVibeSearchResults(q.length >= 2 ? searchVibes(q, 30) : []);
+                  }}
+                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                />
               </div>
 
+              {/* Search results */}
+              {vibeQuery.length >= 2 && (
+                <div className="mb-4">
+                  <p className="label-signal mb-2">{vibeSearchResults.length} results</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {vibeSearchResults.map((tag) => (
+                      <motion.button
+                        key={tag}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => { searchByInterest(tag); setVibeQuery(""); setVibeSearchResults([]); }}
+                        className={`rounded-full px-3.5 py-2 text-xs font-medium signal-ease ${
+                          selectedInterest === tag
+                            ? "bg-primary text-primary-foreground"
+                            : "signal-surface text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {tag}
+                      </motion.button>
+                    ))}
+                    {vibeSearchResults.length === 0 && (
+                      <p className="text-xs text-muted-foreground py-2">No vibes match "{vibeQuery}"</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Featured vibes (when not searching) */}
+              {vibeQuery.length < 2 && !selectedInterest && (
+                <>
+                  <p className="label-signal mb-2">popular vibes</p>
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {FEATURED_VIBES.map((tag) => (
+                      <motion.button
+                        key={tag}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => searchByInterest(tag)}
+                        className="rounded-full px-3.5 py-2 text-xs font-medium signal-surface text-muted-foreground hover:text-foreground signal-ease"
+                      >
+                        {tag}
+                      </motion.button>
+                    ))}
+                  </div>
+
+                  {/* Browse by category */}
+                  <p className="label-signal mb-2">browse categories</p>
+                  <div className="flex flex-col gap-1.5">
+                    {Object.entries(VIBE_CATEGORIES).map(([category, vibes]) => (
+                      <div key={category}>
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
+                          className="w-full flex items-center justify-between signal-surface rounded-xl px-4 py-3 text-left"
+                        >
+                          <span className="text-xs font-medium text-foreground">{category}</span>
+                          <span className="text-[10px] text-muted-foreground">{vibes.length} vibes</span>
+                        </motion.button>
+                        <AnimatePresence>
+                          {expandedCategory === category && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="flex flex-wrap gap-1.5 px-2 py-2">
+                                {vibes.map((tag) => (
+                                  <motion.button
+                                    key={tag}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => searchByInterest(tag)}
+                                    className={`rounded-full px-3 py-1.5 text-[11px] font-medium signal-ease ${
+                                      selectedInterest === tag
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-secondary text-secondary-foreground hover:text-foreground"
+                                    }`}
+                                  >
+                                    {tag}
+                                  </motion.button>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Selected interest results */}
               {selectedInterest && (
                 <div>
-                  <p className="label-signal mb-3">
-                    embers into <span className="text-primary">{selectedInterest}</span>
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="label-signal">
+                      embers into <span className="text-primary">{selectedInterest}</span>
+                    </p>
+                    <button onClick={() => setSelectedInterest(null)} className="text-[10px] text-muted-foreground">clear</button>
+                  </div>
                   {interestEmbers.length > 0 ? (
                     <div className="flex flex-col gap-2">
                       {interestEmbers.map((ember) => (
