@@ -145,7 +145,9 @@ const DMDemo = () => {
   const wordCount = msg.trim().split(/\s+/).filter(Boolean).length;
 
   return (
-    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-secondary/15 via-accent/10 to-primary/15 border border-border/50 flex flex-col justify-end p-3">
+    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border/50 flex flex-col justify-end p-3">
+      <img src="/discover/beach-sunrise.jpg" alt="Beach signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
       {sent ? (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-end mb-2">
           <span className="text-xs bg-primary/20 text-primary rounded-xl px-3 py-1.5 font-medium">{msg}</span>

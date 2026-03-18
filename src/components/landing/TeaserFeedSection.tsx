@@ -86,10 +86,12 @@ const TeaserFeedSection = () => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -30 }}
                     transition={{ duration: 0.3, ease }}
-                    className={`aspect-[9/14] bg-gradient-to-br ${signal.gradient} relative`}
+                    className="aspect-[9/14] relative overflow-hidden"
                   >
+                    <img src={signal.img} alt={signal.caption} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <p className="text-xl font-bold text-foreground/70 italic text-center px-6" style={{ textShadow: "0 0 20px hsl(var(--primary) / 0.2)" }}>
+                      <p className="text-xl font-bold text-foreground/90 italic text-center px-6 drop-shadow-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
                         {signal.caption}
                       </p>
                     </div>
