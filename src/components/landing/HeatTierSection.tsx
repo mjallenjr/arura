@@ -97,18 +97,21 @@ const HeatTierSection = () => {
                   onClick={() => setHoveredIdx(isHovered ? null : i)}
                   className="relative flex items-center gap-4 pl-1 cursor-pointer group"
                 >
-                  {/* Node dot */}
+                  {/* Node */}
                   <div className="relative z-10 flex-shrink-0">
                     <motion.div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${tier.color} flex items-center justify-center shadow-lg ${tier.glow} border border-border/30`}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${tier.color} flex items-center justify-center shadow-lg ${tier.glow} border border-primary/20`}
                       animate={isHovered ? { scale: 1.15 } : { scale: 1 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <span className="text-base sm:text-lg">{tier.emoji}</span>
+                      {'isStar' in tier && tier.isStar
+                        ? <BrandStar size={20} />
+                        : <BrandFlame size={20} opacity={tier.opacity} />
+                      }
                     </motion.div>
 
                     {/* Pulse ring for star */}
-                    {i === tiers.length - 1 && inView && (
+                    {'isStar' in tier && tier.isStar && inView && (
                       <motion.div
                         className="absolute inset-0 rounded-full border border-primary/40"
                         animate={{ scale: [1, 1.6, 1.6], opacity: [0.6, 0, 0] }}
