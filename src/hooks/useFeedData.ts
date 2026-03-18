@@ -47,7 +47,7 @@ export function useFeedData() {
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
       return shuffleArray(rawSignals.map((s) => {
         let media_url: string | null = null;
-        if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+        if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
         return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
       }));
     } catch { return []; }
