@@ -216,6 +216,8 @@ const Landing = () => {
               { icon: "flame", rule: "Heat, not likes", detail: "match → spark → flame → star" },
               { icon: "dm", rule: "Brief DMs", detail: "10 words max. Say what matters." },
               { icon: "stitch", rule: "Stitch a word", detail: "Overlay your mark on any signal." },
+              { icon: "camp", rule: "Camps form organically", detail: "Share a vibe with 5+ embers and a campfire ignites." },
+              { icon: "ranger", rule: "Earn Park Ranger", detail: "Top contributor at 25 campers names the campground." },
             ].map((item, i) => (
               <FadeIn key={i} delay={i * 0.08}>
                 <div className="rounded-2xl border border-border/50 bg-card/50 p-6 hover:border-primary/20 transition-colors">
