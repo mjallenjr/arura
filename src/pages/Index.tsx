@@ -6,6 +6,7 @@ import StitchWordPreview from "@/components/StitchWordPreview";
 import FeedView from "@/components/FeedView";
 import Onboarding from "@/components/Onboarding";
 import VibesPicker from "@/components/onboarding/VibesPicker";
+import EmberSuggestions from "@/components/onboarding/EmberSuggestions";
 import TrendingBar from "@/components/feed/TrendingBar";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
@@ -38,6 +39,8 @@ const Index = () => {
     return !localStorage.getItem("arura_onboarded");
   });
   const [showVibesPicker, setShowVibesPicker] = useState(false);
+  const [showEmberSuggestions, setShowEmberSuggestions] = useState(false);
+  const [pickedInterests, setPickedInterests] = useState<string[]>([]);
   const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("environment");
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
@@ -241,9 +244,26 @@ const Index = () => {
         {showVibesPicker && user && (
           <VibesPicker
             userId={user.id}
-            onComplete={() => {
+            onComplete={(vibes) => {
               setShowVibesPicker(false);
               localStorage.setItem("arura_vibes_picked", "true");
+              setPickedInterests(vibes);
+              // Show ember suggestions after vibes
+              const hasIgnited = localStorage.getItem("arura_embers_picked");
+              if (!hasIgnited) setShowEmberSuggestions(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showEmberSuggestions && user && (
+          <EmberSuggestions
+            userId={user.id}
+            userInterests={pickedInterests}
+            onComplete={() => {
+              setShowEmberSuggestions(false);
+              localStorage.setItem("arura_embers_picked", "true");
             }}
           />
         )}
