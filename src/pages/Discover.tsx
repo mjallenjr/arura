@@ -24,9 +24,10 @@ const HEAT_COLORS: Record<HeatLevel, string> = {
   star: "hsl(50, 100%, 60%)",
 };
 
+// Heat labels now use branded text (no emojis)
 const HEAT_LABELS: Record<HeatLevel, string> = {
-  match: "🔲", spark: "✨", ignite: "🔥", flame: "🔥", hot: "🔥🔥",
-  burning: "🔥🔥🔥", raging: "💥", inferno: "🌋", star: "⭐",
+  match: "—", spark: "spark", ignite: "ignite", flame: "flame", hot: "hot",
+  burning: "burning", raging: "raging", inferno: "inferno", star: "star",
 };
 
 interface TrendingDrop {
