@@ -122,6 +122,10 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [isFromCache, setIsFromCache] = useState(false);
   const [firstTouchSignals, setFirstTouchSignals] = useState<Record<string, boolean>>({});
   const [levelUpCreditSignals, setLevelUpCreditSignals] = useState<Record<string, boolean>>({});
+  const [hasRekindled, setHasRekindled] = useState<Record<string, boolean>>({});
+  const [levelUpTrigger, setLevelUpTrigger] = useState(false);
+  const [levelUpName, setLevelUpName] = useState("");
+  const prevHeatLevels = useRef<Record<string, string>>({});
 
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
