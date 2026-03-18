@@ -434,6 +434,17 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           checkSparkedBulk={checkSparkedBulk}
         />
       )}
+
+      {/* Quick reply */}
+      {user && signal && !signal.isAd && !signal.isDiscovery && signal.user_id !== user.id && (
+        <QuickReply
+          open={showQuickReply}
+          signalUserId={signal.user_id}
+          signalUserName={signal.display_name}
+          currentUserId={user.id}
+          onClose={() => setShowQuickReply(false)}
+        />
+      )}
     </div>
   );
 };
