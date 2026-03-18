@@ -1,4 +1,19 @@
 import type { Ad } from "@/hooks/useAds";
+import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Resolve a signal's storage_path to a usable media URL.
+ * Test images (path starts with "test/") are served from /test/ in public dir.
+ * Real uploads go through Supabase storage.
+ */
+export function resolveMediaUrl(storagePath: string | null): string | null {
+  if (!storagePath) return null;
+  if (storagePath.startsWith("test/")) {
+    return `/${storagePath}`;
+  }
+  const { data } = supabase.storage.from("signals").getPublicUrl(storagePath);
+  return data.publicUrl;
+}
 
 export const SIGNAL_DURATION = 5000;
 export const AD_DURATION = 3700;
