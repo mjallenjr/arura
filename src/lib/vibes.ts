@@ -1,7 +1,7 @@
 /** Comprehensive vibe/interest tags — ~500 options across categories */
 
 export const VIBE_CATEGORIES: Record<string, string[]> = {
-  "🎵 Music": [
+  "Music": [
     "music", "guitar", "piano", "drums", "singing", "rap", "hip-hop", "r&b", "jazz", "blues",
     "rock", "indie", "metal", "punk", "electronic", "edm", "house", "techno", "lo-fi", "ambient",
     "classical", "opera", "folk", "country", "reggae", "afrobeats", "k-pop", "j-pop", "latin",
