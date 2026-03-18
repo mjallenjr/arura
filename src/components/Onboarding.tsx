@@ -92,6 +92,12 @@ const steps: Step[] = [
     subtitle: "keep it brief",
     body: "DMs are 10 words max. No paragraphs, no novels — just enough to say what matters.",
   },
+  {
+    title: "Bring Your People",
+    subtitle: "the fire spreads",
+    body: "Invite 3 friends to earn your First Spark reward — bonus heat on every flare you drop.",
+    interactive: "invite",
+  },
 ];
 
 const stepIcons: Record<number, React.ReactNode> = {
