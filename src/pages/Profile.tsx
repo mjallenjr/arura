@@ -634,9 +634,9 @@ const Profile = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {tab === "drops" && (
+          {tab === "flares" && (
             <motion.div
-              key="drops"
+              key="flares"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
