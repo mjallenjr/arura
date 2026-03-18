@@ -277,7 +277,7 @@ export function useFeedData() {
   // Sync camps on feed load
   useEffect(() => {
     if (user) {
-      supabase.rpc("sync_camps_for_user", { p_user_id: user.id }).catch(() => {});
+      supabase.rpc("sync_camps_for_user" as any, { p_user_id: user.id }).then(() => {}).catch(() => {});
     }
   }, [user]);
 
