@@ -171,10 +171,10 @@ const Index = () => {
         if (uploadError) throw uploadError;
       }
 
-      // Pro users get 24h signal duration
-      const expiresAt = isPro
-        ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+      // Pro users get 24h, referral rewards add bonus minutes, default 2h
+      const baseMinutes = isPro ? 24 * 60 : 120;
+      const bonusMinutes = reward.bonusMinutes;
+      const expiresAt = new Date(Date.now() + (baseMinutes + bonusMinutes) * 60 * 1000).toISOString();
 
       const { error: insertError } = await supabase.from("signals").insert({
         user_id: user.id,
