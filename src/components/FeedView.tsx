@@ -359,7 +359,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           
           const compositeScore = auraScore * 0.35 + engagementScore * 0.4 + recencyScore * 0.25;
           
-          return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, _score: compositeScore };
+          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, _score: compositeScore };
         })
         .sort((a: any, b: any) => (b._score ?? 0) - (a._score ?? 0));
       
