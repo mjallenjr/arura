@@ -72,7 +72,7 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
     [user]
   );
 
-  /** Fan a flare to another ember — free for sparked embers, ad required otherwise */
+  /** Fan a flare to another ember — caller handles ad gate */
   const fanFlare = useCallback(
     async (
       signalId: string,
@@ -91,27 +91,6 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
       setFanning(true);
 
       try {
-        const isSparked = await checkSparked(recipientId);
-
-        // Ad gate: non-sparked embers require watching an ad
-        if (!isSparked) {
-          if (onAdRequired) {
-            const watched = await onAdRequired();
-            if (!watched) {
-              toast("Watch a quick ad to fan to this ember", { duration: 3000 });
-              setFanning(false);
-              return false;
-            }
-          } else {
-            const ad = await fetchTargetedAd(user.id, "feed");
-            if (!ad) {
-              toast("No ads available — try again later", { duration: 3000 });
-              setFanning(false);
-              return false;
-            }
-          }
-        }
-
         // Insert fan record
         const { error: fanError } = await supabase.from("fans").insert({
           signal_id: signalId,
@@ -151,7 +130,7 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
         return false;
       }
     },
-    [user, fanning, checkSparked, fetchTargetedAd, onAdRequired]
+    [user, fanning]
   );
 
   /** Get flares fanned to the current user (for feed integration) */
