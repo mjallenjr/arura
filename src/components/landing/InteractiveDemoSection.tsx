@@ -51,7 +51,10 @@ const TapDemo = () => {
     <motion.div
       onClick={handleTap}
       whileTap={{ scale: 0.97 }}
-      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer select-none bg-gradient-to-br from-primary/15 via-secondary/30 to-accent/15 border border-border/50"
+      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer select-none border border-border/50"
+    >
+      <img src="/discover/sunset-pier.jpg" alt="Sunset signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-transparent" />
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
         {heat === 0 ? (
