@@ -476,7 +476,7 @@ const People = () => {
       {/* Content */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 pb-8"
+        className="flex-1 overflow-y-auto px-4 pb-24"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
