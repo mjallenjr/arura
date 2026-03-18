@@ -148,6 +148,107 @@ export type Database = {
         }
         Relationships: []
       }
+      camp_flares: {
+        Row: {
+          camp_id: string
+          created_at: string
+          id: string
+          signal_id: string
+          user_id: string
+        }
+        Insert: {
+          camp_id: string
+          created_at?: string
+          id?: string
+          signal_id: string
+          user_id: string
+        }
+        Update: {
+          camp_id?: string
+          created_at?: string
+          id?: string
+          signal_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "camp_flares_camp_id_fkey"
+            columns: ["camp_id"]
+            isOneToOne: false
+            referencedRelation: "camps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camp_flares_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      camp_members: {
+        Row: {
+          camp_id: string
+          contribution_score: number
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          camp_id: string
+          contribution_score?: number
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          camp_id?: string
+          contribution_score?: number
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "camp_members_camp_id_fkey"
+            columns: ["camp_id"]
+            isOneToOne: false
+            referencedRelation: "camps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      camps: {
+        Row: {
+          created_at: string
+          id: string
+          member_count: number
+          name: string | null
+          ranger_id: string | null
+          status: string
+          vibe: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_count?: number
+          name?: string | null
+          ranger_id?: string | null
+          status?: string
+          vibe: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_count?: number
+          name?: string | null
+          ranger_id?: string | null
+          status?: string
+          vibe?: string
+        }
+        Relationships: []
+      }
       creator_payouts: {
         Row: {
           amount: number
@@ -1047,6 +1148,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      sync_camps_for_user: { Args: { p_user_id: string }; Returns: undefined }
       update_seed_heat_scores: { Args: never; Returns: undefined }
       update_signal_heat_levels: { Args: never; Returns: undefined }
     }
