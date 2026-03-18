@@ -63,6 +63,7 @@ const AnimatedRoutes = () => {
         <Route path="/legal" element={<PageTransition className="h-svh"><Legal /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition className="h-svh"><ResetPassword /></PageTransition>} />
         <Route path="/signal/:signalId" element={<PageTransition className="h-svh"><SignalView /></PageTransition>} />
+        <Route path="/analytics" element={<ProtectedRoute><PageTransition className="h-svh"><CreatorAnalytics /></PageTransition></ProtectedRoute>} />
         <Route path="/install" element={<PageTransition className="h-svh"><Install /></PageTransition>} />
         <Route path="*" element={<PageTransition className="h-svh"><NotFound /></PageTransition>} />
       </Routes>
