@@ -34,42 +34,54 @@ const BrandStar = ({ size = 28 }: { size?: number }) => (
 );
 
 const TapDemo = () => {
-  const [heat, setHeat] = useState(0);
+  const [felt, setFelt] = useState(false);
   const [ripple, setRipple] = useState(false);
-  const levels = ["match", "spark", "flame", "star"];
+  const [othersFelt, setOthersFelt] = useState(0);
 
   const handleTap = () => {
-    if (heat >= 4) return;
+    if (felt) return;
     setRipple(true);
     setTimeout(() => setRipple(false), 500);
-    setHeat((h) => h + 1);
+    setFelt(true);
+    // Simulate others feeling it too
+    let count = 0;
+    const interval = setInterval(() => {
+      count++;
+      setOthersFelt(count);
+      if (count >= 6) clearInterval(interval);
+    }, 600);
   };
 
-  const opacityLevels = [0.35, 0.5, 0.75, 1];
+  const totalFelts = (felt ? 1 : 0) + othersFelt;
+  const tier = totalFelts === 0 ? "match" : totalFelts <= 2 ? "spark" : totalFelts <= 5 ? "flame" : "star";
+  const tierOpacity = totalFelts === 0 ? 0.35 : totalFelts <= 2 ? 0.5 : totalFelts <= 5 ? 0.75 : 1;
 
   return (
     <motion.div
       onClick={handleTap}
-      whileTap={{ scale: 0.97 }}
-      className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer select-none border border-border/50"
+      whileTap={!felt ? { scale: 0.97 } : {}}
+      className={`relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border/50 select-none ${!felt ? "cursor-pointer" : ""}`}
     >
       <img src="/discover/sunset-pier.jpg" alt="Sunset signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-transparent" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-        {heat === 0 ? (
-          <BrandFlame size={32} opacity={0.35} />
-        ) : heat < 4 ? (
-          <div className="flex gap-1">
-            {Array.from({ length: heat }).map((_, i) => (
-              <BrandFlame key={i} size={28} opacity={opacityLevels[heat - 1]} />
-            ))}
-          </div>
-        ) : (
+        {tier === "star" ? (
           <BrandStar size={36} />
+        ) : (
+          <BrandFlame size={32} opacity={tierOpacity} />
         )}
         <p className="text-xs font-medium text-foreground/80">
-          {heat === 0 ? "Tap to feel it" : heat < 4 ? levels[heat - 1] : "blazing"}
+          {!felt ? "Tap to feel it" : tier}
         </p>
+        {felt && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-[10px] text-muted-foreground/70"
+          >
+            {totalFelts} {totalFelts === 1 ? "person" : "people"} felt this
+          </motion.p>
+        )}
       </div>
       <AnimatePresence>
         {ripple && (
@@ -84,13 +96,19 @@ const TapDemo = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="absolute top-2 right-2">
-        <div className="flex gap-1">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i < heat ? "bg-primary" : "bg-muted-foreground/20"}`} />
-          ))}
-        </div>
-      </div>
+
+      {/* Felt badge */}
+      <AnimatePresence>
+        {felt && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="absolute top-2 right-2 bg-primary/20 backdrop-blur-sm rounded-full px-2 py-0.5"
+          >
+            <span className="text-[10px] text-primary font-medium">felt ✦</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -196,7 +214,7 @@ const InteractiveDemoSection = () => (
           <div className="space-y-3">
             <TapDemo />
             <h3 className="text-sm font-semibold text-foreground">Feel the heat</h3>
-            <p className="text-xs text-muted-foreground">Tap to raise the heat level. No likes — just energy.</p>
+            <p className="text-xs text-muted-foreground">One tap per person. It takes a crowd to make it burn.</p>
           </div>
         </FadeIn>
         <FadeIn delay={0.12}>
