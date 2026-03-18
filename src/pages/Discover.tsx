@@ -453,20 +453,64 @@ const Discover = () => {
               {vibeQuery.length < 2 && !selectedInterest && (
                 <>
                   <p className="label-signal mb-2">Vibrant Vibes</p>
-                  <div className="flex flex-wrap gap-1.5 mb-5">
-                    {FEATURED_VIBES.map((tag) => (
-                      <motion.button
-                        key={tag}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => searchByInterest(tag)}
-                        className="rounded-full px-3.5 py-2 text-xs font-medium signal-surface text-muted-foreground hover:text-foreground signal-ease flex items-center gap-1.5"
-                      >
-                        {tag}
-                        {vibeCounts[tag] > 0 && (
-                          <span className="text-[9px] text-primary/60">{vibeCounts[tag]}</span>
-                        )}
-                      </motion.button>
-                    ))}
+                  <div className="flex flex-col gap-2 mb-5">
+                    {FEATURED_VIBES.map((tag, i) => {
+                      const count = vibeCounts[tag] ?? 0;
+                      const intensity = Math.min(1, count / 10); // normalize for visual weight
+                      return (
+                        <motion.button
+                          key={tag}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ ...signalTransition, delay: i * 0.03 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => searchByInterest(tag)}
+                          className="w-full flex items-center justify-between signal-surface rounded-xl px-4 py-3 text-left group hover:ring-1 hover:ring-primary/20 signal-ease"
+                        >
+                          <div className="flex items-center gap-3">
+                            {/* Glow dot sized by popularity */}
+                            <motion.div
+                              className="rounded-full bg-primary"
+                              style={{
+                                width: 6 + intensity * 10,
+                                height: 6 + intensity * 10,
+                                opacity: 0.3 + intensity * 0.5,
+                                boxShadow: count > 0 ? `0 0 ${4 + intensity * 12}px hsl(var(--primary) / ${0.2 + intensity * 0.4})` : "none",
+                              }}
+                            />
+                            <span className="text-sm font-medium text-foreground">{tag}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {count > 0 && (
+                              <div className="flex items-center gap-1.5">
+                                {/* Stacked ember avatars placeholder */}
+                                <div className="flex -space-x-1.5">
+                                  {Array.from({ length: Math.min(count, 3) }).map((_, j) => (
+                                    <div
+                                      key={j}
+                                      className="h-5 w-5 rounded-full bg-secondary ring-1 ring-background flex items-center justify-center"
+                                    >
+                                      <svg width="8" height="8" viewBox="0 0 32 32" fill="none" className="text-primary">
+                                        <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.5" />
+                                      </svg>
+                                    </div>
+                                  ))}
+                                </div>
+                                <span className="text-[11px] font-medium text-primary">
+                                  {count} {count === 1 ? "ember" : "embers"}
+                                </span>
+                              </div>
+                            )}
+                            {count === 0 && (
+                              <span className="text-[10px] text-muted-foreground/40">be first</span>
+                            )}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/30 group-hover:text-primary/50 signal-ease">
+                              <path d="M9 18l6-6-6-6" />
+                            </svg>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
                   </div>
 
                   {/* Browse by category */}
