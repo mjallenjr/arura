@@ -135,10 +135,15 @@ export function useFeedData() {
       const auraRank = new Map(rankedIds.map((id: string, i: number) => [id, i]));
       const followingIdSet = new Set(rankedIds as string[]);
 
-      const [rawSignalsRes, diversitySignals] = await Promise.all([
+      const [rawSignalsRes, diversitySignals, fannedSignalIds] = await Promise.all([
         supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30),
         fetchDiversitySignals(followingIdSet),
+        // Fetch flares fanned to this user
+        supabase.from("fans").select("signal_id, sender_id").eq("recipient_id", user.id).order("created_at", { ascending: false }).limit(10),
       ]);
+
+      const fannedIds = new Set(fannedSignalIds.data?.map((f: any) => f.signal_id) ?? []);
+      const fannedSenderMap = new Map(fannedSignalIds.data?.map((f: any) => [f.signal_id, f.sender_id]) ?? []);
 
       const rawSignals = rawSignalsRes.data;
 
