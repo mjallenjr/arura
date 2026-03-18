@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
 
       title = signal.stitch_word
         ? `"${signal.stitch_word}" — ${authorName} on arura`
-        : `${authorName} dropped a signal on arura`;
+        : `${authorName} shot a flare on arura`;
 
       const heatLabel = signal.heat_level !== "match" ? ` 🔥 ${signal.heat_level}` : "";
       description = `A ${signal.type === "photo" ? "photo" : "video"} signal${heatLabel}. Catch it before it burns out.`;

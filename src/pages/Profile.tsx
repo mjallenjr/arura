@@ -15,7 +15,7 @@ import ReferralBadge from "@/components/ReferralBadge";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
-type ProfileTab = "drops" | "activity" | "settings";
+type ProfileTab = "flares" | "activity" | "settings";
 
 interface Notification {
   id: string;
@@ -52,7 +52,7 @@ interface SignalViewer {
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<ProfileTab>("drops");
+  const [tab, setTab] = useState<ProfileTab>("flares");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -603,7 +603,7 @@ const Profile = () => {
 
         {/* Tab switcher */}
         <div className="flex gap-1 mb-6">
-          {(["drops", "activity", "settings"] as ProfileTab[]).map((t) => {
+          {(["flares", "activity", "settings"] as ProfileTab[]).map((t) => {
             const unreadCount = t === "activity" ? notifications.filter((n) => !n.read).length : 0;
             return (
               <button
@@ -622,7 +622,7 @@ const Profile = () => {
                   tab === t ? "bg-primary text-primary-foreground" : "signal-surface text-muted-foreground"
                 }`}
               >
-                {t === "drops" ? "My Drops" : t === "activity" ? "Activity" : "Settings"}
+                {t === "flares" ? "My Flares" : t === "activity" ? "Activity" : "Settings"}
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center">
                     {unreadCount}
@@ -634,9 +634,9 @@ const Profile = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {tab === "drops" && (
+          {tab === "flares" && (
             <motion.div
-              key="drops"
+              key="flares"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -974,7 +974,7 @@ const Profile = () => {
                     </motion.button>
                   ) : (
                     <p className="text-[10px] text-muted-foreground text-center">
-                      Min. payout is $5.00 — keep dropping signals!
+                      Min. payout is $5.00 — keep shooting flares!
                     </p>
                   )}
                 </div>

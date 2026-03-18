@@ -301,9 +301,9 @@ const Index = () => {
                   className="group relative overflow-hidden rounded-2xl bg-primary px-8 py-5 text-primary-foreground signal-glow signal-ease"
                 >
                   <div className="relative z-10 flex flex-col items-center gap-1">
-                    <span className="text-lg font-medium tracking-[-0.02em]">Drop</span>
+                    <span className="text-lg font-medium tracking-[-0.02em]">Flare</span>
                     <span className="text-[10px] font-medium uppercase tracking-[0.1em] opacity-60">
-                      share something warm
+                      shoot something warm
                     </span>
                   </div>
                 </motion.button>
@@ -317,9 +317,9 @@ const Index = () => {
                   className="group relative overflow-hidden rounded-2xl signal-surface signal-blur px-8 py-5 text-foreground signal-ease border border-border/30"
                 >
                   <div className="relative z-10 flex flex-col items-center gap-1">
-                    <span className="text-lg font-medium tracking-[-0.02em]">Indulge</span>
+                    <span className="text-lg font-medium tracking-[-0.02em]">Drift</span>
                     <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
-                      see what's hot
+                      wander through the flames
                     </span>
                   </div>
                 </motion.button>

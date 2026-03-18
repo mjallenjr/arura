@@ -48,7 +48,7 @@ interface Step {
   title: string;
   subtitle: string;
   body: string;
-  interactive?: "drop" | "tap" | "stitch" | "heat";
+  interactive?: "flare" | "tap" | "stitch" | "heat";
 }
 
 const steps: Step[] = [
@@ -58,10 +58,10 @@ const steps: Step[] = [
     body: "A place where moments burn bright and fade fast. Nothing lasts forever here — and that's the point.",
   },
   {
-    title: "Drop",
-    subtitle: "share something warm",
-    body: "Record a 5-second video or snap a photo. Overlay a single word. Your Drop lives for 2 hours, then it's gone.",
-    interactive: "drop",
+    title: "Flare",
+    subtitle: "shoot something warm",
+    body: "Record a 5-second video or snap a photo. Overlay a single word. Your Flare lives for 2 hours, then it's gone.",
+    interactive: "flare",
   },
   {
     title: "Tap = Felt",
@@ -185,7 +185,7 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
           </p>
 
           {/* Interactive demos */}
-          {current.interactive === "drop" && (
+          {current.interactive === "flare" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
