@@ -547,6 +547,19 @@ const Index = () => {
               />
             )}
 
+            {/* Draggable stitch word preview */}
+            {stitchWord && (
+              <StitchWordPreview
+                word={stitchWord}
+                position={stitchWordPos}
+                scale={stitchWordScale}
+                rotation={stitchWordRotation}
+                onPositionChange={setStitchWordPos}
+                onScaleChange={setStitchWordScale}
+                onRotationChange={setStitchWordRotation}
+              />
+            )}
+
             <div className="relative z-10 w-full max-w-sm">
               <PostActions
                 onPost={handlePost}
@@ -560,6 +573,11 @@ const Index = () => {
                 stitchWord={stitchWord}
                 onStitchWordChange={setStitchWord}
               />
+              {stitchWord && (
+                <p className="text-[10px] text-muted-foreground/50 text-center mt-2">
+                  drag to move · pinch to resize & rotate
+                </p>
+              )}
             </div>
           </motion.div>
         )}
