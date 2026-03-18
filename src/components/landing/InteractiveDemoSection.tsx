@@ -13,6 +13,26 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   );
 };
 
+const BrandFlame = ({ size = 28, opacity = 1 }: { size?: number; opacity?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity, filter: `drop-shadow(0 0 ${6 * opacity}px hsl(var(--primary) / ${0.4 * opacity}))` }}>
+    <defs><filter id="td-fg"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g filter="url(#td-fg)">
+      <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+      <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+      <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
+      <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.45"/>
+    </g>
+  </svg>
+);
+
+const BrandStar = ({ size = 28 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary drop-shadow-[0_0_10px_hsl(var(--primary)/0.6)]">
+    <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" fill="currentColor" opacity="0.3"/>
+    <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+  </svg>
+);
+
 const TapDemo = () => {
   const [heat, setHeat] = useState(0);
   const [ripple, setRipple] = useState(false);
@@ -25,6 +45,8 @@ const TapDemo = () => {
     setHeat((h) => h + 1);
   };
 
+  const opacityLevels = [0.35, 0.5, 0.75, 1];
+
   return (
     <motion.div
       onClick={handleTap}
@@ -32,7 +54,17 @@ const TapDemo = () => {
       className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer select-none bg-gradient-to-br from-primary/15 via-secondary/30 to-accent/15 border border-border/50"
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-        <span className="text-3xl">{heat === 0 ? "🔥" : heat < 4 ? "🔥".repeat(heat) : "⭐"}</span>
+        {heat === 0 ? (
+          <BrandFlame size={32} opacity={0.35} />
+        ) : heat < 4 ? (
+          <div className="flex gap-1">
+            {Array.from({ length: heat }).map((_, i) => (
+              <BrandFlame key={i} size={28} opacity={opacityLevels[heat - 1]} />
+            ))}
+          </div>
+        ) : (
+          <BrandStar size={36} />
+        )}
         <p className="text-xs font-medium text-foreground/80">
           {heat === 0 ? "Tap to feel it" : heat < 4 ? levels[heat - 1] : "blazing"}
         </p>
