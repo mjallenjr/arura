@@ -7,6 +7,7 @@ import FeedPlayer from "@/components/feed/FeedPlayer";
 import FeedEndScreen from "@/components/feed/FeedEndScreen";
 import AdCard from "@/components/feed/AdCard";
 import StitchOverlay from "@/components/feed/StitchOverlay";
+import QuickReply from "@/components/feed/QuickReply";
 import FeedControls from "@/components/feed/FeedControls";
 import LevelUpCelebration from "@/components/feed/LevelUpCelebration";
 import FanSheet from "@/components/feed/FanSheet";
@@ -49,6 +50,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [showFanSheet, setShowFanSheet] = useState(false);
+  const [showQuickReply, setShowQuickReply] = useState(false);
   const { fanFlare, fanCounts, getFanCount, checkSparkedBulk } = useFan();
 
   const {
@@ -352,6 +354,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         onRekindle={() => handleRekindle(signal.id, signal.user_id)}
         onShare={() => handleShare(signal.id)}
         onFan={() => { getFanCount(signal.id); setShowFanSheet(true); }}
+        onReply={() => setShowQuickReply(true)}
       />
 
       <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
@@ -429,6 +432,17 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           }
           onClose={() => setShowFanSheet(false)}
           checkSparkedBulk={checkSparkedBulk}
+        />
+      )}
+
+      {/* Quick reply */}
+      {user && signal && !signal.isAd && !signal.isDiscovery && signal.user_id !== user.id && (
+        <QuickReply
+          open={showQuickReply}
+          signalUserId={signal.user_id}
+          signalUserName={signal.display_name}
+          currentUserId={user.id}
+          onClose={() => setShowQuickReply(false)}
         />
       )}
     </div>

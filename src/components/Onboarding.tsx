@@ -115,7 +115,8 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
   const [interactionDone, setInteractionDone] = useState(false);
   const current = steps[step];
   const isLast = step === steps.length - 1;
-  const needsInteraction = !!current.interactive && !interactionDone;
+  // Invite step is never blocking — let users explore before committing
+  const needsInteraction = !!current.interactive && current.interactive !== "invite" && !interactionDone;
 
   const goNext = () => {
     if (isLast) {

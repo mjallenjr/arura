@@ -172,6 +172,14 @@ const InviteStep = ({ onComplete }: InviteStepProps) => {
                 </motion.button>
               ))}
             </div>
+
+            {/* Skip option */}
+            <button
+              onClick={onComplete}
+              className="text-xs text-muted-foreground/50 signal-ease hover:text-muted-foreground mt-1"
+            >
+              skip for now
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
