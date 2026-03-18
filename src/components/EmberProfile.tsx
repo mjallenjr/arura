@@ -275,7 +275,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
       setRefueling(false);
       if (!error) {
         setRefueled(true);
-        toast({ title: "🔥 refueled", description: `${data?.display_name} will know a roaming ember wants more` });
+        toast({ title: "✦ refueled", description: `${data?.display_name} will know a roaming ember wants more` });
       }
     }, 600);
   }, [currentUser, userId, refueled, data?.display_name]);
