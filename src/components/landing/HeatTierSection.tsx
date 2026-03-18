@@ -190,10 +190,7 @@ const HeatTierSection = () => {
                       animate={isHovered ? { scale: 1.15 } : { scale: 1 }}
                       transition={{ duration: 0.2 }}
                     >
-                      {'isStar' in tier && tier.isStar
-                        ? <BrandStar size={20} />
-                        : <BrandFlame size={20} opacity={tier.opacity} />
-                      }
+                      {(() => { const Icon = tierIcons[i]; return <Icon size={20} />; })()}
                     </motion.div>
 
                     {/* Pulse ring for star */}
