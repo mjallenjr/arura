@@ -22,19 +22,12 @@ export function useFeedData() {
   const fetchDiscovery = useCallback(async (): Promise<Signal[]> => {
     if (!user) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
     try {
-      const [ownWords, stitchWords] = await Promise.all([
-        supabase.from("signals").select("stitch_word").eq("user_id", user.id).not("stitch_word", "is", null).order("created_at", { ascending: false }).limit(10),
-        supabase.from("stitches").select("word").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
-      ]);
-      const themes = [...(ownWords.data?.map((s) => s.stitch_word).filter(Boolean) ?? []), ...(stitchWords.data?.map((s) => s.word) ?? [])];
-      if (themes.length === 0) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-      const { data, error } = await supabase.functions.invoke("discover-content", { body: { themes } });
-      if (error || !data?.items?.length) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-      return data.items.map((item: any) => ({
-        id: item.id, user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: item.display_name || item.query, media_url: item.image_url, isDiscovery: true,
-      }));
+      // Use seed content with per-user 2h windows instead of edge function
+      const seedSignals = await fetchSeedSignals(user.id, 15);
+      if (seedSignals.length > 0) return seedSignals;
+      return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
     } catch { return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5); }
-  }, [user]);
+  }, [user, fetchSeedSignals]);
 
   const fetchSuggestedSignals = useCallback(async (): Promise<Signal[]> => {
     if (!user) return [];
