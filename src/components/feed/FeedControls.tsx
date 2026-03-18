@@ -35,6 +35,7 @@ interface FeedControlsProps {
   onReportClick: () => void;
   onRekindle: () => void;
   onShare: () => void;
+  onFan: () => void;
 }
 
 const FeedControls = ({
