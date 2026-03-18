@@ -221,6 +221,20 @@ const FeedControls = ({
                 </svg>
                 fan
               </motion.button>
+              {/* Reply button */}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                transition={{ delay: 3.5 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => { e.stopPropagation(); onReply(); }}
+                className="flex items-center gap-1 rounded-full bg-muted/40 px-3 py-1.5 text-[10px] font-medium text-muted-foreground signal-ease hover:bg-muted/60"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+                reply
+              </motion.button>
             </div>
           )}
 
