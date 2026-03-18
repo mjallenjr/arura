@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import EmberProfile from "@/components/EmberProfile";
+import { useHaptics } from "@/hooks/useHaptics";
 import { useNavigate } from "react-router-dom";
 import EmberProfile from "@/components/EmberProfile";
 
