@@ -66,7 +66,7 @@ export function useFeedData() {
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
       return picked.map((s: any) => {
         let media_url: string | null = null;
-        if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+        if (s.storage_path) { media_url = resolveMediaUrl(s.storage_path); }
         return {
           id: s.signal_id, user_id: s.signal_user_id, type: s.signal_type,
           storage_path: s.storage_path, song_clip_url: s.song_clip_url, song_title: s.song_title,
