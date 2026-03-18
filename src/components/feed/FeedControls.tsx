@@ -8,6 +8,8 @@ interface Signal {
   isAd?: boolean;
   isDiscovery?: boolean;
   isSuggested?: boolean;
+  isFanned?: boolean;
+  fannedBy?: string;
   display_name: string;
   song_title: string | null;
   heat_level?: string;
