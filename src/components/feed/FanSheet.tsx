@@ -9,6 +9,7 @@ interface FanSheetProps {
   userId: string;
   fanCount: number;
   onFan: (recipientId: string, recipientName: string) => Promise<boolean>;
+  checkSparked: (recipientId: string) => Promise<boolean>;
   onClose: () => void;
 }
 
@@ -16,15 +17,16 @@ interface EmberResult {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
+  isSparked?: boolean;
 }
 
-const FanSheet = ({ open, signalId, userId, fanCount, onFan, onClose }: FanSheetProps) => {
+const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClose }: FanSheetProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<EmberResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState<string | null>(null);
 
-  // Search embers
+  // Search embers and check sparked status
   useEffect(() => {
     if (!open || query.length < 2) {
       setResults([]);
@@ -36,11 +38,21 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, onClose }: FanSheet
         search_term: query,
         requesting_user_id: userId,
       });
-      setResults((data as EmberResult[]) ?? []);
+      const profiles = (data as EmberResult[]) ?? [];
+      // Check sparked status for each result
+      const withSparked = await Promise.all(
+        profiles.map(async (p) => ({
+          ...p,
+          isSparked: await checkSparked(p.user_id),
+        }))
+      );
+      // Sort sparked embers first
+      withSparked.sort((a, b) => (b.isSparked ? 1 : 0) - (a.isSparked ? 1 : 0));
+      setResults(withSparked);
       setLoading(false);
     }, 300);
     return () => clearTimeout(timeout);
-  }, [query, open, userId]);
+  }, [query, open, userId, checkSparked]);
 
   // Load recent follows as default suggestions
   useEffect(() => {
@@ -58,11 +70,19 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, onClose }: FanSheet
         const { data: profiles } = await supabase.rpc("get_profiles_by_ids", {
           p_user_ids: ids,
         });
-        setResults((profiles as EmberResult[]) ?? []);
+        const embers = (profiles as EmberResult[]) ?? [];
+        const withSparked = await Promise.all(
+          embers.map(async (p) => ({
+            ...p,
+            isSparked: await checkSparked(p.user_id),
+          }))
+        );
+        withSparked.sort((a, b) => (b.isSparked ? 1 : 0) - (a.isSparked ? 1 : 0));
+        setResults(withSparked);
       }
       setLoading(false);
     })();
-  }, [open, userId, query]);
+  }, [open, userId, query, checkSparked]);
 
   const handleFan = useCallback(
     async (ember: EmberResult) => {
@@ -98,9 +118,7 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, onClose }: FanSheet
               <div>
                 <h3 className="text-sm font-semibold text-foreground">Fan this flare</h3>
                 <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {fanCount >= 2
-                    ? "ad required for next fan"
-                    : `${2 - fanCount} free fan${2 - fanCount !== 1 ? "s" : ""} remaining`}
+                  sparked embers are free · others require an ad
                 </p>
               </div>
               <button
@@ -165,8 +183,12 @@ const FanSheet = ({ open, signalId, userId, fanCount, onFan, onClose }: FanSheet
                   <span className="text-sm font-medium text-foreground flex-1 text-left">
                     {ember.display_name}
                   </span>
-                  <span className="text-[10px] text-primary font-medium">
-                    {sending === ember.user_id ? "fanning..." : "fan"}
+                  <span className="text-[10px] font-medium">
+                    {sending === ember.user_id
+                      ? "fanning..."
+                      : ember.isSparked
+                        ? <span className="text-primary">fan</span>
+                        : <span className="text-muted-foreground">ad · fan</span>}
                   </span>
                 </motion.button>
               ))}

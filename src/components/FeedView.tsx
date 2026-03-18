@@ -49,7 +49,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [showFanSheet, setShowFanSheet] = useState(false);
-  const { fanFlare, fanCounts, getFanCount } = useFan();
+  const { fanFlare, fanCounts, getFanCount, checkSparked } = useFan();
 
   const {
     feltEffects, stitchCounts, hasStitched, stitchSuggestions, loadingSuggestions,
@@ -427,6 +427,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
             fanFlare(signal.id, recipientId, recipientName)
           }
           onClose={() => setShowFanSheet(false)}
+          checkSparked={checkSparked}
         />
       )}
     </div>
