@@ -64,7 +64,7 @@ const PhoneMockup = () => {
   );
 };
 
-
+const Landing = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
