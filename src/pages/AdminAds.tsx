@@ -181,7 +181,7 @@ const AdminAds = () => {
         <p className="text-sm text-muted-foreground text-center">You don't have permission to access this page.</p>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate("/")}
+           onClick={() => navigate("/home")}
           className="rounded-full signal-surface px-6 py-2.5 text-sm font-medium text-muted-foreground signal-ease"
         >
           Go back
