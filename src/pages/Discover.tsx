@@ -5,8 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import EmberProfile from "@/components/EmberProfile";
 import { useHaptics } from "@/hooks/useHaptics";
-import { useNavigate } from "react-router-dom";
-import EmberProfile from "@/components/EmberProfile";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
