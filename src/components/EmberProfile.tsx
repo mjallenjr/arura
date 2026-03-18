@@ -345,6 +345,9 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
               )}
             </div>
             <p className="text-lg font-medium text-foreground tracking-tight">{data.display_name}</p>
+            {referralReward.tier !== "none" && (
+              <ReferralBadge reward={referralReward} size="sm" />
+            )}
             {data.bio_word && (
               <motion.div
                 initial={{ opacity: 0 }}
