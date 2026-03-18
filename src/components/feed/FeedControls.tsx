@@ -122,7 +122,12 @@ const FeedControls = ({
             {signal.display_name}
           </motion.p>
           {signal.heat_level && signal.heat_level !== "match" && (
-            <HeatBadge level={signal.heat_level} />
+            <HeatBadge
+              level={signal.heat_level}
+              heatScore={signal.heat_score}
+              isFirstTouch={isFirstTouch}
+              isLevelUpCredit={isLevelUpCredit}
+            />
           )}
         </div>
           {signal.song_title && (
