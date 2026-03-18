@@ -11,128 +11,55 @@ import FeedControls from "@/components/feed/FeedControls";
 import LevelUpCelebration from "@/components/feed/LevelUpCelebration";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useAds, type Ad } from "@/hooks/useAds";
-import { useBlocks } from "@/hooks/useBlocks";
-import { useRateLimit } from "@/hooks/useRateLimit";
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useFeedData } from "@/hooks/useFeedData";
+import { useFeedInteractions } from "@/hooks/useFeedInteractions";
 import { toast } from "sonner";
-import { playFelt, playStitch, playLevelUp, playRekindle, playSwipe, hapticFelt, hapticStitch, hapticLevelUp, hapticRekindle, hapticSwipe } from "@/lib/sounds";
-import { HEAT_THRESHOLDS, HEAT_TIERS } from "@/components/feed/HeatBadge";
+import { playSwipe, hapticSwipe } from "@/lib/sounds";
+import { Signal, SIGNAL_DURATION, AD_DURATION, shuffleArray, getTouchDistance, getTouchAngle } from "@/lib/feed-types";
+
+// Re-export Signal for consumers
+export type { Signal } from "@/lib/feed-types";
 
 interface FeedViewProps {
   onEnd: () => void;
 }
 
-const SIGNAL_DURATION = 5000;
-const AD_DURATION = 3700;
-const FEED_CACHE_KEY = "arura_feed_cache";
-const FEED_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-export interface Signal {
-  id: string;
-  user_id: string;
-  type: string;
-  storage_path: string | null;
-  song_clip_url: string | null;
-  song_title: string | null;
-  stitch_word: string | null;
-  stitch_word_pos?: { x: number; y: number; scale: number; rotation: number } | null;
-  created_at: string;
-  display_name: string;
-  media_url: string | null;
-  heat_level?: string;
-  heat_score?: number;
-  isDiscovery?: boolean;
-  isSuggested?: boolean;
-  isDiversity?: boolean;
-  isAd?: boolean;
-  ad?: Ad;
-}
-
-const FALLBACK_DISCOVERY: Signal[] = [
-  { id: "d-1", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "autumn river", media_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1200&fit=crop", isDiscovery: true },
-  { id: "d-2", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "sunset pier", media_url: "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=800&h=1200&fit=crop", isDiscovery: true },
-  { id: "d-3", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "hidden waterfall", media_url: "https://images.unsplash.com/photo-1432405972618-c6b0cfba8427?w=800&h=1200&fit=crop", isDiscovery: true },
-  { id: "d-4", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "mountain lake", media_url: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=800&h=1200&fit=crop", isDiscovery: true },
-  { id: "d-5", user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: "northern lights", media_url: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&h=1200&fit=crop", isDiscovery: true },
-];
-
-function shuffleArray<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function getTouchDistance(t1: Touch, t2: Touch) {
-  return Math.sqrt((t1.clientX - t2.clientX) ** 2 + (t1.clientY - t2.clientY) ** 2);
-}
-
-function getTouchAngle(t1: Touch, t2: Touch) {
-  return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * (180 / Math.PI);
-}
-
-// Offline cache helpers
-function getCachedFeed(): Signal[] | null {
-  try {
-    const raw = localStorage.getItem(FEED_CACHE_KEY);
-    if (!raw) return null;
-    const { signals, timestamp } = JSON.parse(raw);
-    if (Date.now() - timestamp > FEED_CACHE_TTL) return null;
-    return signals;
-  } catch { return null; }
-}
-
-function cacheFeed(signals: Signal[]) {
-  try {
-    const cacheable = signals.filter(s => !s.isAd).slice(0, 20);
-    localStorage.setItem(FEED_CACHE_KEY, JSON.stringify({ signals: cacheable, timestamp: Date.now() }));
-  } catch { /* quota exceeded */ }
-}
-
 const FeedView = ({ onEnd }: FeedViewProps) => {
   const { user } = useAuth();
-  const { fetchTargetedAd } = useAds();
-  const { isBlocked, refreshBlocks } = useBlocks();
-  const checkStitchLimit = useRateLimit(10, 60000);
-  const isOnline = useOnlineStatus();
-  const [showReportMenu, setShowReportMenu] = useState(false);
-  const [signals, setSignals] = useState<Signal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    signals, setSignals, loading, isFromCache, isOnline,
+    firstTouchSignals, levelUpCreditSignals,
+    fetchSuggestedSignals, refreshBlocks,
+  } = useFeedData();
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [feltEffects, setFeltEffects] = useState<Array<{ id: string; x: number; y: number }>>([]);
   const [ended, setEnded] = useState(false);
-  const [stitchInput, setStitchInput] = useState("");
-  const [showStitchInput, setShowStitchInput] = useState(false);
-  const [stitchCounts, setStitchCounts] = useState<Record<string, number>>({});
-  const [hasStitched, setHasStitched] = useState<Record<string, boolean>>({});
-  const [stitchSuggestions, setStitchSuggestions] = useState<string[]>([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [suggestedLoaded, setSuggestedLoaded] = useState(false);
+  const [showStitchInput, setShowStitchInput] = useState(false);
   const [showIgnitePrompt, setShowIgnitePrompt] = useState(false);
-  const [ignitedInFeed, setIgnitedInFeed] = useState<Record<string, boolean>>({});
+  const [stitchInput, setStitchInput] = useState("");
   const [stitchPos, setStitchPos] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
   const [stitchScale, setStitchScale] = useState(1);
   const [stitchRotation, setStitchRotation] = useState(0);
   const [submittedStitch, setSubmittedStitch] = useState<{
     word: string; x: number; y: number; scale: number; rotation: number;
   } | null>(null);
-  const [isFromCache, setIsFromCache] = useState(false);
-  const [firstTouchSignals, setFirstTouchSignals] = useState<Record<string, boolean>>({});
-  const [levelUpCreditSignals, setLevelUpCreditSignals] = useState<Record<string, boolean>>({});
-  const [hasRekindled, setHasRekindled] = useState<Record<string, boolean>>({});
-  const [levelUpTrigger, setLevelUpTrigger] = useState(false);
-  const [levelUpName, setLevelUpName] = useState("");
-  const prevHeatLevels = useRef<Record<string, string>>({});
+  const [swipeOffset, setSwipeOffset] = useState(0);
 
+  const {
+    feltEffects, stitchCounts, hasStitched, stitchSuggestions, loadingSuggestions,
+    ignitedInFeed, hasRekindled, levelUpTrigger, levelUpName,
+    showReportMenu, setShowReportMenu,
+    handleStitchSubmit: rawStitchSubmit, handleRekindle, handleShare, handleFelt, handleIgnite,
+    setStitchSuggestions,
+  } = useFeedInteractions({ signals, currentIndex, showStitchInput });
+
+  // Refs
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
   const lastTapRef = useRef<number>(0);
   const tapTimeoutRef = useRef<number>(0);
-  const doubleTapPosRef = useRef<{ x: number; y: number }>({ x: 50, y: 50 });
   const feedRef = useRef<HTMLDivElement>(null);
   const pinchStartDistRef = useRef<number | null>(null);
   const pinchStartAngleRef = useRef<number | null>(null);
@@ -143,14 +70,12 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const swipeStartXRef = useRef<number | null>(null);
   const swipeStartYRef = useRef<number | null>(null);
   const swipeDeltaRef = useRef(0);
-  const [swipeOffset, setSwipeOffset] = useState(0);
   const isSwiping = useRef(false);
 
   // ── Pinch-to-resize/rotate for stitch ──
   useEffect(() => {
     const el = feedRef.current;
     if (!el || !showStitchInput) return;
-
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault();
@@ -170,253 +95,38 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       }
     };
     const onTouchEnd = () => { pinchStartDistRef.current = null; pinchStartAngleRef.current = null; };
-
     el.addEventListener("touchstart", onTouchStart, { passive: false });
     el.addEventListener("touchmove", onTouchMove, { passive: false });
     el.addEventListener("touchend", onTouchEnd);
     return () => { el.removeEventListener("touchstart", onTouchStart); el.removeEventListener("touchmove", onTouchMove); el.removeEventListener("touchend", onTouchEnd); };
   }, [showStitchInput, stitchScale, stitchRotation]);
 
-  // ── Data fetching ──
-  const fetchDiscovery = useCallback(async (): Promise<Signal[]> => {
-    if (!user) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-    try {
-      const [ownWords, stitchWords] = await Promise.all([
-        supabase.from("signals").select("stitch_word").eq("user_id", user.id).not("stitch_word", "is", null).order("created_at", { ascending: false }).limit(10),
-        supabase.from("stitches").select("word").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
-      ]);
-      const themes = [...(ownWords.data?.map((s) => s.stitch_word).filter(Boolean) ?? []), ...(stitchWords.data?.map((s) => s.word) ?? [])];
-      if (themes.length === 0) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-      const { data, error } = await supabase.functions.invoke("discover-content", { body: { themes } });
-      if (error || !data?.items?.length) return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5);
-      return data.items.map((item: any) => ({
-        id: item.id, user_id: "", type: "photo", storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "", display_name: item.display_name || item.query, media_url: item.image_url, isDiscovery: true,
-      }));
-    } catch { return shuffleArray(FALLBACK_DISCOVERY).slice(0, 5); }
-  }, [user]);
+  // ── Heat advisory realtime ──
+  const jumpToSignal = useCallback((signalId: string) => {
+    const idx = signals.findIndex((s) => s.id === signalId);
+    if (idx >= 0) { setCurrentIndex(idx); setProgress(0); }
+  }, [signals]);
 
-  const fetchSuggestedSignals = useCallback(async (): Promise<Signal[]> => {
-    if (!user) return [];
-    try {
-      const { data: myFollows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
-      const followingIds = new Set(myFollows?.map((f) => f.following_id) ?? []);
-      if (followingIds.size === 0) return [];
-      const { data: fof } = await supabase.from("follows").select("following_id").in("follower_id", [...followingIds]).limit(100);
-      if (!fof) return [];
-      const candidateIds = [...new Set(fof.map((f) => f.following_id))].filter((id) => id !== user.id && !followingIds.has(id));
-      if (candidateIds.length === 0) return [];
-      const shuffledCandidates = shuffleArray(candidateIds).slice(0, 10);
-      const { data: rawSignals } = await supabase.from("signals").select("*").in("user_id", shuffledCandidates).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(15);
-      if (!rawSignals || rawSignals.length === 0) return [];
-      const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
-      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", authorIds);
-      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
-      return shuffleArray(rawSignals.map((s) => {
-        let media_url: string | null = null;
-        if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
-        return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
-      }));
-    } catch { return []; }
-  }, [user]);
-
-  // ── Diversity injection: fetch 1-2 signals from outside follow graph ──
-  const fetchDiversitySignals = useCallback(async (followingIds: Set<string>): Promise<Signal[]> => {
-    if (!user) return [];
-    try {
-      // Get engagement-ranked signals from outside follow graph
-      const { data: ranked } = await supabase.rpc("get_engagement_ranked_signals", { p_user_id: user.id });
-      if (!ranked || ranked.length === 0) return [];
-
-      // Filter to only those NOT in follow graph
-      const outsideGraph = (ranked as any[]).filter((s: any) => !followingIds.has(s.signal_user_id));
-      const picked = shuffleArray(outsideGraph).slice(0, 2);
-      if (picked.length === 0) return [];
-
-      const authorIds = [...new Set(picked.map((s: any) => s.signal_user_id))];
-      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", authorIds);
-      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
-
-      return picked.map((s: any) => {
-        let media_url: string | null = null;
-        if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
-        return {
-          id: s.signal_id, user_id: s.signal_user_id, type: s.signal_type,
-          storage_path: s.storage_path, song_clip_url: s.song_clip_url, song_title: s.song_title,
-          stitch_word: s.stitch_word, created_at: s.created_at,
-          display_name: nameMap.get(s.signal_user_id) ?? "unknown", media_url,
-          isDiversity: true,
-        };
-      });
-    } catch { return []; }
-  }, [user]);
-
-  const interleaveAds = useCallback(async (items: Signal[], userId: string): Promise<Signal[]> => {
-    if (items.length < 3) return items;
-    const result: Signal[] = [];
-    let contentCount = 0;
-    for (const item of items) {
-      contentCount++;
-      result.push(item);
-      if (contentCount % 3 === 0) {
-        const ad = await fetchTargetedAd(userId, "feed");
-        if (ad) {
-          result.push({
-            id: `ad-${ad.id}-${contentCount}`, user_id: "", type: ad.media_type === "video" ? "video" : "photo",
-            storage_path: null, song_clip_url: null, song_title: null, stitch_word: null, created_at: "",
-            display_name: ad.company_name, media_url: ad.media_url, isAd: true, ad,
-          });
-        }
-      }
-    }
-    return result;
-  }, [fetchTargetedAd]);
-
-  // ── Fetch signals with offline-first + diversity ──
   useEffect(() => {
     if (!user) return;
-    const fetchSignals = async () => {
-      // Try cache first for instant load
-      if (!isOnline) {
-        const cached = getCachedFeed();
-        if (cached && cached.length > 0) {
-          setSignals(cached);
-          setIsFromCache(true);
-          setLoading(false);
-          return;
+    const channel = supabase
+      .channel("heat-advisory")
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "notifications",
+        filter: `user_id=eq.${user.id}`,
+      }, (payload: any) => {
+        const row = payload.new;
+        if (row?.type === "heat_advisory" && row?.signal_id) {
+          toast("🔥 Heat Advisory", {
+            description: `A drop you follow just hit ${row.word?.toUpperCase() ?? "HOT"} — tap to jump!`,
+            duration: 6000,
+            action: { label: "Go", onClick: () => jumpToSignal(row.signal_id) },
+          });
         }
-      }
-
-      // Show cached data immediately, then refresh
-      const cached = getCachedFeed();
-      if (cached && cached.length > 0) {
-        setSignals(cached);
-        setIsFromCache(true);
-        setLoading(false);
-      }
-
-      // 1. Get aura-ranked following
-      const { data: auraData } = await supabase.rpc("get_aura_ranked_following", { p_user_id: user.id });
-      const rankedIds = auraData?.map((a: any) => a.following_id) ?? [];
-      
-      if (rankedIds.length === 0) {
-        const discovery = await fetchDiscovery();
-        const final = await interleaveAds(discovery, user.id);
-        setSignals(final);
-        cacheFeed(final);
-        setIsFromCache(false);
-        setLoading(false);
-        return;
-      }
-      
-      const auraRank = new Map(rankedIds.map((id: string, i: number) => [id, i]));
-      const followingIdSet = new Set(rankedIds as string[]);
-      
-      // 2. Fetch signals + diversity in parallel
-      const [rawSignalsRes, diversitySignals] = await Promise.all([
-        supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30),
-        fetchDiversitySignals(followingIdSet),
-      ]);
-      
-      const rawSignals = rawSignalsRes.data;
-      
-      if (!rawSignals || rawSignals.length === 0) {
-        const discovery = await fetchDiscovery();
-        const final = await interleaveAds([...discovery, ...diversitySignals], user.id);
-        setSignals(final);
-        cacheFeed(final);
-        setIsFromCache(false);
-        setLoading(false);
-        return;
-      }
-      
-      // 3. Get engagement data
-      const signalIds = rawSignals.map(s => s.id);
-      const [feltData, stitchData, viewData, firstFeltData, firstStitchData] = await Promise.all([
-        supabase.from("felts").select("signal_id").in("signal_id", signalIds),
-        supabase.from("stitches").select("signal_id").in("signal_id", signalIds),
-        supabase.from("signal_views").select("signal_id").in("signal_id", signalIds),
-        // Check if current user was first to felt each signal
-        user ? supabase.from("felts").select("signal_id, created_at").in("signal_id", signalIds).eq("user_id", user.id).order("created_at", { ascending: true }).limit(signalIds.length) : Promise.resolve({ data: [] }),
-        // Check if current user was first to stitch each signal
-        user ? supabase.from("stitches").select("signal_id, created_at").in("signal_id", signalIds).eq("user_id", user.id).order("created_at", { ascending: true }).limit(signalIds.length) : Promise.resolve({ data: [] }),
-      ]);
-      
-      const feltCounts = new Map<string, number>();
-      feltData.data?.forEach((f: any) => feltCounts.set(f.signal_id, (feltCounts.get(f.signal_id) ?? 0) + 1));
-      const stitchCountsMap = new Map<string, number>();
-      stitchData.data?.forEach((s: any) => stitchCountsMap.set(s.signal_id, (stitchCountsMap.get(s.signal_id) ?? 0) + 1));
-      const viewCounts = new Map<string, number>();
-      viewData.data?.forEach((v: any) => viewCounts.set(v.signal_id, (viewCounts.get(v.signal_id) ?? 0) + 1));
-
-      // Determine first touch: user was the only felt (count=1) and they felted it
-      const firstTouchMap: Record<string, boolean> = {};
-      const userFeltSignals = new Set((firstFeltData as any)?.data?.map((f: any) => f.signal_id) ?? []);
-      const userStitchedSignals = new Set((firstStitchData as any)?.data?.map((s: any) => s.signal_id) ?? []);
-      signalIds.forEach(id => {
-        const totalFelts = feltCounts.get(id) ?? 0;
-        const totalStitches = stitchCountsMap.get(id) ?? 0;
-        // First touch = user interacted AND total is exactly 1
-        if ((totalFelts === 1 && userFeltSignals.has(id)) || (totalStitches === 1 && userStitchedSignals.has(id))) {
-          firstTouchMap[id] = true;
-        }
-      });
-      setFirstTouchSignals(firstTouchMap);
-
-      // Level-up credit: user interacted and the signal is above 'match'
-      const levelUpMap: Record<string, boolean> = {};
-      signalIds.forEach(id => {
-        if ((userFeltSignals.has(id) || userStitchedSignals.has(id)) && !firstTouchMap[id]) {
-          levelUpMap[id] = true;
-        }
-      });
-      setLevelUpCreditSignals(levelUpMap);
-      
-      // 4. Get profiles
-      const allAuthorIds = [...new Set([...rawSignals.map((s) => s.user_id), ...diversitySignals.map(s => s.user_id)])];
-      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", allAuthorIds);
-      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
-      
-      // 5. Composite scoring
-      const now = Date.now();
-      const enriched: Signal[] = rawSignals
-        .filter((s) => !isBlocked(s.user_id))
-        .map((s) => {
-          let media_url: string | null = null;
-          if (s.storage_path) { const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = data.publicUrl; }
-          
-          const auraPos = auraRank.get(s.user_id) ?? rankedIds.length;
-          const auraScore = Math.max(0, 100 - (auraPos / Math.max(rankedIds.length, 1)) * 100);
-          
-          const felts = feltCounts.get(s.id) ?? 0;
-          const stitches = stitchCountsMap.get(s.id) ?? 0;
-          const views = viewCounts.get(s.id) ?? 0;
-          const engagementScore = Math.min(100, felts * 15 + stitches * 25 + views * 2);
-          
-          const ageMs = now - new Date(s.created_at).getTime();
-          const recencyScore = Math.max(0, 100 - (ageMs / (2 * 60 * 60 * 1000)) * 100);
-          
-          const compositeScore = auraScore * 0.35 + engagementScore * 0.4 + recencyScore * 0.25;
-          
-          const heatScore = felts * 3 + stitches * 8 + views;
-          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, heat_score: heatScore, _score: compositeScore };
-        })
-        .sort((a: any, b: any) => (b._score ?? 0) - (a._score ?? 0));
-      
-      // 6. Inject diversity signals at positions ~5 and ~10
-      const withDiversity = [...enriched];
-      diversitySignals.forEach((ds, i) => {
-        const insertPos = Math.min(withDiversity.length, 4 + i * 5);
-        withDiversity.splice(insertPos, 0, ds);
-      });
-      
-      const final = await interleaveAds(withDiversity, user.id);
-      setSignals(final);
-      cacheFeed(final);
-      setIsFromCache(false);
-      setLoading(false);
-    };
-    fetchSignals();
-  }, [user, fetchDiscovery, fetchTargetedAd, isOnline]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, jumpToSignal]);
 
   // ── Signal advancement ──
   const resetStitchState = useCallback(() => {
@@ -461,7 +171,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         });
       } else { setEnded(true); }
     }
-  }, [currentIndex, signals, hasStitched, suggestedLoaded, fetchSuggestedSignals, resetStitchState]);
+  }, [currentIndex, signals, hasStitched, suggestedLoaded, fetchSuggestedSignals, resetStitchState, setSignals]);
 
   const goBackSignal = useCallback(() => {
     if (currentIndex > 0) {
@@ -471,153 +181,12 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     }
   }, [currentIndex, resetStitchState]);
 
-  // ── Stitch counts ──
-  useEffect(() => {
-    if (!user || signals.length === 0) return;
-    const mySignalIds = signals.filter((s) => s.user_id === user.id && !s.isDiscovery).map((s) => s.id);
-    if (mySignalIds.length === 0) return;
-    supabase.from("stitches").select("signal_id").in("signal_id", mySignalIds).then(({ data }) => {
-      if (!data) return;
-      const counts: Record<string, number> = {};
-      data.forEach((d: any) => { counts[d.signal_id] = (counts[d.signal_id] || 0) + 1; });
-      setStitchCounts(counts);
-    });
-  }, [user, signals]);
-
-  // ── Heat advisory realtime listener ──
-  const jumpToSignal = useCallback((signalId: string) => {
-    const idx = signals.findIndex((s) => s.id === signalId);
-    if (idx >= 0) {
-      setCurrentIndex(idx);
-      setProgress(0);
-      resetStitchState();
-    }
-  }, [signals, resetStitchState]);
-
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel("heat-advisory")
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "notifications",
-        filter: `user_id=eq.${user.id}`,
-      }, (payload: any) => {
-        const row = payload.new;
-        if (row?.type === "heat_advisory" && row?.signal_id) {
-          const level = row.word?.toUpperCase() ?? "HOT";
-          const sigId = row.signal_id;
-          toast("🔥 Heat Advisory", {
-            description: `A drop you follow just hit ${level} — tap to jump!`,
-            duration: 6000,
-            action: {
-              label: "Go",
-              onClick: () => jumpToSignal(sigId),
-            },
-          });
-        }
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user, jumpToSignal]);
-
-  // ── Stitch submit ──
-  const handleStitchSubmit = useCallback(async () => {
-    const signal = signals[currentIndex];
-    if (!user || !signal || signal.isDiscovery || !stitchInput.trim()) return;
-    if (!checkStitchLimit()) { toast.error("Slow down — too many stitches"); return; }
-    const word = stitchInput.replace(/\s/g, "").slice(0, 12);
-    if (!word) return;
-    const { error } = await supabase.from("stitches").insert({ user_id: user.id, signal_id: signal.id, word });
-    if (!error) {
-      setHasStitched((prev) => ({ ...prev, [signal.id]: true }));
-      setSubmittedStitch({ word, x: stitchPos.x, y: stitchPos.y, scale: stitchScale, rotation: stitchRotation });
-      await supabase.from("notifications").insert({ user_id: signal.user_id, from_user_id: user.id, signal_id: signal.id, type: "stitch", word });
-      playStitch();
-      hapticStitch();
-      toast.success("Stitched ✦");
-    }
-    setShowStitchInput(false);
-    setStitchInput("");
-  }, [user, signals, currentIndex, stitchInput, stitchPos, stitchScale, stitchRotation]);
-
-  // ── Rekindle handler ──
-  const handleRekindle = useCallback(async (signalId: string, signalUserId: string) => {
-    if (!user || hasRekindled[signalId]) return;
-    const { error } = await supabase.from("rekindles").insert({ user_id: user.id, signal_id: signalId } as any);
-    if (!error) {
-      setHasRekindled((prev) => ({ ...prev, [signalId]: true }));
-      await supabase.from("notifications").insert({
-        user_id: signalUserId,
-        from_user_id: user.id,
-        signal_id: signalId,
-        type: "rekindle" as any,
-      } as any);
-      playRekindle();
-      hapticRekindle();
-      toast.success("Rekindled — keeping it lit");
-    }
-  }, [user, hasRekindled]);
-
-  // ── Share handler ──
-  const handleShare = useCallback(async (signalId: string) => {
-    // Use edge function URL for sharing — serves dynamic OG tags to social crawlers
-    const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/signal-og?id=${signalId}`;
-    const fallbackUrl = `${window.location.origin}/signal/${signalId}`;
-    if (navigator.share) {
-      try { await navigator.share({ title: "arura signal", url: ogUrl }); } catch {}
-    } else {
-      await navigator.clipboard.writeText(ogUrl);
-      toast.success("Link copied");
-    }
-  }, []);
-
-  // ── Level-up detection ──
-  useEffect(() => {
-    if (signals.length === 0) return;
-    signals.forEach((s) => {
-      const prev = prevHeatLevels.current[s.id];
-      if (prev && s.heat_level && prev !== s.heat_level) {
-        const prevIdx = HEAT_TIERS.indexOf(prev as any);
-        const newIdx = HEAT_TIERS.indexOf(s.heat_level as any);
-        if (newIdx > prevIdx && s.id === signals[currentIndex]?.id) {
-          setLevelUpName(s.heat_level);
-          setLevelUpTrigger(true);
-          playLevelUp();
-          hapticLevelUp();
-          setTimeout(() => setLevelUpTrigger(false), 100);
-        }
-      }
-      if (s.heat_level) prevHeatLevels.current[s.id] = s.heat_level;
-    });
-  }, [signals, currentIndex]);
-
-  // ── Record view ──
-  useEffect(() => {
-    if (loading || ended || signals.length === 0) return;
-    const signal = signals[currentIndex];
-    if (!user || !signal || signal.isDiscovery) return;
-    supabase.from("signal_views").upsert({ user_id: user.id, signal_id: signal.id }, { onConflict: "user_id,signal_id" }).then(() => {});
-  }, [currentIndex, loading, ended, signals, user]);
-
-  // ── AI stitch suggestions + pause/resume timer ──
+  // ── Pause/resume timer on stitch ──
   useEffect(() => {
     if (showStitchInput) {
       pausedRef.current = true;
       elapsedBeforePauseRef.current += Date.now() - startTimeRef.current;
       cancelAnimationFrame(animRef.current);
-      const signal = signals[currentIndex];
-      if (signal && !signal.isDiscovery && !signal.isAd) {
-        setLoadingSuggestions(true);
-        setStitchSuggestions([]);
-        supabase.functions.invoke("stitch-suggest", {
-          body: { creator_name: signal.display_name, stitch_word: signal.stitch_word, media_type: signal.type, display_name: signal.display_name },
-        }).then(({ data, error }) => {
-          if (!error && data?.words) setStitchSuggestions(data.words);
-          setLoadingSuggestions(false);
-        }).catch(() => setLoadingSuggestions(false));
-      }
       return;
     }
     pausedRef.current = false;
@@ -660,7 +229,6 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         clearTimeout(tapTimeoutRef.current);
         lastTapRef.current = 0;
         if (user && current && !current.isDiscovery && current.user_id !== user.id && !hasStitched[current.id]) {
-          doubleTapPosRef.current = { x: xPct, y: yPct };
           setStitchPos({ x: xPct, y: yPct });
           setStitchScale(1);
           setStitchRotation(0);
@@ -671,18 +239,21 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       }
       lastTapRef.current = now;
       tapTimeoutRef.current = window.setTimeout(() => {
-        if (user && current && !current.isDiscovery) {
-          supabase.from("felts").insert({ user_id: user.id, signal_id: current.id }).then(() => {});
-        }
-        playFelt();
-        hapticFelt();
-        const id = `${Date.now()}-${Math.random()}`;
-        setFeltEffects((prev) => [...prev, { id, x, y }]);
-        setTimeout(() => { setFeltEffects((prev) => prev.filter((f) => f.id !== id)); }, 700);
+        handleFelt(x, y);
       }, 300);
     },
-    [user, signals, currentIndex, hasStitched, showStitchInput]
+    [user, signals, currentIndex, hasStitched, showStitchInput, handleFelt]
   );
+
+  // ── Stitch submit wrapper ──
+  const onStitchSubmit = useCallback(async () => {
+    const success = await rawStitchSubmit(stitchInput, stitchPos, stitchScale, stitchRotation);
+    if (success) {
+      setSubmittedStitch({ word: stitchInput.replace(/\s/g, "").slice(0, 12), x: stitchPos.x, y: stitchPos.y, scale: stitchScale, rotation: stitchRotation });
+    }
+    setShowStitchInput(false);
+    setStitchInput("");
+  }, [rawStitchSubmit, stitchInput, stitchPos, stitchScale, stitchRotation]);
 
   // ── Render ──
   if (loading) {
@@ -715,23 +286,16 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         if (swipeStartXRef.current === null || swipeStartYRef.current === null || showStitchInput || e.touches.length > 1) return;
         const dx = e.touches[0].clientX - swipeStartXRef.current;
         const dy = e.touches[0].clientY - swipeStartYRef.current;
-        // Only start swiping if horizontal movement dominates
         if (!isSwiping.current && Math.abs(dx) > 15 && Math.abs(dx) > Math.abs(dy) * 1.5) {
           isSwiping.current = true;
         }
-        if (isSwiping.current) {
-          swipeDeltaRef.current = dx;
-          setSwipeOffset(dx);
-        }
+        if (isSwiping.current) { swipeDeltaRef.current = dx; setSwipeOffset(dx); }
       }}
       onTouchEnd={() => {
         if (isSwiping.current) {
           const threshold = 80;
-          if (swipeDeltaRef.current < -threshold) {
-            advanceSignal(); playSwipe(); hapticSwipe();
-          } else if (swipeDeltaRef.current > threshold) {
-            goBackSignal(); playSwipe(); hapticSwipe();
-          }
+          if (swipeDeltaRef.current < -threshold) { advanceSignal(); playSwipe(); hapticSwipe(); }
+          else if (swipeDeltaRef.current > threshold) { goBackSignal(); playSwipe(); hapticSwipe(); }
         }
         swipeStartXRef.current = null;
         swipeStartYRef.current = null;
@@ -778,7 +342,6 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         onShare={() => handleShare(signal.id)}
       />
 
-      {/* Level-up celebration */}
       <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
 
       <div style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
@@ -805,23 +368,17 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         isIgnitedInFeed={!!ignitedInFeed[signal.user_id]}
         displayName={signal.display_name}
         onStitchInputChange={setStitchInput}
-        onStitchSubmit={handleStitchSubmit}
+        onStitchSubmit={onStitchSubmit}
         onStitchClose={() => { setShowStitchInput(false); setShowIgnitePrompt(false); setStitchInput(""); setStitchSuggestions([]); }}
-        onIgnite={async () => {
-          if (!user) return;
-          const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: signal.user_id });
-          if (!error) { setIgnitedInFeed((prev) => ({ ...prev, [signal.user_id]: true })); toast.success(`Ignited ${signal.display_name} 🔥`); }
-        }}
+        onIgnite={() => handleIgnite(signal.user_id, signal.display_name)}
       />
 
-      {/* Ad overlay */}
       {signal.isAd && signal.ad && (
         <div className="absolute bottom-0 left-0 right-0 z-10 p-8">
           <AdCard ad={signal.ad} signalId={signal.id} />
         </div>
       )}
 
-      {/* Report/Block menu */}
       <AnimatePresence>
         {showReportMenu && signal && !signal.isAd && !signal.isDiscovery && (
           <ReportBlockMenu
@@ -834,10 +391,11 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         )}
       </AnimatePresence>
 
-      {/* Felt effects */}
-      {feltEffects.map((felt) => (
-        <FeltEffect key={felt.id} x={felt.x} y={felt.y} />
-      ))}
+      <AnimatePresence>
+        {feltEffects.map((f) => (
+          <FeltEffect key={f.id} x={f.x} y={f.y} />
+        ))}
+      </AnimatePresence>
     </div>
   );
 };
