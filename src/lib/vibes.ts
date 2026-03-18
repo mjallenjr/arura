@@ -89,7 +89,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "dark souls", "elden ring", "speedrunning", "game modding", "tabletop games",
     "d&d", "board games", "card games", "chess", "magic the gathering",
   ],
-  "🐾 Animals": [
+  "Animals": [
     "dogs", "cats", "pets", "horses", "birds", "fish", "reptiles", "rabbits",
     "hamsters", "ferrets", "animal rescue", "veterinary", "wildlife photography",
     "marine biology", "dog training", "cat behavior", "aquariums", "terrariums",
