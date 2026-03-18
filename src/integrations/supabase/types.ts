@@ -636,6 +636,7 @@ export type Database = {
           song_clip_url: string | null
           song_title: string | null
           stitch_word: string | null
+          stitch_word_pos: Json | null
           storage_path: string | null
           type: string
           user_id: string
@@ -649,6 +650,7 @@ export type Database = {
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null
+          stitch_word_pos?: Json | null
           storage_path?: string | null
           type?: string
           user_id: string
@@ -662,6 +664,7 @@ export type Database = {
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null
+          stitch_word_pos?: Json | null
           storage_path?: string | null
           type?: string
           user_id?: string

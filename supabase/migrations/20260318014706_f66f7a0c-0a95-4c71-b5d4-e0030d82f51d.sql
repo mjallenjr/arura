@@ -1,0 +1,1 @@
+ALTER TABLE public.signals ADD COLUMN IF NOT EXISTS stitch_word_pos jsonb DEFAULT NULL;
