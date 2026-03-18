@@ -123,8 +123,30 @@ export function useFeedData() {
       const rankedIds = auraData?.map((a: any) => a.following_id) ?? [];
 
       if (rankedIds.length === 0) {
-        const discovery = await fetchDiscovery();
-        const final = await interleaveAds(discovery, user.id);
+        // Cold-start: fetch seed content AND top engagement signals in parallel
+        const [discovery, engagementRes] = await Promise.all([
+          fetchDiscovery(),
+          supabase.rpc("get_engagement_ranked_signals", { p_user_id: user.id }),
+        ]);
+        
+        let forYouSignals: Signal[] = [];
+        if (engagementRes.data && (engagementRes.data as any[]).length > 0) {
+          const topSignals = shuffleArray(engagementRes.data as any[]).slice(0, 8);
+          const authorIds = [...new Set(topSignals.map((s: any) => s.signal_user_id))];
+          const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", authorIds);
+          const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+          forYouSignals = topSignals.map((s: any) => ({
+            id: s.signal_id, user_id: s.signal_user_id, type: s.signal_type,
+            storage_path: s.storage_path, song_clip_url: s.song_clip_url, song_title: s.song_title,
+            stitch_word: s.stitch_word, created_at: s.created_at,
+            display_name: nameMap.get(s.signal_user_id) ?? "unknown",
+            media_url: s.storage_path ? resolveMediaUrl(s.storage_path) : null,
+            isForYou: true,
+          }));
+        }
+
+        const combined = shuffleArray([...forYouSignals, ...discovery]);
+        const final = await interleaveAds(combined, user.id);
         setSignals(final);
         cacheFeed(final);
         setIsFromCache(false);

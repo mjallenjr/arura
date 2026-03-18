@@ -38,6 +38,7 @@ export interface Signal {
   isDiscovery?: boolean;
   isSuggested?: boolean;
   isDiversity?: boolean;
+  isForYou?: boolean;
   isAd?: boolean;
   isSeed?: boolean;
   isFanned?: boolean;

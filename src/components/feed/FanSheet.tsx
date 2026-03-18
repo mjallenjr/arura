@@ -131,10 +131,10 @@ const FanSheet = ({
       if (ember.isSparked) {
         await executeFan(ember);
       } else {
-        // Fetch ad and show interstitial
+        // Fetch ad — skip interstitial entirely if no real ads exist
         const ad = await fetchTargetedAd(userId, "feed");
-        if (!ad) {
-          // No ads available — let them fan anyway
+        if (!ad || !ad.cta_url) {
+          // No real ad inventory — let them fan free until advertisers onboard
           await executeFan(ember);
           return;
         }
