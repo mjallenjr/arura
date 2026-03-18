@@ -5,7 +5,7 @@ import { useAds } from "@/hooks/useAds";
 import { toast } from "sonner";
 
 interface UseFanOptions {
-  onAdRequired?: () => Promise<boolean>; // returns true if ad was watched
+  onAdRequired?: () => Promise<boolean>;
 }
 
 export function useFan({ onAdRequired }: UseFanOptions = {}) {
@@ -13,6 +13,33 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
   const { fetchTargetedAd } = useAds();
   const [fanCounts, setFanCounts] = useState<Record<string, number>>({});
   const [fanning, setFanning] = useState(false);
+  const [sparkedIds, setSparkedIds] = useState<Set<string>>(new Set());
+
+  /** Check if a recipient is a mutual follow (sparked) */
+  const checkSparked = useCallback(
+    async (recipientId: string): Promise<boolean> => {
+      if (!user) return false;
+      if (sparkedIds.has(recipientId)) return true;
+
+      const [{ count: iFollow }, { count: theyFollow }] = await Promise.all([
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", user.id)
+          .eq("following_id", recipientId),
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", recipientId)
+          .eq("following_id", user.id),
+      ]);
+
+      const mutual = (iFollow ?? 0) > 0 && (theyFollow ?? 0) > 0;
+      if (mutual) setSparkedIds((prev) => new Set(prev).add(recipientId));
+      return mutual;
+    },
+    [user, sparkedIds]
+  );
 
   /** Get how many times the current user has fanned a specific signal */
   const getFanCount = useCallback(
@@ -30,27 +57,25 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
     [user]
   );
 
-  /** Fan a flare to another ember */
+  /** Fan a flare to another ember — free for sparked embers, ad required otherwise */
   const fanFlare = useCallback(
     async (signalId: string, recipientId: string, recipientName: string): Promise<boolean> => {
       if (!user || fanning) return false;
       setFanning(true);
 
       try {
-        // Check current fan count for this signal
-        let count = fanCounts[signalId] ?? (await getFanCount(signalId));
+        const isSparked = await checkSparked(recipientId);
 
-        // Ad gate: 3rd+ fan requires watching an ad
-        if (count >= 2) {
+        // Ad gate: non-sparked embers require watching an ad
+        if (!isSparked) {
           if (onAdRequired) {
             const watched = await onAdRequired();
             if (!watched) {
-              toast("Watch a quick ad to fan again", { duration: 3000 });
+              toast("Watch a quick ad to fan to this ember", { duration: 3000 });
               setFanning(false);
               return false;
             }
           } else {
-            // Fetch and "show" an ad impression
             const ad = await fetchTargetedAd(user.id, "feed");
             if (!ad) {
               toast("No ads available — try again later", { duration: 3000 });
@@ -87,7 +112,7 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
 
         setFanCounts((prev) => ({
           ...prev,
-          [signalId]: (prev[signalId] ?? count) + 1,
+          [signalId]: (prev[signalId] ?? 0) + 1,
         }));
 
         toast.success(`Fanned to ${recipientName}`);
@@ -99,7 +124,7 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
         return false;
       }
     },
-    [user, fanning, fanCounts, getFanCount, fetchTargetedAd, onAdRequired]
+    [user, fanning, checkSparked, fetchTargetedAd, onAdRequired]
   );
 
   /** Get flares fanned to the current user (for feed integration) */
@@ -114,5 +139,5 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
     return data?.map((f: any) => f.signal_id) ?? [];
   }, [user]);
 
-  return { fanFlare, getFanCount, fetchFannedFlares, fanCounts, fanning };
+  return { fanFlare, getFanCount, fetchFannedFlares, checkSparked, fanCounts, fanning };
 }

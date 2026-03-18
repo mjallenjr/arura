@@ -9,6 +9,7 @@ interface FanSheetProps {
   userId: string;
   fanCount: number;
   onFan: (recipientId: string, recipientName: string) => Promise<boolean>;
+  checkSparked: (recipientId: string) => Promise<boolean>;
   onClose: () => void;
 }
 
