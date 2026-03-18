@@ -9,10 +9,12 @@ import AdCard from "@/components/feed/AdCard";
 import StitchOverlay from "@/components/feed/StitchOverlay";
 import FeedControls from "@/components/feed/FeedControls";
 import LevelUpCelebration from "@/components/feed/LevelUpCelebration";
+import FanSheet from "@/components/feed/FanSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFeedData } from "@/hooks/useFeedData";
 import { useFeedInteractions } from "@/hooks/useFeedInteractions";
+import { useFan } from "@/hooks/useFan";
 import { toast } from "sonner";
 import { playSwipe, hapticSwipe } from "@/lib/sounds";
 import { Signal, SIGNAL_DURATION, AD_DURATION, shuffleArray, getTouchDistance, getTouchAngle } from "@/lib/feed-types";
@@ -46,6 +48,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     word: string; x: number; y: number; scale: number; rotation: number;
   } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
+  const [showFanSheet, setShowFanSheet] = useState(false);
+  const { fanFlare, fanCounts, getFanCount } = useFan();
 
   const {
     feltEffects, stitchCounts, hasStitched, stitchSuggestions, loadingSuggestions,
@@ -347,12 +351,20 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         onReportClick={() => setShowReportMenu(true)}
         onRekindle={() => handleRekindle(signal.id, signal.user_id)}
         onShare={() => handleShare(signal.id)}
+        onFan={() => { getFanCount(signal.id); setShowFanSheet(true); }}
       />
 
       <LevelUpCelebration trigger={levelUpTrigger} newLevel={levelUpName} />
 
-      <div style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
+      <div className="relative" style={{ transform: `translateX(${swipeOffset * 0.4}px)`, opacity: 1 - Math.abs(swipeOffset) / 400, transition: swipeOffset === 0 ? 'transform 0.25s ease, opacity 0.25s ease' : 'none' }}>
         <FeedPlayer signalId={signal.id} mediaUrl={signal.media_url} type={signal.type} />
+        {/* Smoldering edge effect for fanned flares */}
+        {signal.isFanned && (
+          <div className="absolute inset-0 pointer-events-none z-[5]" style={{
+            boxShadow: 'inset 0 0 40px 8px hsl(var(--primary) / 0.3), inset 0 0 80px 20px hsl(var(--primary) / 0.15)',
+            animation: 'smolder 3s ease-in-out infinite alternate',
+          }} />
+        )}
       </div>
 
       <StitchOverlay
@@ -403,6 +415,20 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           <FeltEffect key={f.id} x={f.x} y={f.y} />
         ))}
       </AnimatePresence>
+
+      {/* Fan sheet */}
+      {user && signal && (
+        <FanSheet
+          open={showFanSheet}
+          signalId={signal.id}
+          userId={user.id}
+          fanCount={fanCounts[signal.id] ?? 0}
+          onFan={(recipientId, recipientName) =>
+            fanFlare(signal.id, recipientId, recipientName)
+          }
+          onClose={() => setShowFanSheet(false)}
+        />
+      )}
     </div>
   );
 };

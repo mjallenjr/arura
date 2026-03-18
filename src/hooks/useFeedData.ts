@@ -135,16 +135,39 @@ export function useFeedData() {
       const auraRank = new Map(rankedIds.map((id: string, i: number) => [id, i]));
       const followingIdSet = new Set(rankedIds as string[]);
 
-      const [rawSignalsRes, diversitySignals] = await Promise.all([
+      const [rawSignalsRes, diversitySignals, fannedSignalIds] = await Promise.all([
         supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30),
         fetchDiversitySignals(followingIdSet),
+        // Fetch flares fanned to this user
+        supabase.from("fans").select("signal_id, sender_id").eq("recipient_id", user.id).order("created_at", { ascending: false }).limit(10),
       ]);
+
+      const fannedIds = new Set(fannedSignalIds.data?.map((f: any) => f.signal_id) ?? []);
+      const fannedSenderMap = new Map(fannedSignalIds.data?.map((f: any) => [f.signal_id, f.sender_id]) ?? []);
 
       const rawSignals = rawSignalsRes.data;
 
       if (!rawSignals || rawSignals.length === 0) {
+        // Still fetch fanned flares even with no followed content
+        let fannedSignals: Signal[] = [];
+        if (fannedIds.size > 0) {
+          const { data: fSignals } = await supabase.from("signals").select("*").in("id", [...fannedIds]).gt("expires_at", new Date().toISOString());
+          if (fSignals) {
+            const fAuthorIds = [...new Set(fSignals.map(s => s.user_id))];
+            const { data: fProfiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", fAuthorIds);
+            const fNameMap = new Map(fProfiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+            const senderIds = [...new Set([...fannedSenderMap.values()])];
+            const { data: sProfiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", senderIds);
+            const sNameMap = new Map(sProfiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+            fannedSignals = fSignals.map(s => {
+              let media_url: string | null = null;
+              if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+              return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: fNameMap.get(s.user_id) ?? "unknown", media_url, isFanned: true, fannedBy: sNameMap.get(fannedSenderMap.get(s.id) ?? "") ?? "someone" };
+            });
+          }
+        }
         const discovery = await fetchDiscovery();
-        const final = await interleaveAds([...discovery, ...diversitySignals], user.id);
+        const final = await interleaveAds([...fannedSignals, ...discovery, ...diversitySignals], user.id);
         setSignals(final);
         cacheFeed(final);
         setIsFromCache(false);
@@ -208,7 +231,9 @@ export function useFeedData() {
           const recencyScore = Math.max(0, 100 - (ageMs / (2 * 60 * 60 * 1000)) * 100);
           const compositeScore = auraScore * 0.35 + engagementScore * 0.4 + recencyScore * 0.25;
           const heatScore = felts * 3 + stitches * 8 + views;
-          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, heat_score: heatScore, _score: compositeScore };
+          const isFanned = fannedIds.has(s.id);
+          const fannedBy = isFanned ? undefined : undefined; // will resolve below
+          return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, heat_score: heatScore, _score: isFanned ? compositeScore + 50 : compositeScore, isFanned };
         })
         .sort((a, b) => (b._score ?? 0) - (a._score ?? 0));
 

@@ -24,6 +24,8 @@ export interface Signal {
   isDiversity?: boolean;
   isAd?: boolean;
   isSeed?: boolean;
+  isFanned?: boolean;
+  fannedBy?: string;
   ad?: Ad;
   _score?: number;
 }
