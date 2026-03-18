@@ -1,6 +1,8 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useCallback } from "react";
 import NotificationBell from "@/components/NotificationBell";
+import { useHaptics } from "@/hooks/useHaptics";
 
 const tabs = [
   { path: "/", label: "arura", icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" },
@@ -13,6 +15,12 @@ const tabs = [
 const NavBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { vibrate } = useHaptics();
+
+  const handleTap = useCallback((path: string) => {
+    vibrate(15);
+    navigate(path);
+  }, [navigate, vibrate]);
 
   if (location.pathname === "/auth") return null;
 
@@ -24,8 +32,8 @@ const NavBar = () => {
           return (
             <motion.button
               key={tab.path}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(tab.path)}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => handleTap(tab.path)}
               className={`relative flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-medium signal-ease ${
                 active ? "text-primary" : "text-muted-foreground"
               }`}
@@ -35,6 +43,20 @@ const NavBar = () => {
                   layoutId="nav-pill"
                   className="absolute inset-0 rounded-full bg-primary/10"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                />
+              )}
+              {/* Glow pulse on active icon */}
+              {active && (
+                <motion.div
+                  className="absolute inset-0 rounded-full pointer-events-none"
+                  animate={{
+                    boxShadow: [
+                      "0 0 0px 0px hsl(var(--signal-glow) / 0)",
+                      "0 0 12px 2px hsl(var(--signal-glow) / 0.2)",
+                      "0 0 0px 0px hsl(var(--signal-glow) / 0)",
+                    ],
+                  }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 />
               )}
               <svg
