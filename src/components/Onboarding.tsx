@@ -4,6 +4,7 @@ import InteractiveTapDemo from "@/components/onboarding/InteractiveTapDemo";
 import InteractiveStitchDemo from "@/components/onboarding/InteractiveStitchDemo";
 import InteractiveDropDemo from "@/components/onboarding/InteractiveDropDemo";
 import InteractiveHeatDemo from "@/components/onboarding/InteractiveHeatDemo";
+import InviteStep from "@/components/onboarding/InviteStep";
 
 const signalTransition = { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -48,7 +49,7 @@ interface Step {
   title: string;
   subtitle: string;
   body: string;
-  interactive?: "flare" | "tap" | "stitch" | "heat";
+  interactive?: "flare" | "tap" | "stitch" | "heat" | "invite";
 }
 
 const steps: Step[] = [
@@ -90,6 +91,12 @@ const steps: Step[] = [
     title: "Words",
     subtitle: "keep it brief",
     body: "DMs are 10 words max. No paragraphs, no novels — just enough to say what matters.",
+  },
+  {
+    title: "Bring Your People",
+    subtitle: "the fire spreads",
+    body: "Invite 3 friends to earn your First Spark reward — bonus heat on every flare you drop.",
+    interactive: "invite",
   },
 ];
 
@@ -226,6 +233,17 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
               className="mt-2"
             >
               <InteractiveHeatDemo onComplete={() => setInteractionDone(true)} />
+            </motion.div>
+          )}
+
+          {current.interactive === "invite" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...signalTransition, delay: 0.3 }}
+              className="mt-2 w-full"
+            >
+              <InviteStep onComplete={() => setInteractionDone(true)} />
             </motion.div>
           )}
         </motion.div>
