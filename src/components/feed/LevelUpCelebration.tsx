@@ -23,7 +23,8 @@ const LevelUpCelebration = ({ trigger, newLevel }: LevelUpCelebrationProps) => {
   if (!show) return null;
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden" role="status" aria-live="assertive">
+      <span className="sr-only">Level up! You reached {newLevel}</span>
       {/* Radial flash */}
       <motion.div
         initial={{ opacity: 0.6, scale: 0.3 }}

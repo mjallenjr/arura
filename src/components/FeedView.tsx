@@ -313,9 +313,16 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         <X className="w-5 h-5" />
       </button>
 
+      {/* Live region for screen readers — signal changes */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        Signal {currentIndex + 1} of {signals.length}
+        {signal.display_name ? `, by ${signal.display_name}` : ""}
+        {signal.heat_level ? `, heat level ${signal.heat_level}` : ""}
+      </div>
+
       {/* Offline/cached indicator */}
       {isFromCache && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 rounded-full bg-muted/80 backdrop-blur-sm px-3 py-1">
+        <div role="status" aria-live="polite" className="absolute top-12 left-1/2 -translate-x-1/2 z-20 rounded-full bg-muted/80 backdrop-blur-sm px-3 py-1">
           <p className="text-[10px] text-muted-foreground">
             {isOnline ? "refreshing..." : "offline — showing cached"}
           </p>

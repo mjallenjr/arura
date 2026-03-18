@@ -12,6 +12,8 @@ const FeedEndScreen = ({ onEnd }: FeedEndScreenProps) => (
     animate={{ opacity: 1 }}
     transition={{ ...signalTransition, delay: 0.3 }}
     className="flex h-full flex-col items-center justify-center gap-8 p-8"
+    role="status"
+    aria-live="polite"
   >
     <p className="display-signal text-center">Your fire is resting.</p>
     <p className="text-sm text-muted-foreground">Go spark something new.</p>
