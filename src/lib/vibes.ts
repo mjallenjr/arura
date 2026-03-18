@@ -110,7 +110,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "volunteering", "community building", "education", "mentoring", "nonprofits",
     "politics", "journalism", "environmental justice", "refugees", "accessibility",
   ],
-  "🎉 Lifestyle": [
+  "Lifestyle": [
     "parties", "nightlife", "clubbing", "raves", "brunch", "picnics", "road trips",
     "dating", "relationships", "parenting", "wedding planning", "minimalism",
     "slow living", "cottagecore", "dark academia", "goblincore", "witchcore",
