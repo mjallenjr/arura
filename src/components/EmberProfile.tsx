@@ -4,6 +4,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import FeltEffect from "./FeltEffect";
+import ReferralBadge from "./ReferralBadge";
+import type { ReferralReward } from "@/hooks/useReferral";
+
+const REWARD_TIERS: { min: number; tier: ReferralReward["tier"]; label: string; bonusMinutes: number }[] = [
+  { min: 25, tier: "eternal",  label: "Eternal Flame",  bonusMinutes: 120 },
+  { min: 10, tier: "inferno",  label: "Inferno Spark",  bonusMinutes: 60 },
+  { min: 5,  tier: "flame",    label: "Flame Carrier",  bonusMinutes: 30 },
+  { min: 1,  tier: "spark",    label: "First Spark",    bonusMinutes: 15 },
+];
+
+function getReward(count: number): ReferralReward {
+  for (const t of REWARD_TIERS) {
+    if (count >= t.min) {
+      const nextTier = REWARD_TIERS[REWARD_TIERS.indexOf(t) - 1];
+      return { tier: t.tier, label: t.label, bonusMinutes: t.bonusMinutes, nextTierAt: nextTier ? nextTier.min : t.min };
+    }
+  }
+  return { tier: "none", label: "", bonusMinutes: 0, nextTierAt: 1 };
+}
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -33,6 +52,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   const [refueling, setRefueling] = useState(false);
   const [igniting, setIgniting] = useState(false);
   const [hasMutualSpark, setHasMutualSpark] = useState(false);
+  const [referralReward, setReferralReward] = useState<ReferralReward>({ tier: "none", label: "", bonusMinutes: 0, nextTierAt: 1 });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -85,6 +105,14 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
         fuelingCount: fuelingRes.count ?? 0,
         topDrop,
       });
+
+      // Fetch referral count for badge
+      const { count: refCount } = await supabase
+        .from("referrals")
+        .select("id", { count: "exact", head: true })
+        .eq("referrer_id", userId);
+      setReferralReward(getReward(refCount ?? 0));
+
       setLoading(false);
     };
     load();
@@ -317,6 +345,9 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
               )}
             </div>
             <p className="text-lg font-medium text-foreground tracking-tight">{data.display_name}</p>
+            {referralReward.tier !== "none" && (
+              <ReferralBadge reward={referralReward} size="sm" />
+            )}
             {data.bio_word && (
               <motion.div
                 initial={{ opacity: 0 }}
