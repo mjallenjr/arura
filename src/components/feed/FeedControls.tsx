@@ -49,7 +49,10 @@ const FeedControls = ({
   showReportMenu,
   isFirstTouch,
   isLevelUpCredit,
+  hasRekindled,
   onReportClick,
+  onRekindle,
+  onShare,
 }: FeedControlsProps) => {
   const signal = currentSignal;
 
