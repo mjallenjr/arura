@@ -360,6 +360,8 @@ const Landing = () => {
               { them: "Posts live forever", us: "2 hours, then gone" },
               { them: "DM overload", us: "10 words. That's it." },
               { them: "Curated performance", us: "5-second raw moments" },
+              { them: "Groups you have to find", us: "Camps form around shared vibes" },
+              { them: "Admins appointed by founders", us: "Park Rangers earned by contribution" },
             ].map((row, i) => (
               <FadeIn key={i} delay={i * 0.06}>
                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3.5 border-b border-border/30 last:border-0">
