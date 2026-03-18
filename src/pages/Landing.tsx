@@ -123,10 +123,16 @@ const Landing = () => {
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <FadeIn>
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 mb-8">
+            <button
+              onClick={() => {
+                const input = document.getElementById("waitlist-email");
+                if (input) { input.scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => input.focus(), 400); }
+              }}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 mb-8 cursor-pointer hover:bg-primary/10 transition-colors"
+            >
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="text-xs font-medium text-primary">Early access — join the waitlist</span>
-            </div>
+            </button>
           </FadeIn>
 
           <FadeIn delay={0.1}>
@@ -157,6 +163,7 @@ const Landing = () => {
             ) : (
               <form onSubmit={handleWaitlist} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                 <input
+                  id="waitlist-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
