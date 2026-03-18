@@ -70,7 +70,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "hostels", "airbnb", "travel photography", "travel writing", "languages",
     "cultural exchange", "volunteering abroad", "study abroad", "expat life",
   ],
-  "👗 Style": [
+  "Style": [
     "fashion", "streetwear", "vintage fashion", "thrifting", "sustainable fashion",
     "sneakers", "watches", "accessories", "minimalist fashion", "haute couture",
     "tattoos", "piercings", "hair styling", "makeup", "skincare", "nails",
