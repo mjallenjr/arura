@@ -13,16 +13,36 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   );
 };
 
+const BrandFlame = ({ size = 18, opacity = 1, className = "" }: { size?: number; opacity?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={`text-primary ${className}`} style={{ opacity }}>
+    <defs><filter id={`hfg-${size}`}><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g filter={`url(#hfg-${size})`}>
+      <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+      <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+      <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
+      <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.45"/>
+    </g>
+  </svg>
+);
+
+const BrandStar = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]">
+    <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" fill="currentColor" opacity="0.3"/>
+    <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+  </svg>
+);
+
 const tiers = [
-  { name: "match",   emoji: "🔥", color: "from-muted-foreground/40 to-muted-foreground/20", glow: "", desc: "Just lit — 2h to prove itself" },
-  { name: "spark",   emoji: "🔥", color: "from-amber-800/50 to-amber-900/30", glow: "", desc: "Catching on" },
-  { name: "ignite",  emoji: "🔥", color: "from-amber-700/60 to-orange-800/40", glow: "shadow-amber-900/20", desc: "People are noticing" },
-  { name: "flame",   emoji: "🔥", color: "from-orange-600/60 to-amber-700/40", glow: "shadow-orange-800/30", desc: "Burning steady" },
-  { name: "hot",     emoji: "🔥", color: "from-orange-500/70 to-red-600/50", glow: "shadow-orange-600/30", desc: "Can't look away" },
-  { name: "burning", emoji: "🔥", color: "from-red-500/70 to-orange-500/50", glow: "shadow-red-500/30", desc: "Spreading fast" },
-  { name: "raging",  emoji: "🔥", color: "from-red-500/80 to-rose-500/60", glow: "shadow-red-500/40", desc: "Wildfire energy" },
-  { name: "inferno", emoji: "🔥", color: "from-rose-500/80 to-red-400/70", glow: "shadow-rose-500/50", desc: "Unstoppable" },
-  { name: "star",    emoji: "⭐", color: "from-primary/80 to-primary/50", glow: "shadow-primary/40", desc: "Eternal — lives for 1 year" },
+  { name: "match",   opacity: 0.3,  color: "from-primary/15 to-primary/5",  glow: "",                    desc: "Just lit — 2h to prove itself" },
+  { name: "spark",   opacity: 0.4,  color: "from-primary/20 to-primary/10", glow: "",                    desc: "Catching on" },
+  { name: "ignite",  opacity: 0.5,  color: "from-primary/30 to-primary/15", glow: "shadow-primary/10",   desc: "People are noticing" },
+  { name: "flame",   opacity: 0.6,  color: "from-primary/40 to-primary/20", glow: "shadow-primary/15",   desc: "Burning steady" },
+  { name: "hot",     opacity: 0.7,  color: "from-primary/50 to-primary/25", glow: "shadow-primary/20",   desc: "Can't look away" },
+  { name: "burning", opacity: 0.8,  color: "from-primary/60 to-primary/30", glow: "shadow-primary/25",   desc: "Spreading fast" },
+  { name: "raging",  opacity: 0.85, color: "from-primary/70 to-primary/40", glow: "shadow-primary/30",   desc: "Wildfire energy" },
+  { name: "inferno", opacity: 0.95, color: "from-primary/80 to-primary/50", glow: "shadow-primary/40",   desc: "Unstoppable" },
+  { name: "star",    opacity: 1,    color: "from-primary/90 to-primary/60", glow: "shadow-primary/50",   desc: "Eternal — lives for 1 year", isStar: true },
 ];
 
 const HeatTierSection = () => {
@@ -53,7 +73,7 @@ const HeatTierSection = () => {
           {/* Connecting line */}
           <div className="absolute left-5 sm:left-6 top-0 bottom-0 w-px">
             <motion.div
-              className="w-full h-full bg-gradient-to-b from-muted-foreground/20 via-orange-500/30 via-red-500/40 to-primary/60"
+              className="w-full h-full bg-gradient-to-b from-primary/10 via-primary/30 to-primary/70"
               initial={{ scaleY: 0 }}
               animate={inView ? { scaleY: 1 } : {}}
               transition={{ duration: 1.2, ease }}
