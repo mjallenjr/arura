@@ -47,6 +47,7 @@ const Discover = () => {
   const [vibeQuery, setVibeQuery] = useState("");
   const [vibeSearchResults, setVibeSearchResults] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [vibeCounts, setVibeCounts] = useState<Record<string, number>>({});
 
   // Pull-to-refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
