@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { X, Search } from "lucide-react";
+import { X, Search, Zap } from "lucide-react";
 
 interface FanSheetProps {
   open: boolean;
