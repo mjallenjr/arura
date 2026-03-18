@@ -78,7 +78,7 @@ const SignalView = () => {
             stroke="currentColor" strokeWidth="1.5" fill="none" />
         </svg>
         <p className="text-sm text-muted-foreground text-center">This signal has burned out</p>
-        <a href="/" className="text-xs text-primary hover:underline">Open arura</a>
+        <a href="/home" className="text-xs text-primary hover:underline">Open arura</a>
       </div>
     );
   }
