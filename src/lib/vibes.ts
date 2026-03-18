@@ -49,7 +49,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "craft beer", "whiskey", "sake", "kombucha", "smoothies", "juice", "sourdough",
     "chocolate", "desserts", "pastry", "cheese", "bbq", "smoking meat",
   ],
-  "🌿 Nature": [
+  "Nature": [
     "nature", "plants", "gardening", "houseplants", "succulents", "bonsai", "flowers",
     "hiking", "camping", "backpacking", "foraging", "birdwatching", "wildlife", "fly fishing",
     "marine life", "astronomy", "stargazing", "sunsets", "sunrises", "mountains",
