@@ -116,9 +116,49 @@ const TapDemo = () => {
 const StitchDemo = () => {
   const [word, setWord] = useState("");
   const [placed, setPlaced] = useState(false);
+  const [pos, setPos] = useState({ x: 50, y: 33 }); // percentage
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const lastTouch = useRef<{ dist: number } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragging.current = true;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragging.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.max(5, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(10, Math.min(80, ((e.clientY - rect.top) / rect.height) * 100));
+    setPos({ x, y });
+  };
+
+  const handlePointerUp = () => { dragging.current = false; };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (lastTouch.current) {
+        const delta = dist / lastTouch.current.dist;
+        setScale((s) => Math.max(0.5, Math.min(2.5, s * delta)));
+      }
+      lastTouch.current = { dist };
+    }
+  };
+
+  const handleTouchEnd = () => { lastTouch.current = null; };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    setScale((s) => Math.max(0.5, Math.min(2.5, s - e.deltaY * 0.003)));
+  };
 
   return (
-    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border/50">
+    <div ref={containerRef} className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-border/50">
       <img src="/discover/clouds-lake.jpg" alt="Lake signal" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/30 to-transparent" />
       <div className="absolute inset-0 flex items-center justify-center">
@@ -126,14 +166,26 @@ const StitchDemo = () => {
       </div>
       {placed && word && (
         <motion.div
-          initial={{ scale: 0, rotate: -10 }}
+          initial={{ scale: 0, rotate: -6 }}
           animate={{ scale: 1, rotate: 0 }}
-          className="absolute top-1/3 left-1/2 -translate-x-1/2"
+          className="absolute cursor-grab active:cursor-grabbing touch-none"
+          style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: `translate(-50%, -50%) scale(${scale})` }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onWheel={handleWheel}
         >
-          <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg backdrop-blur-sm">
+          <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg backdrop-blur-sm select-none whitespace-nowrap">
             {word}
           </span>
         </motion.div>
+      )}
+      {placed && (
+        <div className="absolute top-2 left-2">
+          <span className="text-[9px] text-muted-foreground/50 bg-background/40 backdrop-blur-sm rounded px-1.5 py-0.5">drag to move · scroll to resize</span>
+        </div>
       )}
       <div className="absolute bottom-3 left-3 right-3 flex gap-2">
         <input
@@ -141,7 +193,7 @@ const StitchDemo = () => {
           maxLength={12}
           placeholder="your word..."
           value={word}
-          onChange={(e) => { setWord(e.target.value); setPlaced(false); }}
+          onChange={(e) => { setWord(e.target.value.replace(/\s/g, "")); setPlaced(false); }}
           className="flex-1 text-xs bg-background/60 backdrop-blur-sm border border-border/50 rounded-lg px-2.5 py-1.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
         />
         <button
