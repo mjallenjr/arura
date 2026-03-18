@@ -503,6 +503,55 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     setStitchInput("");
   }, [user, signals, currentIndex, stitchInput, stitchPos, stitchScale, stitchRotation]);
 
+  // ── Rekindle handler ──
+  const handleRekindle = useCallback(async (signalId: string, signalUserId: string) => {
+    if (!user || hasRekindled[signalId]) return;
+    const { error } = await supabase.from("rekindles").insert({ user_id: user.id, signal_id: signalId } as any);
+    if (!error) {
+      setHasRekindled((prev) => ({ ...prev, [signalId]: true }));
+      await supabase.from("notifications").insert({
+        user_id: signalUserId,
+        from_user_id: user.id,
+        signal_id: signalId,
+        type: "rekindle" as any,
+      } as any);
+      playRekindle();
+      hapticRekindle();
+      toast.success("Rekindled — keeping it lit");
+    }
+  }, [user, hasRekindled]);
+
+  // ── Share handler ──
+  const handleShare = useCallback(async (signalId: string) => {
+    const url = `${window.location.origin}/signal/${signalId}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "arura signal", url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    }
+  }, []);
+
+  // ── Level-up detection ──
+  useEffect(() => {
+    if (signals.length === 0) return;
+    signals.forEach((s) => {
+      const prev = prevHeatLevels.current[s.id];
+      if (prev && s.heat_level && prev !== s.heat_level) {
+        const prevIdx = HEAT_TIERS.indexOf(prev as any);
+        const newIdx = HEAT_TIERS.indexOf(s.heat_level as any);
+        if (newIdx > prevIdx && s.id === signals[currentIndex]?.id) {
+          setLevelUpName(s.heat_level);
+          setLevelUpTrigger(true);
+          playLevelUp();
+          hapticLevelUp();
+          setTimeout(() => setLevelUpTrigger(false), 100);
+        }
+      }
+      if (s.heat_level) prevHeatLevels.current[s.id] = s.heat_level;
+    });
+  }, [signals, currentIndex]);
+
   // ── Record view ──
   useEffect(() => {
     if (loading || ended || signals.length === 0) return;
