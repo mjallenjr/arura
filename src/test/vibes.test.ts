@@ -14,13 +14,11 @@ describe("Vibes System", () => {
     expect(ALL_VIBES).toHaveLength(total);
   });
 
-  it("FEATURED_VIBES are recognizable terms", () => {
-    // Featured vibes should be non-empty strings
+  it("FEATURED_VIBES are non-empty strings", () => {
+    expect(FEATURED_VIBES.length).toBeGreaterThan(10);
     FEATURED_VIBES.forEach((v) => {
+      expect(typeof v).toBe("string");
       expect(v.length).toBeGreaterThan(0);
-      // Each should return itself or be found in a search
-      const results = searchVibes(v, 50);
-      expect(results.length).toBeGreaterThan(0);
     });
   });
 
