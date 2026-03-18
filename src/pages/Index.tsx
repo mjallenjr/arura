@@ -187,7 +187,8 @@ const Index = () => {
         expires_at: expiresAt,
       } as any);
       if (insertError) throw insertError;
-      toast.success(isPro ? "Signal posted — live for 24h ✦" : "Signal posted");
+      const bonusLabel = bonusMinutes > 0 ? ` (+${bonusMinutes}min referral bonus)` : "";
+      toast.success(isPro ? `Signal posted — live for 24h ✦${bonusLabel}` : `Signal posted${bonusLabel}`);
       resetToHome();
     } catch (err) {
       console.error("Post failed:", err);
