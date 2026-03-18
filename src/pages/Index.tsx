@@ -13,6 +13,7 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useReferral } from "@/hooks/useReferral";
 import { toast } from "sonner";
 
 type AppState = "home" | "camera" | "confirm" | "feed";
