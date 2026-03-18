@@ -12,7 +12,7 @@ export function useFeedData() {
   const { fetchTargetedAd } = useAds();
   const { isBlocked, refreshBlocks } = useBlocks();
   const isOnline = useOnlineStatus();
-
+  const { fetchSeedSignals, feltSeed, stitchSeed } = useSeedContent();
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFromCache, setIsFromCache] = useState(false);
