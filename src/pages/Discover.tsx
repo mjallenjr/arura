@@ -191,6 +191,14 @@ const Discover = () => {
     setSuggestedEmbers(scored);
   }, [user]);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    vibrate(20);
+    if (tab === "trending") await loadTrending();
+    else if (tab === "embers") await loadSuggestedEmbers();
+    setRefreshing(false);
+  }, [tab, vibrate, loadTrending, loadSuggestedEmbers]);
+
   // Search by interest
   const searchByInterest = useCallback(async (interest: string) => {
     if (!user) return;
