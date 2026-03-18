@@ -52,6 +52,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
   const [refueling, setRefueling] = useState(false);
   const [igniting, setIgniting] = useState(false);
   const [hasMutualSpark, setHasMutualSpark] = useState(false);
+  const [referralReward, setReferralReward] = useState<ReferralReward>({ tier: "none", label: "", bonusMinutes: 0, nextTierAt: 1 });
   const navigate = useNavigate();
 
   useEffect(() => {
