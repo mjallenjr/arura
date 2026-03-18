@@ -68,7 +68,66 @@ serve(async (req) => {
       }
     }
 
-    // 4. Notify users about new embers in their top vibes (weekly digest)
+    // 4. HEAT ADVISORY — notify followers when a signal jumps 2+ tiers rapidly
+    const { data: risingSignals } = await supabase
+      .from("signals")
+      .select("id, user_id, heat_level, stitch_word, heat_score:last_engagement_at")
+      .gt("expires_at", new Date().toISOString())
+      .in("heat_level", ["flame", "hot", "burning", "raging", "inferno", "star"])
+      .gt("last_engagement_at", fifteenMinAgo)
+      .limit(30);
+
+    if (risingSignals && risingSignals.length > 0) {
+      for (const rs of risingSignals) {
+        // Get followers of the signal creator
+        const { data: followers } = await supabase
+          .from("follows")
+          .select("follower_id")
+          .eq("following_id", rs.user_id)
+          .limit(50);
+
+        if (!followers || followers.length === 0) continue;
+
+        const levelLabel = rs.heat_level === "star" ? "⭐ STAR" : `🔥 ${rs.heat_level?.toUpperCase()}`;
+        const word = rs.stitch_word ? ` "${rs.stitch_word}"` : "";
+
+        for (const f of followers) {
+          // Insert heat_advisory notification (skip if already sent for this signal recently)
+          const { data: existing } = await supabase
+            .from("notifications")
+            .select("id")
+            .eq("user_id", f.follower_id)
+            .eq("signal_id", rs.id)
+            .eq("type", "heat_advisory")
+            .gt("created_at", fifteenMinAgo)
+            .limit(1);
+
+          if (existing && existing.length > 0) continue;
+
+          await supabase.from("notifications").insert({
+            user_id: f.follower_id,
+            from_user_id: rs.user_id,
+            signal_id: rs.id,
+            type: "heat_advisory",
+            word: rs.heat_level,
+          });
+
+          // Also push
+          try {
+            await supabase.functions.invoke("send-push", {
+              body: {
+                user_id: f.follower_id,
+                title: "🔥 Heat Advisory",
+                body: `A drop${word} you follow is rapidly rising — now ${levelLabel}!`,
+                url: "/",
+              },
+            });
+          } catch { /* skip */ }
+        }
+      }
+    }
+
+    // 5. Notify users about new embers in their top vibes (weekly digest)
     // Only run on Mondays
     const now = new Date();
     if (now.getUTCDay() === 1 && now.getUTCHours() === 12) {
@@ -84,7 +143,6 @@ serve(async (req) => {
           if (interests.length === 0) continue;
           const topVibe = interests[0];
           
-          // Count embers for this vibe
           const { count } = await supabase
             .from("profiles")
             .select("*", { count: "exact", head: true })
