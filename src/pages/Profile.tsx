@@ -585,6 +585,19 @@ const Profile = () => {
               <span className="label-signal">Fueling You</span>
             </button>
           </div>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ ...signalTransition, delay: 0.15 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/analytics")}
+            className="w-full rounded-xl bg-primary/10 border border-primary/20 p-3 flex items-center justify-center gap-2 signal-ease hover:bg-primary/20"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary">
+              <path d="M18 20V10M12 20V4M6 20v-6" />
+            </svg>
+            <span className="text-xs font-medium text-primary">View Analytics</span>
+          </motion.button>
         </motion.div>
 
         {/* Tab switcher */}
