@@ -13,35 +13,50 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
   const { fetchTargetedAd } = useAds();
   const [fanCounts, setFanCounts] = useState<Record<string, number>>({});
   const [fanning, setFanning] = useState(false);
-  const [sparkedIds, setSparkedIds] = useState<Set<string>>(new Set());
+  const [sparkedCache, setSparkedCache] = useState<Record<string, boolean>>({});
 
-  /** Check if a recipient is a mutual follow (sparked) */
-  const checkSparked = useCallback(
-    async (recipientId: string): Promise<boolean> => {
-      if (!user) return false;
-      if (sparkedIds.has(recipientId)) return true;
+  /** Bulk check which IDs are mutual follows — single DB call */
+  const checkSparkedBulk = useCallback(
+    async (candidateIds: string[]): Promise<Record<string, boolean>> => {
+      if (!user || candidateIds.length === 0) return {};
 
-      const [{ count: iFollow }, { count: theyFollow }] = await Promise.all([
-        supabase
-          .from("follows")
-          .select("*", { count: "exact", head: true })
-          .eq("follower_id", user.id)
-          .eq("following_id", recipientId),
-        supabase
-          .from("follows")
-          .select("*", { count: "exact", head: true })
-          .eq("follower_id", recipientId)
-          .eq("following_id", user.id),
-      ]);
+      // Return cached results for already-checked IDs
+      const uncached = candidateIds.filter((id) => !(id in sparkedCache));
+      let newResults: Record<string, boolean> = {};
 
-      const mutual = (iFollow ?? 0) > 0 && (theyFollow ?? 0) > 0;
-      if (mutual) setSparkedIds((prev) => new Set(prev).add(recipientId));
-      return mutual;
+      if (uncached.length > 0) {
+        const { data } = await supabase.rpc("get_mutual_follow_ids", {
+          p_user_id: user.id,
+          p_candidate_ids: uncached,
+        });
+        const mutualIds = new Set<string>((data as string[]) ?? []);
+        uncached.forEach((id) => {
+          newResults[id] = mutualIds.has(id);
+        });
+        setSparkedCache((prev) => ({ ...prev, ...newResults }));
+      }
+
+      // Merge cached + new
+      const result: Record<string, boolean> = {};
+      candidateIds.forEach((id) => {
+        result[id] = sparkedCache[id] ?? newResults[id] ?? false;
+      });
+      return result;
     },
-    [user, sparkedIds]
+    [user, sparkedCache]
   );
 
-  /** Get how many times the current user has fanned a specific signal */
+  /** Single ID check — uses cache or falls back to bulk */
+  const checkSparked = useCallback(
+    async (recipientId: string): Promise<boolean> => {
+      if (recipientId in sparkedCache) return sparkedCache[recipientId];
+      const result = await checkSparkedBulk([recipientId]);
+      return result[recipientId] ?? false;
+    },
+    [sparkedCache, checkSparkedBulk]
+  );
+
+  /** Get how many times the current user has fanned a specific flare */
   const getFanCount = useCallback(
     async (signalId: string): Promise<number> => {
       if (!user) return 0;
@@ -59,8 +74,20 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
 
   /** Fan a flare to another ember — free for sparked embers, ad required otherwise */
   const fanFlare = useCallback(
-    async (signalId: string, recipientId: string, recipientName: string): Promise<boolean> => {
+    async (
+      signalId: string,
+      recipientId: string,
+      recipientName: string,
+      expiresAt?: string
+    ): Promise<boolean> => {
       if (!user || fanning) return false;
+
+      // Expiry guard — can't fan ash
+      if (expiresAt && new Date(expiresAt) <= new Date()) {
+        toast("This flare has turned to ash", { duration: 3000 });
+        return false;
+      }
+
       setFanning(true);
 
       try {
@@ -139,5 +166,13 @@ export function useFan({ onAdRequired }: UseFanOptions = {}) {
     return data?.map((f: any) => f.signal_id) ?? [];
   }, [user]);
 
-  return { fanFlare, getFanCount, fetchFannedFlares, checkSparked, fanCounts, fanning };
+  return {
+    fanFlare,
+    getFanCount,
+    fetchFannedFlares,
+    checkSparked,
+    checkSparkedBulk,
+    fanCounts,
+    fanning,
+  };
 }
