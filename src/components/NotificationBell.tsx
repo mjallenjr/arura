@@ -95,7 +95,7 @@ const NotificationBell = () => {
       case "felt": return "felt your flare";
       case "follow": return "ignited you";
       case "dm": return `sent you a word`;
-      case "heat_advisory": return `'s flare is rapidly rising — now 🔥 ${n.word?.toUpperCase()}`;
+      case "heat_advisory": return `'s flare is rapidly rising — now ${n.word?.toUpperCase()}`;
       default: return "interacted with your flare";
     }
   };
