@@ -125,6 +125,9 @@ const Index = () => {
     setSongUrl("");
     setSongTitle("");
     setStitchWord("");
+    setStitchWordPos({ x: 50, y: 40 });
+    setStitchWordScale(1);
+    setStitchWordRotation(0);
     setState("home");
   }, []);
 
