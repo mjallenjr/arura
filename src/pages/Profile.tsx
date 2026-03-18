@@ -629,6 +629,9 @@ const Profile = () => {
               transition={signalTransition}
               className="flex flex-col gap-3"
             >
+              {/* Heat History */}
+              <ProfileHeatHistory />
+
               {myDrops.length === 0 && (
                 <p className="text-center text-xs text-muted-foreground py-8">
                   No active drops right now
