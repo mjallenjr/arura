@@ -428,7 +428,7 @@ const Discover = () => {
               {/* Featured vibes (when not searching) */}
               {vibeQuery.length < 2 && !selectedInterest && (
                 <>
-                  <p className="label-signal mb-2">popular vibes</p>
+                  <p className="label-signal mb-2">Vibrant Vibes</p>
                   <div className="flex flex-wrap gap-1.5 mb-5">
                     {FEATURED_VIBES.map((tag) => (
                       <motion.button
