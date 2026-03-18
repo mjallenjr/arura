@@ -13,36 +13,122 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   );
 };
 
-const BrandFlame = ({ size = 18, opacity = 1, className = "" }: { size?: number; opacity?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={`text-primary ${className}`} style={{ opacity }}>
-    <defs><filter id={`hfg-${size}`}><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-    <g filter={`url(#hfg-${size})`}>
-      <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
-      <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
-      <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
-      <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.45"/>
-    </g>
+/* ── Branded tier icons: each tier has a unique symbol that evolves ── */
+
+// 1. Match — a single matchstick
+const IconMatch = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.5 }}>
+    <line x1="16" y1="28" x2="16" y2="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <ellipse cx="16" cy="11" rx="3" ry="4" fill="currentColor" opacity="0.3"/>
+    <ellipse cx="16" cy="11" rx="3" ry="4" stroke="currentColor" strokeWidth="1.3" fill="none"/>
   </svg>
 );
 
-const BrandStar = ({ size = 18 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]">
+// 2. Spark — small radiating lines (a spark igniting)
+const IconSpark = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.55 }}>
+    <circle cx="16" cy="16" r="3" fill="currentColor" opacity="0.25"/>
+    <circle cx="16" cy="16" r="3" stroke="currentColor" strokeWidth="1.3" fill="none"/>
+    <line x1="16" y1="6" x2="16" y2="10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="16" y1="22" x2="16" y2="26" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="6" y1="16" x2="10" y2="16" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="22" y1="16" x2="26" y2="16" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <line x1="9" y1="9" x2="12" y2="12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <line x1="20" y1="20" x2="23" y2="23" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+  </svg>
+);
+
+// 3. Ignite — small flame just catching
+const IconIgnite = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.6 }}>
+    <path d="M16 10c-.8 3.2-3.2 4.8-3.2 8a4.8 4.8 0 009.6 0c0-3.2-2.4-4.8-3.2-8-.8 1.6-2.4 2.4-3.2 0z" fill="currentColor" opacity="0.2"/>
+    <path d="M16 10c-.8 3.2-3.2 4.8-3.2 8a4.8 4.8 0 009.6 0c0-3.2-2.4-4.8-3.2-8-.8 1.6-2.4 2.4-3.2 0z" stroke="currentColor" strokeWidth="1.3" fill="none"/>
+  </svg>
+);
+
+// 4. Flame — full branded flame (no horns yet)
+const IconFlame = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.65 }}>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.4" fill="none"/>
+    <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.3"/>
+  </svg>
+);
+
+// 5. Hot — branded flame with one horn emerging
+const IconHot = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.7 }}>
+    <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.2"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.4" fill="none"/>
+    <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.35"/>
+  </svg>
+);
+
+// 6. Burning — full horned flame (the brand mark)
+const IconBurning = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.8 }}>
+    <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+    <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.4"/>
+  </svg>
+);
+
+// 7. Raging — horned flame with radiating heat waves
+const IconRaging = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.88 }}>
+    <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.25"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+    <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.45"/>
+    {/* Heat waves */}
+    <path d="M5 14c1-1 1-3 2-4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+    <path d="M27 14c-1-1-1-3-2-4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+    <path d="M3 18c1.5-.5 1.5-2.5 3-3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.3"/>
+    <path d="M29 18c-1.5-.5-1.5-2.5-3-3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.3"/>
+  </svg>
+);
+
+// 8. Inferno — horned flame with double-layer inner fire and heat waves
+const IconInferno = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ opacity: 0.95, filter: "drop-shadow(0 0 4px hsl(var(--primary) / 0.3))" }}>
+    <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.3"/>
+    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+    <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.5"/>
+    <path d="M16 21a1.8 1.8 0 001.8-1.8c0-1.2-.9-1.8-1.2-3-.3.6-.9.9-1.2 0-.3 1.2-1.2 1.8-1.2 3A1.8 1.8 0 0016 21z" fill="currentColor" opacity="0.6"/>
+    <path d="M5 14c1-1 1-3 2-4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+    <path d="M27 14c-1-1-1-3-2-4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+    <path d="M3 18c1.5-.5 1.5-2.5 3-3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.3"/>
+    <path d="M29 18c-1.5-.5-1.5-2.5-3-3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.3"/>
+  </svg>
+);
+
+// 9. Star — radiant star with glow
+const IconStar = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className="text-primary" style={{ filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.6))" }}>
     <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" fill="currentColor" opacity="0.3"/>
     <path d="M16 4l3.5 8.5L28 14l-6.5 5.5L23 28l-7-4.5L9 28l1.5-8.5L4 14l8.5-1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+    <circle cx="16" cy="15" r="3" fill="currentColor" opacity="0.25"/>
   </svg>
 );
 
+const tierIcons = [IconMatch, IconSpark, IconIgnite, IconFlame, IconHot, IconBurning, IconRaging, IconInferno, IconStar];
+
 const tiers = [
-  { name: "match",   opacity: 0.3,  color: "from-primary/15 to-primary/5",  glow: "",                    desc: "Just lit — 2h to prove itself" },
-  { name: "spark",   opacity: 0.4,  color: "from-primary/20 to-primary/10", glow: "",                    desc: "Catching on" },
-  { name: "ignite",  opacity: 0.5,  color: "from-primary/30 to-primary/15", glow: "shadow-primary/10",   desc: "People are noticing" },
-  { name: "flame",   opacity: 0.6,  color: "from-primary/40 to-primary/20", glow: "shadow-primary/15",   desc: "Burning steady" },
-  { name: "hot",     opacity: 0.7,  color: "from-primary/50 to-primary/25", glow: "shadow-primary/20",   desc: "Can't look away" },
-  { name: "burning", opacity: 0.8,  color: "from-primary/60 to-primary/30", glow: "shadow-primary/25",   desc: "Spreading fast" },
-  { name: "raging",  opacity: 0.85, color: "from-primary/70 to-primary/40", glow: "shadow-primary/30",   desc: "Wildfire energy" },
-  { name: "inferno", opacity: 0.95, color: "from-primary/80 to-primary/50", glow: "shadow-primary/40",   desc: "Unstoppable" },
-  { name: "star",    opacity: 1,    color: "from-primary/90 to-primary/60", glow: "shadow-primary/50",   desc: "Eternal — lives for 1 year", isStar: true },
+  { name: "match",   color: "from-primary/15 to-primary/5",  glow: "",                    desc: "Just lit — 2h to prove itself" },
+  { name: "spark",   color: "from-primary/20 to-primary/10", glow: "",                    desc: "Catching on" },
+  { name: "ignite",  color: "from-primary/30 to-primary/15", glow: "shadow-primary/10",   desc: "People are noticing" },
+  { name: "flame",   color: "from-primary/40 to-primary/20", glow: "shadow-primary/15",   desc: "Burning steady" },
+  { name: "hot",     color: "from-primary/50 to-primary/25", glow: "shadow-primary/20",   desc: "Can't look away" },
+  { name: "burning", color: "from-primary/60 to-primary/30", glow: "shadow-primary/25",   desc: "Spreading fast" },
+  { name: "raging",  color: "from-primary/70 to-primary/40", glow: "shadow-primary/30",   desc: "Wildfire energy" },
+  { name: "inferno", color: "from-primary/80 to-primary/50", glow: "shadow-primary/40",   desc: "Unstoppable" },
+  { name: "star",    color: "from-primary/90 to-primary/60", glow: "shadow-primary/50",   desc: "Eternal — lives for 1 year", isStar: true },
 ];
 
 const HeatTierSection = () => {
