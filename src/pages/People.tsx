@@ -309,6 +309,9 @@ const People = () => {
           list.map((r) => (r.user_id === targetUserId ? { ...r, isFollowing: true } : r));
         setResults(updateFollow);
         setInterestResults(updateFollow);
+        // Remove from suggestions after igniting
+        setSuggested((prev) => prev.filter((r) => r.user_id !== targetUserId));
+        setAllSuggestions((prev) => prev.filter((r) => r.user_id !== targetUserId));
         toast.success("Ignited 🔥");
         setTimeout(() => setAnimating(null), 1200);
       }
