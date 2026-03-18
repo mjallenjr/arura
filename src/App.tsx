@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import OfflineBanner from "@/components/OfflineBanner";
+import CookieConsent from "@/components/CookieConsent";
 import NavBar from "@/components/NavBar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -69,6 +70,7 @@ const AppRoutes = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <NavBar />}
+      <CookieConsent />
     </>
   );
 };
