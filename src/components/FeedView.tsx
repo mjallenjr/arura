@@ -32,6 +32,7 @@ export interface Signal {
   song_clip_url: string | null;
   song_title: string | null;
   stitch_word: string | null;
+  stitch_word_pos: { x: number; y: number; scale: number; rotation: number } | null;
   created_at: string;
   display_name: string;
   media_url: string | null;
