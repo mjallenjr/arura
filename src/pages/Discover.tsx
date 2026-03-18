@@ -9,6 +9,26 @@ import { VIBE_CATEGORIES, FEATURED_VIBES, searchVibes } from "@/lib/vibes";
 
 const signalTransition = { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] as const };
 
+const HEAT_LEVELS = ["match", "spark", "ignite", "flame", "hot", "burning", "raging", "inferno", "star"] as const;
+type HeatLevel = typeof HEAT_LEVELS[number];
+
+const HEAT_COLORS: Record<HeatLevel, string> = {
+  match: "hsl(var(--muted-foreground))",
+  spark: "hsl(45, 90%, 55%)",
+  ignite: "hsl(35, 95%, 50%)",
+  flame: "hsl(25, 95%, 50%)",
+  hot: "hsl(15, 95%, 50%)",
+  burning: "hsl(5, 90%, 50%)",
+  raging: "hsl(350, 90%, 45%)",
+  inferno: "hsl(340, 95%, 40%)",
+  star: "hsl(50, 100%, 60%)",
+};
+
+const HEAT_LABELS: Record<HeatLevel, string> = {
+  match: "🔲", spark: "✨", ignite: "🔥", flame: "🔥", hot: "🔥🔥",
+  burning: "🔥🔥🔥", raging: "💥", inferno: "🌋", star: "⭐",
+};
+
 interface TrendingDrop {
   id: string;
   user_id: string;
@@ -20,6 +40,7 @@ interface TrendingDrop {
   display_name: string;
   stitch_count: number;
   felt_count: number;
+  heat_level?: string;
 }
 
 interface SuggestedEmber {
@@ -48,6 +69,7 @@ const Discover = () => {
   const [vibeSearchResults, setVibeSearchResults] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [vibeCounts, setVibeCounts] = useState<Record<string, number>>({});
+  const [vibeAvatars, setVibeAvatars] = useState<Record<string, Array<{ user_id: string; display_name: string; avatar_url: string | null }>>>({});
 
   // Pull-to-refresh state
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -57,8 +79,6 @@ const Discover = () => {
   const [refreshing, setRefreshing] = useState(false);
   const PULL_THRESHOLD = 80;
 
-  // Pull-to-refresh handlers defined after data loaders
-
   // Load following list
   useEffect(() => {
     if (!user) return;
@@ -67,12 +87,11 @@ const Discover = () => {
     });
   }, [user]);
 
-  // Load trending drops (most stitched/felted active drops)
+  // Load trending drops
   const loadTrending = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
-    // Use engagement-ranked function for smarter trending
     const { data: ranked } = await supabase.rpc("get_engagement_ranked_signals", { p_user_id: user.id });
 
     if (!ranked || ranked.length === 0) {
@@ -81,13 +100,20 @@ const Discover = () => {
       return;
     }
 
-    // Get author names
     const authorIds = [...new Set(ranked.map((s: any) => s.signal_user_id))];
     const { data: profiles } = await supabase
       .from("public_profiles")
       .select("user_id, display_name")
       .in("user_id", authorIds);
     const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+
+    // Get heat levels for these signals
+    const signalIds = ranked.map((s: any) => s.signal_id);
+    const { data: heatData } = await supabase
+      .from("signals")
+      .select("id, heat_level")
+      .in("id", signalIds);
+    const heatMap = new Map(heatData?.map((h: any) => [h.id, h.heat_level]) ?? []);
 
     const trending: TrendingDrop[] = ranked
       .map((s: any) => {
@@ -107,6 +133,7 @@ const Discover = () => {
           display_name: nameMap.get(s.signal_user_id) ?? "unknown",
           stitch_count: 0,
           felt_count: 0,
+          heat_level: heatMap.get(s.signal_id) ?? "match",
         };
       })
       .slice(0, 20);
@@ -115,11 +142,10 @@ const Discover = () => {
     setLoading(false);
   }, [user]);
 
-  // Load suggested embers (interest-based matching)
+  // Load suggested embers
   const loadSuggestedEmbers = useCallback(async () => {
     if (!user) return;
 
-    // Get my interests
     const { data: myProfile } = await supabase
       .from("profiles")
       .select("interests")
@@ -128,7 +154,6 @@ const Discover = () => {
 
     const myInterests = myProfile?.interests ?? [];
 
-    // Get all profiles with interests, not already following
     const { data: allProfiles } = await supabase
       .from("public_profiles")
       .select("user_id, display_name, avatar_url, interests")
@@ -137,14 +162,12 @@ const Discover = () => {
 
     if (!allProfiles) return;
 
-    // Get my follows
     const { data: follows } = await supabase
       .from("follows")
       .select("following_id")
       .eq("follower_id", user.id);
     const followSet = new Set(follows?.map((f) => f.following_id) ?? []);
 
-    // Score by shared interests
     const scored: SuggestedEmber[] = allProfiles
       .filter((p) => !followSet.has(p.user_id))
       .map((p) => {
@@ -226,12 +249,25 @@ const Discover = () => {
   useEffect(() => {
     loadTrending();
     loadSuggestedEmbers();
-    // Load social proof for featured vibes
-    supabase.rpc("get_vibe_counts", { p_vibes: FEATURED_VIBES }).then(({ data }) => {
-      if (data) {
+    // Load social proof for featured vibes - counts + real avatars
+    Promise.all([
+      supabase.rpc("get_vibe_counts", { p_vibes: FEATURED_VIBES }),
+      supabase.rpc("get_vibe_top_embers", { p_vibes: FEATURED_VIBES }),
+    ]).then(([countsRes, avatarsRes]) => {
+      if (countsRes.data) {
         const counts: Record<string, number> = {};
-        (data as any[]).forEach((d: any) => { counts[d.vibe] = Number(d.ember_count); });
+        (countsRes.data as any[]).forEach((d: any) => { counts[d.vibe] = Number(d.ember_count); });
         setVibeCounts(counts);
+      }
+      if (avatarsRes.data) {
+        const avatarMap: Record<string, Array<{ user_id: string; display_name: string; avatar_url: string | null }>> = {};
+        (avatarsRes.data as any[]).forEach((d: any) => {
+          if (!avatarMap[d.vibe]) avatarMap[d.vibe] = [];
+          if (avatarMap[d.vibe].length < 3) {
+            avatarMap[d.vibe].push({ user_id: d.user_id, display_name: d.display_name, avatar_url: d.avatar_url });
+          }
+        });
+        setVibeAvatars(avatarMap);
       }
     });
   }, [loadTrending, loadSuggestedEmbers]);
@@ -248,6 +284,26 @@ const Discover = () => {
       setFollowingIds((prev) => new Set(prev).add(targetId));
     }
   }, [user, followingIds]);
+
+  const getHeatBadge = (level: string) => {
+    const hl = level as HeatLevel;
+    const idx = HEAT_LEVELS.indexOf(hl);
+    if (idx <= 0) return null;
+    return (
+      <motion.span
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold"
+        style={{
+          background: `${HEAT_COLORS[hl]}20`,
+          color: HEAT_COLORS[hl],
+          boxShadow: idx >= 4 ? `0 0 ${idx * 2}px ${HEAT_COLORS[hl]}40` : "none",
+        }}
+      >
+        {HEAT_LABELS[hl]} {hl}
+      </motion.span>
+    );
+  };
 
   return (
     <div className="flex h-svh w-full flex-col bg-background">
@@ -379,6 +435,14 @@ const Discover = () => {
                         <div className="absolute inset-0 bg-gradient-to-br from-secondary via-muted to-secondary" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                      
+                      {/* Heat level badge */}
+                      {drop.heat_level && drop.heat_level !== "match" && (
+                        <div className="absolute top-2 right-2">
+                          {getHeatBadge(drop.heat_level)}
+                        </div>
+                      )}
+                      
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         {drop.stitch_word && (
                           <p className="text-sm font-bold text-primary italic mb-1">"{drop.stitch_word}"</p>
@@ -449,14 +513,15 @@ const Discover = () => {
                 </div>
               )}
 
-              {/* Featured vibes (when not searching) */}
+              {/* Featured vibes with real avatars + trending */}
               {vibeQuery.length < 2 && !selectedInterest && (
                 <>
                   <p className="label-signal mb-2">Vibrant Vibes</p>
                   <div className="flex flex-col gap-2 mb-5">
                     {FEATURED_VIBES.map((tag, i) => {
                       const count = vibeCounts[tag] ?? 0;
-                      const intensity = Math.min(1, count / 10); // normalize for visual weight
+                      const avatars = vibeAvatars[tag] ?? [];
+                      const intensity = Math.min(1, count / 10);
                       return (
                         <motion.button
                           key={tag}
@@ -483,18 +548,29 @@ const Discover = () => {
                           <div className="flex items-center gap-2">
                             {count > 0 && (
                               <div className="flex items-center gap-1.5">
-                                {/* Stacked ember avatars placeholder */}
+                                {/* Real ember avatars */}
                                 <div className="flex -space-x-1.5">
-                                  {Array.from({ length: Math.min(count, 3) }).map((_, j) => (
+                                  {avatars.slice(0, 3).map((ember, j) => (
                                     <div
-                                      key={j}
-                                      className="h-5 w-5 rounded-full bg-secondary ring-1 ring-background flex items-center justify-center"
+                                      key={ember.user_id}
+                                      className="h-5 w-5 rounded-full ring-1 ring-background flex items-center justify-center overflow-hidden bg-secondary"
+                                      style={{ zIndex: 3 - j }}
                                     >
-                                      <svg width="8" height="8" viewBox="0 0 32 32" fill="none" className="text-primary">
-                                        <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.5" />
-                                      </svg>
+                                      {ember.avatar_url ? (
+                                        <img src={ember.avatar_url} alt={ember.display_name} className="h-full w-full object-cover" />
+                                      ) : (
+                                        <span className="text-[7px] font-bold text-secondary-foreground">
+                                          {ember.display_name?.charAt(0).toUpperCase()}
+                                        </span>
+                                      )}
                                     </div>
                                   ))}
+                                  {/* Show overflow count */}
+                                  {count > 3 && (
+                                    <div className="h-5 w-5 rounded-full ring-1 ring-background bg-primary/10 flex items-center justify-center">
+                                      <span className="text-[7px] font-bold text-primary">+{count - 3}</span>
+                                    </div>
+                                  )}
                                 </div>
                                 <span className="text-[11px] font-medium text-primary">
                                   {count} {count === 1 ? "ember" : "embers"}

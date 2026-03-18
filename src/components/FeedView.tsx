@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAds, type Ad } from "@/hooks/useAds";
 import { useBlocks } from "@/hooks/useBlocks";
 import { useRateLimit } from "@/hooks/useRateLimit";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { toast } from "sonner";
 
 interface FeedViewProps {
@@ -20,6 +21,8 @@ interface FeedViewProps {
 
 const SIGNAL_DURATION = 5000;
 const AD_DURATION = 3700;
+const FEED_CACHE_KEY = "arura_feed_cache";
+const FEED_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export interface Signal {
   id: string;
@@ -34,6 +37,7 @@ export interface Signal {
   media_url: string | null;
   isDiscovery?: boolean;
   isSuggested?: boolean;
+  isDiversity?: boolean;
   isAd?: boolean;
   ad?: Ad;
 }
@@ -63,11 +67,30 @@ function getTouchAngle(t1: Touch, t2: Touch) {
   return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * (180 / Math.PI);
 }
 
+// Offline cache helpers
+function getCachedFeed(): Signal[] | null {
+  try {
+    const raw = localStorage.getItem(FEED_CACHE_KEY);
+    if (!raw) return null;
+    const { signals, timestamp } = JSON.parse(raw);
+    if (Date.now() - timestamp > FEED_CACHE_TTL) return null;
+    return signals;
+  } catch { return null; }
+}
+
+function cacheFeed(signals: Signal[]) {
+  try {
+    const cacheable = signals.filter(s => !s.isAd).slice(0, 20);
+    localStorage.setItem(FEED_CACHE_KEY, JSON.stringify({ signals: cacheable, timestamp: Date.now() }));
+  } catch { /* quota exceeded */ }
+}
+
 const FeedView = ({ onEnd }: FeedViewProps) => {
   const { user } = useAuth();
   const { fetchTargetedAd } = useAds();
   const { isBlocked, refreshBlocks } = useBlocks();
   const checkStitchLimit = useRateLimit(10, 60000);
+  const isOnline = useOnlineStatus();
   const [showReportMenu, setShowReportMenu] = useState(false);
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +113,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
   const [submittedStitch, setSubmittedStitch] = useState<{
     word: string; x: number; y: number; scale: number; rotation: number;
   } | null>(null);
+  const [isFromCache, setIsFromCache] = useState(false);
 
   const startTimeRef = useRef(Date.now());
   const animRef = useRef<number>(0);
@@ -177,6 +201,37 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     } catch { return []; }
   }, [user]);
 
+  // ── Diversity injection: fetch 1-2 signals from outside follow graph ──
+  const fetchDiversitySignals = useCallback(async (followingIds: Set<string>): Promise<Signal[]> => {
+    if (!user) return [];
+    try {
+      // Get engagement-ranked signals from outside follow graph
+      const { data: ranked } = await supabase.rpc("get_engagement_ranked_signals", { p_user_id: user.id });
+      if (!ranked || ranked.length === 0) return [];
+
+      // Filter to only those NOT in follow graph
+      const outsideGraph = (ranked as any[]).filter((s: any) => !followingIds.has(s.signal_user_id));
+      const picked = shuffleArray(outsideGraph).slice(0, 2);
+      if (picked.length === 0) return [];
+
+      const authorIds = [...new Set(picked.map((s: any) => s.signal_user_id))];
+      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", authorIds);
+      const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
+
+      return picked.map((s: any) => {
+        let media_url: string | null = null;
+        if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
+        return {
+          id: s.signal_id, user_id: s.signal_user_id, type: s.signal_type,
+          storage_path: s.storage_path, song_clip_url: s.song_clip_url, song_title: s.song_title,
+          stitch_word: s.stitch_word, created_at: s.created_at,
+          display_name: nameMap.get(s.signal_user_id) ?? "unknown", media_url,
+          isDiversity: true,
+        };
+      });
+    } catch { return []; }
+  }, [user]);
+
   const interleaveAds = useCallback(async (items: Signal[], userId: string): Promise<Signal[]> => {
     if (items.length < 3) return items;
     const result: Signal[] = [];
@@ -198,34 +253,65 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     return result;
   }, [fetchTargetedAd]);
 
-  // ── Fetch signals ──
+  // ── Fetch signals with offline-first + diversity ──
   useEffect(() => {
     if (!user) return;
     const fetchSignals = async () => {
-      // 1. Get aura-ranked following for personal feed
+      // Try cache first for instant load
+      if (!isOnline) {
+        const cached = getCachedFeed();
+        if (cached && cached.length > 0) {
+          setSignals(cached);
+          setIsFromCache(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Show cached data immediately, then refresh
+      const cached = getCachedFeed();
+      if (cached && cached.length > 0) {
+        setSignals(cached);
+        setIsFromCache(true);
+        setLoading(false);
+      }
+
+      // 1. Get aura-ranked following
       const { data: auraData } = await supabase.rpc("get_aura_ranked_following", { p_user_id: user.id });
       const rankedIds = auraData?.map((a: any) => a.following_id) ?? [];
       
       if (rankedIds.length === 0) {
         const discovery = await fetchDiscovery();
-        setSignals(await interleaveAds(discovery, user.id));
+        const final = await interleaveAds(discovery, user.id);
+        setSignals(final);
+        cacheFeed(final);
+        setIsFromCache(false);
         setLoading(false);
         return;
       }
       
       const auraRank = new Map(rankedIds.map((id: string, i: number) => [id, i]));
+      const followingIdSet = new Set(rankedIds as string[]);
       
-      // 2. Fetch signals from followed users
-      const { data: rawSignals } = await supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30);
+      // 2. Fetch signals + diversity in parallel
+      const [rawSignalsRes, diversitySignals] = await Promise.all([
+        supabase.from("signals").select("*").in("user_id", rankedIds).gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(30),
+        fetchDiversitySignals(followingIdSet),
+      ]);
+      
+      const rawSignals = rawSignalsRes.data;
       
       if (!rawSignals || rawSignals.length === 0) {
         const discovery = await fetchDiscovery();
-        setSignals(await interleaveAds(discovery, user.id));
+        const final = await interleaveAds([...discovery, ...diversitySignals], user.id);
+        setSignals(final);
+        cacheFeed(final);
+        setIsFromCache(false);
         setLoading(false);
         return;
       }
       
-      // 3. Get engagement data (felts + stitches) for each signal
+      // 3. Get engagement data
       const signalIds = rawSignals.map(s => s.id);
       const [feltData, stitchData, viewData] = await Promise.all([
         supabase.from("felts").select("signal_id").in("signal_id", signalIds),
@@ -241,11 +327,11 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       viewData.data?.forEach((v: any) => viewCounts.set(v.signal_id, (viewCounts.get(v.signal_id) ?? 0) + 1));
       
       // 4. Get profiles
-      const authorIds = [...new Set(rawSignals.map((s) => s.user_id))];
-      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", authorIds);
+      const allAuthorIds = [...new Set([...rawSignals.map((s) => s.user_id), ...diversitySignals.map(s => s.user_id)])];
+      const { data: profiles } = await supabase.from("public_profiles").select("user_id, display_name").in("user_id", allAuthorIds);
       const nameMap = new Map(profiles?.map((p) => [p.user_id, p.display_name]) ?? []);
       
-      // 5. Composite scoring: aura (connection) * 0.4 + engagement * 0.4 + recency * 0.2
+      // 5. Composite scoring
       const now = Date.now();
       const enriched: Signal[] = rawSignals
         .filter((s) => !isBlocked(s.user_id))
@@ -253,17 +339,14 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           let media_url: string | null = null;
           if (s.storage_path) { const { data } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = data.publicUrl; }
           
-          // Aura score (lower rank = better, normalize to 0-100)
           const auraPos = auraRank.get(s.user_id) ?? rankedIds.length;
           const auraScore = Math.max(0, 100 - (auraPos / Math.max(rankedIds.length, 1)) * 100);
           
-          // Engagement score
           const felts = feltCounts.get(s.id) ?? 0;
           const stitches = stitchCountsMap.get(s.id) ?? 0;
           const views = viewCounts.get(s.id) ?? 0;
           const engagementScore = Math.min(100, felts * 15 + stitches * 25 + views * 2);
           
-          // Recency score (0-100, full score if just posted, 0 after 2 hours)
           const ageMs = now - new Date(s.created_at).getTime();
           const recencyScore = Math.max(0, 100 - (ageMs / (2 * 60 * 60 * 1000)) * 100);
           
@@ -273,11 +356,21 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
         })
         .sort((a: any, b: any) => (b._score ?? 0) - (a._score ?? 0));
       
-      setSignals(await interleaveAds(enriched, user.id));
+      // 6. Inject diversity signals at positions ~5 and ~10
+      const withDiversity = [...enriched];
+      diversitySignals.forEach((ds, i) => {
+        const insertPos = Math.min(withDiversity.length, 4 + i * 5);
+        withDiversity.splice(insertPos, 0, ds);
+      });
+      
+      const final = await interleaveAds(withDiversity, user.id);
+      setSignals(final);
+      cacheFeed(final);
+      setIsFromCache(false);
       setLoading(false);
     };
     fetchSignals();
-  }, [user, fetchDiscovery, fetchTargetedAd]);
+  }, [user, fetchDiscovery, fetchTargetedAd, isOnline]);
 
   // ── Signal advancement ──
   const resetStitchState = useCallback(() => {
@@ -427,7 +520,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
           setStitchScale(1);
           setStitchRotation(0);
           setShowStitchInput(true);
-          if (current.isSuggested) setShowIgnitePrompt(true);
+          if (current.isSuggested || current.isDiversity) setShowIgnitePrompt(true);
         }
         return;
       }
@@ -461,6 +554,15 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
 
   return (
     <div ref={feedRef} className="relative h-full w-full bg-background touch-none" onClick={handleTap}>
+      {/* Offline/cached indicator */}
+      {isFromCache && (
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 rounded-full bg-muted/80 backdrop-blur-sm px-3 py-1">
+          <p className="text-[10px] text-muted-foreground">
+            {isOnline ? "refreshing..." : "offline — showing cached"}
+          </p>
+        </div>
+      )}
+
       <FeedControls
         signals={signals}
         currentIndex={currentIndex}
