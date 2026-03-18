@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PostActions from "@/components/PostActions";
 import FeedView from "@/components/FeedView";
 import Onboarding from "@/components/Onboarding";
+import VibesPicker from "@/components/onboarding/VibesPicker";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
