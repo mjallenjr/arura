@@ -8,7 +8,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "vinyl", "dj", "producing", "songwriting", "concerts", "festivals", "karaoke", "beatbox",
     "orchestra", "ukulele", "bass", "saxophone", "violin", "cello", "flute", "harmonica",
   ],
-  "📸 Visual Arts": [
+  "Visual Arts": [
     "photography", "painting", "drawing", "sculpture", "digital art", "illustration", "ceramics",
     "printmaking", "calligraphy", "graffiti", "street art", "collage", "watercolor", "oil painting",
     "pixel art", "3d art", "animation", "graphic design", "typography", "lettering", "embroidery",
