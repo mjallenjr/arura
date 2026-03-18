@@ -58,13 +58,7 @@ const Discover = () => {
   const [refreshing, setRefreshing] = useState(false);
   const PULL_THRESHOLD = 80;
 
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    vibrate(20);
-    if (tab === "trending") await loadTrending();
-    else if (tab === "embers") await loadSuggestedEmbers();
-    setRefreshing(false);
-  }, [tab, vibrate]);
+  // handleRefresh defined after loadTrending/loadSuggestedEmbers
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     const el = scrollRef.current;
