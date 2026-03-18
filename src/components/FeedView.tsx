@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { X } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import FeltEffect from "@/components/FeltEffect";
 import ReportBlockMenu from "@/components/ReportBlockMenu";
