@@ -163,6 +163,7 @@ const Landing = () => {
             ) : (
               <form onSubmit={handleWaitlist} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                 <input
+                  id="waitlist-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
