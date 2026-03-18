@@ -203,7 +203,7 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
       return shuffleArray(rawSignals.map((s) => {
         let media_url: string | null = null;
         if (s.storage_path) { const { data: d } = supabase.storage.from("signals").getPublicUrl(s.storage_path); media_url = d.publicUrl; }
-        return { ...s, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
+        return { ...s, stitch_word_pos: s.stitch_word_pos as any, display_name: nameMap.get(s.user_id) ?? "unknown", media_url, isSuggested: true };
       }));
     } catch { return []; }
   }, [user]);
