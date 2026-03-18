@@ -72,7 +72,7 @@ const Advertise = () => {
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             We'll reach out within 24 hours with your campaign setup. Get ready to reach the most engaged audience on the internet.
           </p>
-          <a href="/" className="mt-6 inline-block text-xs text-primary hover:underline">← Back to arura</a>
+          <a href="/home" className="mt-6 inline-block text-xs text-primary hover:underline">← Back to arura</a>
         </motion.div>
       </div>
     );
@@ -87,7 +87,7 @@ const Advertise = () => {
         
         <div className="relative z-10 px-6 pt-16 pb-12 max-w-lg mx-auto">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={t}>
-            <a href="/" className="label-signal text-primary mb-8 inline-block">arura</a>
+            <a href="/home" className="label-signal text-primary mb-8 inline-block">arura</a>
             <h1 className="text-3xl font-semibold tracking-tight text-foreground leading-tight mb-3">
               Your brand, inside<br />the moment.
             </h1>

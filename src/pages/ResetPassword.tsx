@@ -39,7 +39,7 @@ const ResetPassword = () => {
       toast.error(error.message);
     } else {
       toast.success("Password updated — you're in");
-      navigate("/");
+      navigate("/home");
     }
     setSubmitting(false);
   };

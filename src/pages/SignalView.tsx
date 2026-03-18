@@ -78,7 +78,7 @@ const SignalView = () => {
             stroke="currentColor" strokeWidth="1.5" fill="none" />
         </svg>
         <p className="text-sm text-muted-foreground text-center">This signal has burned out</p>
-        <a href="/" className="text-xs text-primary hover:underline">Open arura</a>
+        <a href="/home" className="text-xs text-primary hover:underline">Open arura</a>
       </div>
     );
   }
@@ -124,7 +124,7 @@ const SignalView = () => {
           )}
         </div>
         <a
-          href="/"
+          href="/home"
           className="inline-block mt-2 rounded-full bg-primary px-5 py-2 text-xs font-medium text-primary-foreground signal-glow"
         >
           Open in arura
@@ -133,7 +133,7 @@ const SignalView = () => {
 
       {/* Top branding */}
       <div className="absolute top-4 left-4 z-20">
-        <a href="/" className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+        <a href="/home" className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
           <svg width="20" height="20" viewBox="0 0 32 32" fill="none" className="text-primary">
             <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z"
               fill="currentColor" opacity="0.3" />

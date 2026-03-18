@@ -35,7 +35,7 @@ const AdminModeration = () => {
     if (!user) return;
     supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
       setIsAdmin(!!data);
-      if (!data) navigate("/");
+      if (!data) navigate("/home");
     });
   }, [user, navigate]);
 

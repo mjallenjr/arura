@@ -309,7 +309,7 @@ const Discover = () => {
     <div className="flex h-svh w-full flex-col bg-background">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
-        <button onClick={() => navigate("/")} className="text-muted-foreground">
+        <button onClick={() => navigate("/home")} className="text-muted-foreground">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
@@ -412,7 +412,7 @@ const Discover = () => {
                   <p className="text-xs text-muted-foreground text-center px-8">Things heat up fast. Drop a signal and watch it spread.</p>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate("/home")}
                     className="rounded-2xl bg-primary px-8 py-3 text-sm font-medium text-primary-foreground signal-glow mt-2"
                   >
                     Drop something warm

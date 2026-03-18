@@ -181,7 +181,7 @@ const AdminAds = () => {
         <p className="text-sm text-muted-foreground text-center">You don't have permission to access this page.</p>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate("/")}
+           onClick={() => navigate("/home")}
           className="rounded-full signal-surface px-6 py-2.5 text-sm font-medium text-muted-foreground signal-ease"
         >
           Go back
@@ -196,7 +196,7 @@ const AdminAds = () => {
     <div className="flex h-svh w-full flex-col bg-background">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
-        <button onClick={() => navigate("/")} className="text-muted-foreground">
+        <button onClick={() => navigate("/home")} className="text-muted-foreground">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
