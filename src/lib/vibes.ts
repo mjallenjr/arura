@@ -63,7 +63,7 @@ export const VIBE_CATEGORIES: Record<string, string[]> = {
     "game development", "robotics", "3d printing", "drones", "smart home", "iot",
     "linux", "open source", "startups", "product design", "ux design", "ui design",
   ],
-  "✈️ Travel": [
+  "Travel": [
     "travel", "backpacking", "solo travel", "road trips", "van life", "digital nomad",
     "europe", "asia", "south america", "africa", "middle east", "oceania",
     "city breaks", "beach holidays", "adventure travel", "luxury travel", "budget travel",
