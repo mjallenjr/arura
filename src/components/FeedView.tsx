@@ -422,6 +422,14 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     }
   }, [currentIndex, signals, hasStitched, suggestedLoaded, fetchSuggestedSignals, resetStitchState]);
 
+  const goBackSignal = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex((i) => i - 1);
+      setProgress(0);
+      resetStitchState();
+    }
+  }, [currentIndex, resetStitchState]);
+
   // ── Stitch counts ──
   useEffect(() => {
     if (!user || signals.length === 0) return;
