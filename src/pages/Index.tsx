@@ -6,6 +6,7 @@ import StitchWordPreview from "@/components/StitchWordPreview";
 import FeedView from "@/components/FeedView";
 import Onboarding from "@/components/Onboarding";
 import VibesPicker from "@/components/onboarding/VibesPicker";
+import EmberSuggestions from "@/components/onboarding/EmberSuggestions";
 import TrendingBar from "@/components/feed/TrendingBar";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
