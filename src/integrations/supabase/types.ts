@@ -597,6 +597,35 @@ export type Database = {
           },
         ]
       }
+      seed_exposures: {
+        Row: {
+          first_seen_at: string
+          id: string
+          signal_id: string
+          user_id: string
+        }
+        Insert: {
+          first_seen_at?: string
+          id?: string
+          signal_id: string
+          user_id: string
+        }
+        Update: {
+          first_seen_at?: string
+          id?: string
+          signal_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_exposures_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       signal_owner_views: {
         Row: {
           created_at: string
@@ -662,6 +691,7 @@ export type Database = {
           heat_level: string
           id: string
           last_engagement_at: string | null
+          media_url: string | null
           song_clip_url: string | null
           song_title: string | null
           stitch_word: string | null
@@ -676,6 +706,7 @@ export type Database = {
           heat_level?: string
           id?: string
           last_engagement_at?: string | null
+          media_url?: string | null
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null
@@ -690,6 +721,7 @@ export type Database = {
           heat_level?: string
           id?: string
           last_engagement_at?: string | null
+          media_url?: string | null
           song_clip_url?: string | null
           song_title?: string | null
           stitch_word?: string | null
