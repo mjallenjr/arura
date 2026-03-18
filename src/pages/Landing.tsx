@@ -242,6 +242,16 @@ const Landing = () => {
                         <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" fill="currentColor" opacity="0.1"/>
                       </svg>
+                    ) : item.icon === "camp" ? (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                        <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" fill="currentColor" opacity="0.2"/>
+                        <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                    ) : item.icon === "ranger" ? (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                        <path d="M12 2l2.6 6.4L21 9.5l-4.9 4.1L17.5 20 12 16.6 6.5 20l1.4-6.4L3 9.5l6.4-1.1z" fill="currentColor" opacity="0.2"/>
+                        <path d="M12 2l2.6 6.4L21 9.5l-4.9 4.1L17.5 20 12 16.6 6.5 20l1.4-6.4L3 9.5l6.4-1.1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+                      </svg>
                     ) : (
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary">
                         <path d="M4 4l4 4m8 8l4 4M4 20l16-16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
