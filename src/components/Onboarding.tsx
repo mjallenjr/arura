@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import InteractiveTapDemo from "@/components/onboarding/InteractiveTapDemo";
 import InteractiveStitchDemo from "@/components/onboarding/InteractiveStitchDemo";
 import InteractiveDropDemo from "@/components/onboarding/InteractiveDropDemo";
+import InteractiveHeatDemo from "@/components/onboarding/InteractiveHeatDemo";
 
 const signalTransition = { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -47,7 +48,7 @@ interface Step {
   title: string;
   subtitle: string;
   body: string;
-  interactive?: "drop" | "tap" | "stitch";
+  interactive?: "drop" | "tap" | "stitch" | "heat";
 }
 
 const steps: Step[] = [
@@ -73,6 +74,12 @@ const steps: Step[] = [
     subtitle: "leave your mark",
     body: "Double-tap the signal below to place a word. Pinch to resize & rotate it.",
     interactive: "stitch",
+  },
+  {
+    title: "Keep It Lit",
+    subtitle: "heat rises with engagement",
+    body: "Every felt, stitch, and view adds heat. Watch signals climb from match → spark → flame → star. You can even rekindle a dying drop.",
+    interactive: "heat",
   },
   {
     title: "Embers",
@@ -208,6 +215,17 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
               className="mt-2"
             >
               <InteractiveStitchDemo onComplete={() => setInteractionDone(true)} />
+            </motion.div>
+          )}
+
+          {current.interactive === "heat" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...signalTransition, delay: 0.3 }}
+              className="mt-2"
+            >
+              <InteractiveHeatDemo onComplete={() => setInteractionDone(true)} />
             </motion.div>
           )}
         </motion.div>

@@ -1,10 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import PostActions from "@/components/PostActions";
 import StitchWordPreview from "@/components/StitchWordPreview";
 import FeedView from "@/components/FeedView";
 import Onboarding from "@/components/Onboarding";
 import VibesPicker from "@/components/onboarding/VibesPicker";
+import TrendingBar from "@/components/feed/TrendingBar";
 import { useCamera } from "@/hooks/useCamera";
 import { useRecorder } from "@/hooks/useRecorder";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -23,6 +25,7 @@ const signalTransition = {
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { isPro } = useSubscription();
   const [state, setState] = useState<AppState>("home");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("video");
@@ -308,6 +311,18 @@ const Index = () => {
                   </div>
                 </motion.button>
               </div>
+
+              {/* Trending bar */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ ...signalTransition, delay: 0.4 }}
+                className="w-full max-w-[280px]"
+              >
+                <TrendingBar onSignalTap={(id) => {
+                  navigate(`/signal/${id}`);
+                }} />
+              </motion.div>
             </div>
           </motion.div>
         )}
