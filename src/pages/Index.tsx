@@ -168,8 +168,9 @@ const Index = () => {
         song_clip_url: songUrl || null,
         song_title: songTitle || null,
         stitch_word: stitchWord || null,
+        stitch_word_pos: stitchWord ? { x: stitchWordPos.x, y: stitchWordPos.y, scale: stitchWordScale, rotation: stitchWordRotation } : null,
         expires_at: expiresAt,
-      });
+      } as any);
       if (insertError) throw insertError;
       toast.success(isPro ? "Signal posted — live for 24h ✦" : "Signal posted");
       resetToHome();
