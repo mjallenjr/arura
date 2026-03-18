@@ -19,7 +19,7 @@ interface EmberResult {
   avatar_url: string | null;
 }
 
-const FanSheet = ({ open, signalId, userId, fanCount, onFan, onClose }: FanSheetProps) => {
+const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClose }: FanSheetProps) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<EmberResult[]>([]);
   const [loading, setLoading] = useState(false);
