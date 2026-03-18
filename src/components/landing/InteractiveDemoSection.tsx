@@ -214,7 +214,7 @@ const InteractiveDemoSection = () => (
           <div className="space-y-3">
             <TapDemo />
             <h3 className="text-sm font-semibold text-foreground">Feel the heat</h3>
-            <p className="text-xs text-muted-foreground">Tap to raise the heat level. No likes — just energy.</p>
+            <p className="text-xs text-muted-foreground">One tap per person. It takes a crowd to make it burn.</p>
           </div>
         </FadeIn>
         <FadeIn delay={0.12}>
