@@ -24,6 +24,8 @@ const CreatorAnalytics = React.lazy(() => import("@/pages/CreatorAnalytics"));
 const NotFound = React.lazy(() => import("@/pages/NotFound"));
 const ResetPassword = React.lazy(() => import("@/pages/ResetPassword"));
 const Install = React.lazy(() => import("@/pages/Install"));
+const Camps = React.lazy(() => import("@/pages/Camps"));
+const CampDetail = React.lazy(() => import("@/pages/CampDetail"));
 
 const LazyFallback = () => (
   <div className="flex h-svh items-center justify-center bg-background">
