@@ -17,6 +17,7 @@ interface EmberResult {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
+  isSparked?: boolean;
 }
 
 const FanSheet = ({ open, signalId, userId, fanCount, onFan, checkSparked, onClose }: FanSheetProps) => {
