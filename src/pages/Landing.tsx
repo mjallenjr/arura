@@ -259,6 +259,72 @@ const Landing = () => {
 
       <HeatTierSection />
 
+      {/* ── CAMPFIRES ── */}
+      <section className="py-24 px-6 border-t border-border/50">
+        <div className="max-w-4xl mx-auto">
+          <FadeIn>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-amber-400 text-center mb-4">Campgrounds</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.04em] text-center mb-6">
+              Find your fire.<br />Build your <span className="text-amber-400">camp.</span>
+            </h2>
+            <p className="text-sm text-muted-foreground text-center max-w-lg mx-auto mb-16 leading-relaxed">
+              When 5 embers share the same vibe, a campfire sparks to life. Grow it to 25 campers and it becomes a bonfire — with a Park Ranger who names the campground.
+            </p>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {[
+              {
+                icon: (
+                  <svg width="28" height="28" viewBox="0 0 32 32" fill="none" className="text-amber-400">
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.3"/>
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                  </svg>
+                ),
+                title: "Campfire",
+                subtitle: "5+ embers",
+                desc: "Share a vibe with 5 others and a campfire forms automatically. You're an ember and a camper.",
+              },
+              {
+                icon: (
+                  <svg width="28" height="28" viewBox="0 0 32 32" fill="none" className="text-amber-400">
+                    <path d="M9.5 8C8 5.5 5.5 4 4 3.5c1 1.5 1.8 3.5 2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+                    <path d="M22.5 8C24 5.5 26.5 4 28 3.5c-1 1.5-1.8 3.5-2 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.7"/>
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" fill="currentColor" opacity="0.35"/>
+                    <path d="M16 7c-1.2 4.8-4.8 7.2-4.8 12a7.2 7.2 0 0014.4 0c0-4.8-3.6-7.2-4.8-12-1.2 2.4-3.6 3.6-4.8 0z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M16 23a3.6 3.6 0 003.6-3.6c0-2.4-1.8-3.6-2.4-6-.6 1.2-1.8 1.8-2.4 0-.6 2.4-2.4 3.6-2.4 6A3.6 3.6 0 0016 23z" fill="currentColor" opacity="0.5"/>
+                  </svg>
+                ),
+                title: "Bonfire",
+                subtitle: "25+ campers",
+                desc: "At 25 campers, the fire evolves. The top contributor becomes the Park Ranger.",
+              },
+              {
+                icon: (
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-amber-400">
+                    <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" fill="currentColor" opacity="0.2"/>
+                    <path d="M12 2C6.48 2 2 6 2 10c0 5.5 10 12 10 12s10-6.5 10-12c0-4-4.48-8-10-8z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <path d="M8 14l-2-2 1.5-1.5L9 12l4-4 1.5 1.5L8 14z" fill="currentColor" opacity="0.6"/>
+                  </svg>
+                ),
+                title: "Park Ranger",
+                subtitle: "Top contributor",
+                desc: "The camper with the most flares and stitches names the campground — 3 words max.",
+              },
+            ].map((item, i) => (
+              <FadeIn key={i} delay={i * 0.12}>
+                <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-primary/5 p-6 text-center">
+                  <div className="flex justify-center mb-3">{item.icon}</div>
+                  <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-[10px] font-medium text-amber-400/80 uppercase tracking-wider mt-0.5 mb-2">{item.subtitle}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── WHY NOT THEM ── */}
       <section className="py-24 px-6 border-t border-border/50 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
