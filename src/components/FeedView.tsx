@@ -48,6 +48,8 @@ const FeedView = ({ onEnd }: FeedViewProps) => {
     word: string; x: number; y: number; scale: number; rotation: number;
   } | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
+  const [showFanSheet, setShowFanSheet] = useState(false);
+  const { fanFlare, fanCounts, getFanCount } = useFan();
 
   const {
     feltEffects, stitchCounts, hasStitched, stitchSuggestions, loadingSuggestions,
