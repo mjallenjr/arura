@@ -293,7 +293,7 @@ const EmberProfile = ({ userId, onClose }: EmberProfileProps) => {
       setIgniting(false);
       if (!error) {
         setIsFollowing(true);
-        toast({ title: "🔥 ignited", description: `You ignited ${data?.display_name}` });
+        toast({ title: "✦ ignited", description: `You ignited ${data?.display_name}` });
       }
     }, 800);
   }, [currentUser, userId, isFollowing, data?.display_name]);
